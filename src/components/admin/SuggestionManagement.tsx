@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, UserPlus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SuggestionManagement = () => {
   const { suggestions, addInfluencer, updateSuggestionStatus } = useVoteStore();
+  const queryClient = useQueryClient();
 
   const handleSuggestionAction = async (suggestionId: string, action: 'approved' | 'rejected') => {
     if (action === 'approved') {
@@ -15,8 +17,10 @@ const SuggestionManagement = () => {
       const suggestion = suggestions.find(s => s.id === suggestionId);
       if (suggestion) {
         try {
+          console.log('Approving suggestion:', suggestion);
+          
           // Add the suggestion as a new influencer
-          await addInfluencer({
+          const newInfluencerId = await addInfluencer({
             name: suggestion.influencerName,
             image: suggestion.imageUrl || '/placeholder.svg',
             height: '',
@@ -27,8 +31,14 @@ const SuggestionManagement = () => {
             socialLinks: suggestion.socialLinks
           });
 
+          console.log('New influencer added with ID:', newInfluencerId);
+
           // Update the suggestion status
-          updateSuggestionStatus(suggestionId, action);
+          await updateSuggestionStatus(suggestionId, action);
+          
+          // Invalidate relevant queries to refresh the UI
+          queryClient.invalidateQueries({ queryKey: ['influencers'] });
+          queryClient.invalidateQueries({ queryKey: ['suggestions'] });
           
           toast({
             title: "Approved & Added",
@@ -44,11 +54,20 @@ const SuggestionManagement = () => {
         }
       }
     } else {
-      updateSuggestionStatus(suggestionId, action);
-      toast({
-        title: "Rejected",
-        description: "Suggestion has been rejected.",
-      });
+      try {
+        await updateSuggestionStatus(suggestionId, action);
+        toast({
+          title: "Rejected",
+          description: "Suggestion has been rejected.",
+        });
+      } catch (error) {
+        console.error('Error rejecting suggestion:', error);
+        toast({
+          title: "Error",
+          description: "Failed to reject suggestion. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -121,6 +140,12 @@ const SuggestionManagement = () => {
               )}
             </div>
           ))}
+          
+          {suggestions.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No suggestions yet
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

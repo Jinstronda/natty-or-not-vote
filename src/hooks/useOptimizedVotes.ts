@@ -14,13 +14,39 @@ export const useOptimizedVotes = (influencerId?: string) => {
     queryFn: async () => {
       if (!influencerId) return null;
       
+      console.log('Fetching vote stats for influencer:', influencerId);
+      
       const { data, error } = await supabase
         .from('influencer_vote_counts')
         .select('*')
         .eq('influencer_id', influencerId)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching vote stats:', error);
+        // If materialized view doesn't exist, calculate manually
+        const { data: votes, error: votesError } = await supabase
+          .from('votes')
+          .select('vote')
+          .eq('influencer_id', influencerId);
+          
+        if (votesError) throw votesError;
+        
+        const totalVotes = votes?.length || 0;
+        const nattyCount = votes?.filter(v => v.vote === 'natty').length || 0;
+        const juicyCount = totalVotes - nattyCount;
+        
+        return {
+          influencer_id: influencerId,
+          total_votes: totalVotes,
+          natty_count: nattyCount,
+          juicy_count: juicyCount,
+          natty_percentage: totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0,
+          juicy_percentage: totalVotes > 0 ? Math.round((juicyCount / totalVotes) * 100) : 0
+        };
+      }
+      
+      console.log('Vote stats fetched:', data);
       return data;
     },
     enabled: !!influencerId,
@@ -34,6 +60,8 @@ export const useOptimizedVotes = (influencerId?: string) => {
     queryFn: async () => {
       if (!user || !influencerId) return null;
       
+      console.log('Fetching user vote for:', user.id, 'on influencer:', influencerId);
+      
       const { data, error } = await supabase
         .from('votes')
         .select('*')
@@ -41,7 +69,12 @@ export const useOptimizedVotes = (influencerId?: string) => {
         .eq('influencer_id', influencerId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user vote:', error);
+        throw error;
+      }
+      
+      console.log('User vote fetched:', data);
       return data;
     },
     enabled: !!user && !!influencerId,
@@ -52,6 +85,8 @@ export const useOptimizedVotes = (influencerId?: string) => {
   const voteMutation = useMutation({
     mutationFn: async ({ vote }: { vote: 'natty' | 'juicy' }) => {
       if (!user || !influencerId) throw new Error('Authentication required');
+
+      console.log('Submitting vote:', vote, 'for user:', user.id, 'on influencer:', influencerId);
 
       // Check rate limiting
       const { data: canVote } = await supabase.rpc('check_vote_rate_limit', {
@@ -72,10 +107,17 @@ export const useOptimizedVotes = (influencerId?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting vote:', error);
+        throw error;
+      }
+      
+      console.log('Vote submitted successfully:', data);
       return data;
     },
     onMutate: async ({ vote }) => {
+      console.log('Optimistic update for vote:', vote);
+      
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['user-vote', influencerId, user?.id] });
       await queryClient.cancelQueries({ queryKey: ['vote-stats', influencerId] });
@@ -140,6 +182,8 @@ export const useOptimizedVotes = (influencerId?: string) => {
       return { previousUserVote, previousVoteStats };
     },
     onError: (error, variables, context) => {
+      console.error('Vote mutation error:', error);
+      
       // Rollback optimistic updates
       if (context?.previousUserVote !== undefined) {
         queryClient.setQueryData(['user-vote', influencerId, user?.id], context.previousUserVote);
@@ -155,6 +199,8 @@ export const useOptimizedVotes = (influencerId?: string) => {
       });
     },
     onSuccess: async () => {
+      console.log('Vote mutation successful, invalidating queries');
+      
       // Invalidate and refetch to get the latest server data
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
       queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
@@ -167,11 +213,6 @@ export const useOptimizedVotes = (influencerId?: string) => {
           console.error('Failed to refresh vote counts:', error);
         }
       }, 1000);
-      
-      toast({
-        title: "Vote recorded!",
-        description: "Your vote has been successfully recorded.",
-      });
     },
   });
 
