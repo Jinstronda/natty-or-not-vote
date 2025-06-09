@@ -3,6 +3,8 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import InfluencerCard from "@/components/InfluencerCard";
 import SearchBar from "@/components/SearchBar";
+import SuggestInfluencerForm from "@/components/SuggestInfluencerForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVoteStore } from "@/stores/VoteStore";
 
 const Index = () => {
@@ -27,34 +29,52 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             The community-driven platform to determine if fitness influencers are natural or enhanced
           </p>
-          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
       </section>
 
-      {/* Trending Discussions */}
-      <section className="py-12 px-4 bg-card/50">
+      {/* Main Content with Tabs */}
+      <section className="py-8 px-4">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-heading font-bold text-center mb-12">
-            Trending Discussions
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredInfluencers.map((influencer) => {
-              const percentages = getVotePercentages(influencer.id);
-              return (
-                <InfluencerCard
-                  key={influencer.id}
-                  id={influencer.id}
-                  name={influencer.name}
-                  image={influencer.image}
-                  nattyPercentage={percentages.natty}
-                  juicyPercentage={percentages.juicy}
-                  totalVotes={percentages.total}
-                  platform=""
-                />
-              );
-            })}
-          </div>
+          <Tabs defaultValue="trending" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
+              <TabsTrigger value="trending">Trending</TabsTrigger>
+              <TabsTrigger value="suggest">Suggest An Influencer</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="trending" className="space-y-8">
+              <div className="text-center">
+                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+              </div>
+              
+              <div>
+                <h2 className="text-3xl font-heading font-bold text-center mb-8">
+                  Trending Discussions
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredInfluencers.map((influencer) => {
+                    const percentages = getVotePercentages(influencer.id);
+                    return (
+                      <InfluencerCard
+                        key={influencer.id}
+                        id={influencer.id}
+                        name={influencer.name}
+                        image={influencer.image}
+                        nattyPercentage={percentages.natty}
+                        juicyPercentage={percentages.juicy}
+                        totalVotes={percentages.total}
+                        platform=""
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="suggest">
+              <SuggestInfluencerForm />
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </div>

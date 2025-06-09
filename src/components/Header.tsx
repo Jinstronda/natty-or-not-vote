@@ -2,7 +2,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import SuggestInfluencer from "./SuggestInfluencer";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -12,13 +11,12 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="font-heading font-bold text-2xl">
-            Natty or Not
+            <span className="text-natty">Natty</span> or <span className="text-juicy">Not</span>
           </Link>
           
           <nav className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <SuggestInfluencer />
                 {user.role === 'admin' && (
                   <Button asChild variant="outline">
                     <Link to="/admin">Admin Panel</Link>
