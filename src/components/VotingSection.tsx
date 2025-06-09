@@ -7,16 +7,25 @@ import { useUserVote } from "@/hooks/api/useUserVote";
 import { useVoting } from "@/hooks/api/useVoting";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 interface VotingSectionProps {
   influencerId: string;
 }
 
 const VotingSection = ({ influencerId }: VotingSectionProps) => {
-  const { user } = useAuth();
-  const { data: voteStats, isLoading: statsLoading } = useVoteStats(influencerId);
-  const { data: userVote, isLoading: voteLoading } = useUserVote(influencerId);
+  const { user, loading: authLoading } = useAuth();
+  const { data: voteStats, isLoading: statsLoading, refetch: refetchStats } = useVoteStats(influencerId);
+  const { data: userVote, isLoading: voteLoading, refetch: refetchUserVote } = useUserVote(influencerId);
   const { mutate: castVote, isPending: isVoting } = useVoting(influencerId);
+
+  // Refetch data when user auth state changes
+  useEffect(() => {
+    if (!authLoading && user) {
+      refetchStats();
+      refetchUserVote();
+    }
+  }, [user, authLoading, refetchStats, refetchUserVote]);
 
   const handleVote = (vote: 'natty' | 'juicy') => {
     if (!user) {
@@ -28,8 +37,23 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
+    console.log('Casting vote:', vote, 'for influencer:', influencerId);
     castVote(vote);
   };
+
+  if (authLoading) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-6">
+        <Skeleton className="h-8 w-48 mx-auto mb-6" />
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+        </div>
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -128,6 +152,12 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
           <div className="text-center text-sm text-muted-foreground">
             {voteStats.total_votes.toLocaleString()} total votes
           </div>
+        </div>
+      )}
+
+      {(!voteStats || voteStats.total_votes === 0) && (
+        <div className="text-center text-sm text-muted-foreground">
+          Be the first to vote!
         </div>
       )}
     </div>

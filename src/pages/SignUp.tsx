@@ -6,14 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, signup } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -42,34 +41,20 @@ const SignUp = () => {
     try {
       console.log('Signup form submitted for:', email);
       
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: username,
-          },
-          emailRedirectTo: "https://nattyorjuicy.com/"
-        },
-      });
+      const success = await signup(username, email, password);
 
-      if (error) {
-        console.error('Signup error:', error);
+      if (success) {
+        toast({
+          title: "Account created!",
+          description: "Welcome to Natty or Juicy!",
+        });
+        navigate("/");
+      } else {
         toast({
           title: "Signup failed",
-          description: error.message,
+          description: "Unable to create account. Please try again.",
           variant: "destructive",
         });
-      } else {
-        console.log('Signup response:', data);
-        
-        if (data.user) {
-          toast({
-            title: "Account created!",
-            description: "Welcome to Natty or Juicy!",
-          });
-          navigate("/");
-        }
       }
     } catch (error) {
       console.error('Signup exception:', error);
