@@ -23,7 +23,7 @@ export const useOptimizedVotes = (influencerId?: string) => {
       if (error && error.code !== 'PGRST116') throw error;
       return data;
     },
-    enabled: !!influencerId && !authLoading,
+    enabled: !!influencerId,
     staleTime: 30000, // Cache for 30 seconds
     refetchInterval: 60000, // Refresh every minute
   });
@@ -44,7 +44,7 @@ export const useOptimizedVotes = (influencerId?: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!influencerId && !authLoading,
+    enabled: !!user && !!influencerId,
     staleTime: 300000, // Cache for 5 minutes
   });
 
@@ -76,11 +76,15 @@ export const useOptimizedVotes = (influencerId?: string) => {
       return data;
     },
     onMutate: async ({ vote }) => {
-      // Optimistic update for user vote
+      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['user-vote', influencerId, user?.id] });
+      await queryClient.cancelQueries({ queryKey: ['vote-stats', influencerId] });
       
-      const previousVote = queryClient.getQueryData(['user-vote', influencerId, user?.id]);
+      // Snapshot previous values
+      const previousUserVote = queryClient.getQueryData(['user-vote', influencerId, user?.id]);
+      const previousVoteStats = queryClient.getQueryData(['vote-stats', influencerId]);
       
+      // Optimistically update user vote
       queryClient.setQueryData(['user-vote', influencerId, user?.id], {
         user_id: user?.id,
         influencer_id: influencerId,
@@ -88,12 +92,60 @@ export const useOptimizedVotes = (influencerId?: string) => {
         timestamp: new Date().toISOString()
       });
 
-      return { previousVote };
+      // Optimistically update vote stats
+      if (previousVoteStats) {
+        const stats = previousVoteStats as any;
+        const wasNatty = previousUserVote && (previousUserVote as any).vote === 'natty';
+        const wasJuicy = previousUserVote && (previousUserVote as any).vote === 'juicy';
+        
+        let nattyCount = stats.natty_count || 0;
+        let juicyCount = stats.juicy_count || 0;
+        let totalVotes = stats.total_votes || 0;
+
+        // Remove previous vote if it existed
+        if (wasNatty) {
+          nattyCount = Math.max(0, nattyCount - 1);
+          totalVotes = Math.max(0, totalVotes - 1);
+        } else if (wasJuicy) {
+          juicyCount = Math.max(0, juicyCount - 1);
+          totalVotes = Math.max(0, totalVotes - 1);
+        }
+
+        // Add new vote
+        if (vote === 'natty') {
+          nattyCount += 1;
+        } else {
+          juicyCount += 1;
+        }
+
+        // If this is a new vote (not changing existing vote)
+        if (!previousUserVote) {
+          totalVotes += 1;
+        } else {
+          totalVotes += 1; // We already subtracted the old vote above
+        }
+
+        const newStats = {
+          ...stats,
+          natty_count: nattyCount,
+          juicy_count: juicyCount,
+          total_votes: totalVotes,
+          natty_percentage: totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0,
+          juicy_percentage: totalVotes > 0 ? Math.round((juicyCount / totalVotes) * 100) : 0
+        };
+
+        queryClient.setQueryData(['vote-stats', influencerId], newStats);
+      }
+
+      return { previousUserVote, previousVoteStats };
     },
     onError: (error, variables, context) => {
-      // Rollback optimistic update
-      if (context?.previousVote) {
-        queryClient.setQueryData(['user-vote', influencerId, user?.id], context.previousVote);
+      // Rollback optimistic updates
+      if (context?.previousUserVote !== undefined) {
+        queryClient.setQueryData(['user-vote', influencerId, user?.id], context.previousUserVote);
+      }
+      if (context?.previousVoteStats !== undefined) {
+        queryClient.setQueryData(['vote-stats', influencerId], context.previousVoteStats);
       }
       
       toast({
@@ -103,8 +155,9 @@ export const useOptimizedVotes = (influencerId?: string) => {
       });
     },
     onSuccess: async () => {
-      // Invalidate related queries to refresh data
+      // Invalidate and refetch to get the latest server data
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
+      queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
       
       // Refresh materialized view less aggressively
       setTimeout(async () => {
