@@ -43,20 +43,26 @@ const ProfilePictureUpload = () => {
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
-      // Upload to Supabase storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      // Upload to Supabase storage with user ID as filename
+      const fileName = user.id; // Just use user ID as filename
       
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('profile-pictures')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          upsert: true
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
+
+      console.log('Upload successful, public URL:', publicUrl);
 
       // Update profile in database
       const { error: updateError } = await supabase
@@ -64,7 +70,10 @@ const ProfilePictureUpload = () => {
         .update({ profile_picture_url: publicUrl })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
 
       toast({
         title: "Profile picture updated",
@@ -72,7 +81,9 @@ const ProfilePictureUpload = () => {
       });
 
       // Force refresh user data
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error: any) {
       console.error('Error uploading profile picture:', error);
       toast({

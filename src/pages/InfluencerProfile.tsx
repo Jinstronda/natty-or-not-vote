@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
+import { useRef } from "react";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
 import VotingResults from "@/components/VotingResults";
 import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
-import UserReviews from "@/components/UserReviews";
+import UserReviews, { UserReviewsRef } from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
 import { useInfluencer } from "@/hooks/api/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +16,11 @@ const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
+  const userReviewsRef = useRef<UserReviewsRef>(null);
+
+  const handleReviewSubmitted = () => {
+    userReviewsRef.current?.fetchReviews();
+  };
   
   // Transform the data to match the Influencer type with all required properties
   const influencer: Influencer | null = influencerData ? {
@@ -79,9 +85,9 @@ const InfluencerProfile = () => {
           </div>
           
           <div className="lg:col-span-2 space-y-8">
-            <VotingSection influencerId={id!} />
+            <VotingSection influencerId={id!} onReviewSubmitted={handleReviewSubmitted} />
             <ExpertReviews influencerId={id!} />
-            <UserReviews influencerId={id!} />
+            <UserReviews ref={userReviewsRef} influencerId={id!} />
           </div>
         </div>
       </div>

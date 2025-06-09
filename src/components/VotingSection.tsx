@@ -13,9 +13,10 @@ import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 
 interface VotingSectionProps {
   influencerId: string;
+  onReviewSubmitted?: () => void;
 }
 
-const VotingSection = ({ influencerId }: VotingSectionProps) => {
+const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) => {
   const { user, loading: authLoading } = useAuth();
   const { data: voteStats, isLoading: statsLoading, refetch: refetchStats } = useVoteStats(influencerId);
   const { data: userVote, isLoading: voteLoading, refetch: refetchUserVote } = useUserVote(influencerId);
@@ -190,6 +191,7 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         onClose={() => setShowReviewPrompt(false)}
         influencerId={influencerId}
         vote={lastVote || 'natty'}
+        onReviewSubmitted={onReviewSubmitted}
       />
     </div>
   );
