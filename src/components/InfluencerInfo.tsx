@@ -38,12 +38,12 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Training:</span>
-            <span className="font-medium">{influencer.yearsTraining} years</span>
+            <span className="font-medium">{influencer.years_training} years</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Claims:</span>
-            <Badge className={influencer.claimedStatus === 'Natural' ? 'bg-natty' : 'bg-juicy'}>
-              {influencer.claimedStatus}
+            <Badge className={influencer.claimed_status === 'Natural' ? 'bg-natty' : 'bg-juicy'}>
+              {influencer.claimed_status}
             </Badge>
           </div>
         </div>
