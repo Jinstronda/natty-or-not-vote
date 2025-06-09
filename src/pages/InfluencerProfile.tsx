@@ -11,16 +11,22 @@ import { useInfluencers } from "@/hooks/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Influencer } from "@/types/vote";
+import { useEffect, useState } from "react";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { useInfluencer } = useInfluencers();
   const { data: influencerData, isLoading: influencerLoading, error } = useInfluencer(id!);
+  const [mounted, setMounted] = useState(false);
   
-  console.log('InfluencerProfile - Auth user:', !!user, 'Auth loading:', authLoading);
-  console.log('InfluencerProfile - Influencer loading:', influencerLoading, 'Error:', error);
-  console.log('InfluencerProfile - Influencer data:', !!influencerData);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  console.log('InfluencerProfile - Mounted:', mounted, 'Auth loading:', authLoading, 'Influencer loading:', influencerLoading);
+  console.log('InfluencerProfile - User exists:', !!user, 'User role:', user?.role);
+  console.log('InfluencerProfile - Influencer data:', !!influencerData, 'Error:', error);
   
   // Transform the data to match the Influencer type
   const influencer: Influencer | null = influencerData ? {
@@ -35,8 +41,8 @@ const InfluencerProfile = () => {
     socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
-  // Show loading while auth or influencer data is loading
-  if (authLoading || influencerLoading) {
+  // Show loading state while any critical data is loading or not mounted
+  if (!mounted || authLoading || influencerLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -56,6 +62,7 @@ const InfluencerProfile = () => {
     );
   }
 
+  // Handle error state
   if (error || !influencer) {
     console.error('InfluencerProfile - Error or no influencer:', error);
     return (
@@ -65,13 +72,16 @@ const InfluencerProfile = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold">Influencer not found</h1>
             <p className="text-muted-foreground">The influencer you're looking for doesn't exist.</p>
+            {error && (
+              <p className="text-sm text-red-500 mt-2">Error: {error.message}</p>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  console.log('InfluencerProfile - Rendering with influencer:', influencer.name);
+  console.log('InfluencerProfile - Rendering with influencer:', influencer.name, 'User role:', user?.role);
 
   return (
     <div className="min-h-screen bg-background">
