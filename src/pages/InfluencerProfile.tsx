@@ -14,9 +14,13 @@ import { Influencer } from "@/types/vote";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { useInfluencer } = useInfluencers();
-  const { data: influencerData, isLoading, error } = useInfluencer(id!);
+  const { data: influencerData, isLoading: influencerLoading, error } = useInfluencer(id!);
+  
+  console.log('InfluencerProfile - Auth user:', !!user, 'Auth loading:', authLoading);
+  console.log('InfluencerProfile - Influencer loading:', influencerLoading, 'Error:', error);
+  console.log('InfluencerProfile - Influencer data:', !!influencerData);
   
   // Transform the data to match the Influencer type
   const influencer: Influencer | null = influencerData ? {
@@ -31,7 +35,8 @@ const InfluencerProfile = () => {
     socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
-  if (isLoading) {
+  // Show loading while auth or influencer data is loading
+  if (authLoading || influencerLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -52,6 +57,7 @@ const InfluencerProfile = () => {
   }
 
   if (error || !influencer) {
+    console.error('InfluencerProfile - Error or no influencer:', error);
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -64,6 +70,8 @@ const InfluencerProfile = () => {
       </div>
     );
   }
+
+  console.log('InfluencerProfile - Rendering with influencer:', influencer.name);
 
   return (
     <div className="min-h-screen bg-background">

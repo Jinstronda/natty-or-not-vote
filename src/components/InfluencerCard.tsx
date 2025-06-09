@@ -16,7 +16,7 @@ interface InfluencerCardProps {
 }
 
 const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
-  const { getVotePercentages } = useVotes(influencer.id);
+  const { getVotePercentages, isLoading } = useVotes(influencer.id);
   
   // Enable real-time updates for this influencer
   useRealTime(influencer.id, 'card');
@@ -50,7 +50,11 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             </div>
           )}
           
-          {total > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-2">
+              <span className="text-sm text-muted-foreground">Loading votes...</span>
+            </div>
+          ) : total > 0 ? (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-natty font-medium">🏆 {natty}%</span>

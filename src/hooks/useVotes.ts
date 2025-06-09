@@ -16,31 +16,44 @@ export const useVotes = (influencerId?: string) => {
       
       console.log('Fetching vote stats for influencer:', influencerId);
       
-      const { data: votes, error } = await supabase
-        .from('votes')
-        .select('vote')
-        .eq('influencer_id', influencerId);
-          
-      if (error) {
-        console.error('Error fetching votes:', error);
-        throw error;
+      try {
+        const { data: votes, error } = await supabase
+          .from('votes')
+          .select('vote')
+          .eq('influencer_id', influencerId);
+            
+        if (error) {
+          console.error('Error fetching votes:', error);
+          throw error;
+        }
+        
+        const totalVotes = votes?.length || 0;
+        const nattyCount = votes?.filter(v => v.vote === 'natty').length || 0;
+        const juicyCount = totalVotes - nattyCount;
+        
+        return {
+          influencer_id: influencerId,
+          total_votes: totalVotes,
+          natty_count: nattyCount,
+          juicy_count: juicyCount,
+          natty_percentage: totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0,
+          juicy_percentage: totalVotes > 0 ? Math.round((juicyCount / totalVotes) * 100) : 0
+        };
+      } catch (error) {
+        console.error('Error in vote stats query:', error);
+        return {
+          influencer_id: influencerId,
+          total_votes: 0,
+          natty_count: 0,
+          juicy_count: 0,
+          natty_percentage: 0,
+          juicy_percentage: 0
+        };
       }
-      
-      const totalVotes = votes?.length || 0;
-      const nattyCount = votes?.filter(v => v.vote === 'natty').length || 0;
-      const juicyCount = totalVotes - nattyCount;
-      
-      return {
-        influencer_id: influencerId,
-        total_votes: totalVotes,
-        natty_count: nattyCount,
-        juicy_count: juicyCount,
-        natty_percentage: totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0,
-        juicy_percentage: totalVotes > 0 ? Math.round((juicyCount / totalVotes) * 100) : 0
-      };
     },
     enabled: !!influencerId,
     staleTime: 30000,
+    retry: 1,
   });
 
   // Get user's vote
@@ -51,22 +64,28 @@ export const useVotes = (influencerId?: string) => {
       
       console.log('Fetching user vote for:', user.id, 'on influencer:', influencerId);
       
-      const { data, error } = await supabase
-        .from('votes')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('influencer_id', influencerId)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('votes')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('influencer_id', influencerId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user vote:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching user vote:', error);
+          return null;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Error in user vote query:', error);
+        return null;
       }
-      
-      return data;
     },
     enabled: !!user && !!influencerId,
     staleTime: 300000,
+    retry: 1,
   });
 
   // Get user's review (if any)
@@ -75,21 +94,27 @@ export const useVotes = (influencerId?: string) => {
     queryFn: async () => {
       if (!user || !influencerId) return null;
       
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('influencer_id', influencerId)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('influencer_id', influencerId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user review:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching user review:', error);
+          return null;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Error in user review query:', error);
+        return null;
       }
-      
-      return data;
     },
     enabled: !!user && !!influencerId,
+    retry: 1,
   });
 
   // Vote mutation
