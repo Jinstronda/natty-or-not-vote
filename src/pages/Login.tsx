@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -37,11 +39,33 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = () => {
-    toast({
-      title: "Google Login",
-      description: "Google authentication would be implemented here with a real OAuth provider.",
-    });
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Google Login Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Google Login Error",
+        description: "Failed to initiate Google login. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsGoogleLoading(false);
   };
 
   return (
@@ -91,6 +115,7 @@ const Login = () => {
               variant="outline" 
               className="w-full mt-4" 
               onClick={handleGoogleLogin}
+              disabled={isGoogleLoading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
@@ -110,7 +135,7 @@ const Login = () => {
                   fill="#EA4335"
                 />
               </svg>
-              Continue with Google
+              {isGoogleLoading ? "Connecting..." : "Continue with Google"}
             </Button>
           </div>
           
