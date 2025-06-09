@@ -281,10 +281,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      influencer_vote_counts: {
+        Row: {
+          influencer_id: string | null
+          juicy_percentage: number | null
+          juicy_votes: number | null
+          natty_percentage: number | null
+          natty_votes: number | null
+          total_votes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      check_vote_rate_limit: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      refresh_vote_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

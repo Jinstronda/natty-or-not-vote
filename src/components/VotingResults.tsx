@@ -1,18 +1,22 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useVoteStore } from "@/stores/VoteStore";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
 import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
+import { useRealTimeVotes } from "@/hooks/useRealTimeVotes";
 
 interface VotingResultsProps {
   influencerId: string;
 }
 
 const VotingResults = ({ influencerId }: VotingResultsProps) => {
-  const { getVotePercentages } = useVoteStore();
+  const { getVotePercentages, isLoading } = useOptimizedVotes(influencerId);
   const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
   
-  const communityResults = getVotePercentages(influencerId);
+  // Enable real-time updates
+  useRealTimeVotes(influencerId);
+  
+  const communityResults = getVotePercentages();
   const expertReviews = getInfluencerExpertReviews(influencerId);
   
   // Calculate expert percentages based on ratings (assuming 4+ stars = natty, 3 or less = juicy)
@@ -22,6 +26,28 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
   
   const expertNattyPercentage = totalExpertReviews > 0 ? Math.round((expertNattyCount / totalExpertReviews) * 100) : 0;
   const expertJuicyPercentage = totalExpertReviews > 0 ? Math.round((expertJuicyCount / totalExpertReviews) * 100) : 0;
+
+  if (isLoading) {
+    return (
+      <Card className="mb-8">
+        <CardContent className="p-8">
+          <Skeleton className="h-8 w-48 mx-auto mb-8" />
+          <div className="space-y-8">
+            <div>
+              <Skeleton className="h-6 w-32 mb-4" />
+              <Skeleton className="h-8 w-full mb-3" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-6 w-32 mb-4" />
+              <Skeleton className="h-8 w-full mb-3" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mb-8">
@@ -79,7 +105,7 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Community Verdict</h3>
             <span className="text-sm text-muted-foreground">
-              {communityResults.total} vote{communityResults.total !== 1 ? 's' : ''}
+              {communityResults.total} vote{communityResults.total !== 1 ? 's' : ''} • Live updates
             </span>
           </div>
           
