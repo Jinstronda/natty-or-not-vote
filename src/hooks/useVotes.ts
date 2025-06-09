@@ -121,7 +121,7 @@ export const useVotes = (influencerId?: string) => {
     retry: 1,
   });
 
-  // Vote mutation
+  // Vote mutation with improved upsert
   const voteMutation = useMutation({
     mutationFn: async ({ vote }: { vote: 'natty' | 'juicy' }) => {
       if (!userId || !influencerId) throw new Error('Authentication required');
@@ -134,6 +134,9 @@ export const useVotes = (influencerId?: string) => {
           user_id: userId,
           influencer_id: influencerId,
           vote: vote
+        }, {
+          onConflict: 'user_id,influencer_id',
+          ignoreDuplicates: false
         })
         .select()
         .single();
