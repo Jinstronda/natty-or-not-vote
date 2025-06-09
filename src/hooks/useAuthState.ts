@@ -18,7 +18,6 @@ export const useAuthState = () => {
       console.log('❌ AuthState: No session/user, clearing state');
       setUser(null);
       setSession(null);
-      setLoading(false);
       return;
     }
 
@@ -41,17 +40,24 @@ export const useAuthState = () => {
       };
       setUser(fallbackUser);
       setSession(newSession);
-    } finally {
-      setLoading(false);
     }
   }, [fetchUserProfile]);
 
   useEffect(() => {
     console.log('🚀 AuthState: Initializing...');
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initAuth = async () => {
       try {
+        // Set timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.log('⏰ AuthState: Timeout reached, stopping loading');
+            setLoading(false);
+          }
+        }, 10000); // 10 second timeout
+
         // Get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -65,6 +71,7 @@ export const useAuthState = () => {
 
         if (mounted) {
           await updateUser(session);
+          setLoading(false);
         }
       } catch (error) {
         console.error('❌ AuthState: Init error:', error);
@@ -82,12 +89,19 @@ export const useAuthState = () => {
       
       if (!mounted) return;
 
+      // Clear any existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
       if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
         setSession(null);
         setLoading(false);
       } else {
+        setLoading(true);
         await updateUser(session);
+        setLoading(false);
       }
     });
 
@@ -96,6 +110,9 @@ export const useAuthState = () => {
     return () => {
       console.log('🧹 AuthState: Cleanup');
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, [updateUser]);

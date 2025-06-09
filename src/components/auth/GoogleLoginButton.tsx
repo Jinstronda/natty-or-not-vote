@@ -15,17 +15,17 @@ const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
     setIsGoogleLoading(true);
     
     try {
-      console.log('Initiating Google login...');
+      console.log('🔄 GoogleLogin: Initiating Google OAuth...');
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
       if (error) {
-        console.error('Google login error:', error);
+        console.error('❌ GoogleLogin: OAuth error:', error);
         toast({
           title: "Google Login Error",
           description: error.message,
@@ -35,7 +35,7 @@ const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
       }
       // Don't set loading to false here if successful - the redirect will handle it
     } catch (error) {
-      console.error('Google login exception:', error);
+      console.error('❌ GoogleLogin: Exception:', error);
       toast({
         title: "Google Login Error",
         description: "Failed to initiate Google login. Please try again.",
