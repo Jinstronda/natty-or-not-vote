@@ -1,15 +1,17 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
-const SearchBar = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+interface SearchBarProps {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+}
 
+const SearchBar = ({ searchTerm, onSearchChange }: SearchBarProps) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Searching for:", searchQuery);
+    console.log("Searching for:", searchTerm);
     // TODO: Implement search functionality
   };
 
@@ -20,8 +22,8 @@ const SearchBar = () => {
           <Input
             type="text"
             placeholder="Search for fitness influencers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10 h-12 text-lg bg-input border-border focus:border-primary"
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
