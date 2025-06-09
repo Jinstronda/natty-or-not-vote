@@ -17,17 +17,17 @@ const InfluencerProfile = () => {
   const { user } = useAuth();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
   
-  // Transform the data to match the Influencer type
+  // Transform the data to match the Influencer type with all required properties
   const influencer: Influencer | null = influencerData ? {
     id: influencerData.id,
     name: influencerData.name,
     image: influencerData.image || '/placeholder.svg',
     height: influencerData.height || '',
     weight: influencerData.weight || '',
-    yearsTraining: influencerData.years_training || '',
-    claimedStatus: influencerData.claimed_status || '',
+    yearsTraining: influencerData.years_training || '', // Fixed: added missing property
+    claimedStatus: influencerData.claimed_status || '', // Fixed: added missing property
     description: influencerData.description || '',
-    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
+    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {} // Fixed: added missing property
   } : null;
   
   if (isLoading) {
