@@ -2,47 +2,70 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, UserPlus } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const SuggestionManagement = () => {
-  const { suggestions, addInfluencer, updateSuggestionStatus } = useVoteStore();
   const queryClient = useQueryClient();
+
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['admin-suggestions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('influencer_suggestions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const updateSuggestionMutation = useMutation({
+    mutationFn: async ({ suggestionId, status }: { suggestionId: string, status: string }) => {
+      const { error } = await supabase
+        .from('influencer_suggestions')
+        .update({ status })
+        .eq('id', suggestionId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-suggestions'] });
+    }
+  });
+
+  const addInfluencerMutation = useMutation({
+    mutationFn: async (suggestion: any) => {
+      const { error } = await supabase
+        .from('influencers')
+        .insert({
+          name: suggestion.influencer_name,
+          image: suggestion.image_url || '/placeholder.svg',
+          description: `Suggested by user`,
+          social_links: suggestion.social_links || {}
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['influencers'] });
+    }
+  });
 
   const handleSuggestionAction = async (suggestionId: string, action: 'approved' | 'rejected') => {
     if (action === 'approved') {
-      // Find the suggestion to approve
       const suggestion = suggestions.find(s => s.id === suggestionId);
       if (suggestion) {
         try {
-          console.log('Approving suggestion:', suggestion);
-          
-          // Add the suggestion as a new influencer
-          const newInfluencerId = await addInfluencer({
-            name: suggestion.influencerName,
-            image: suggestion.imageUrl || '/placeholder.svg',
-            height: '',
-            weight: '',
-            yearsTraining: '',
-            claimedStatus: '',
-            description: `Suggested by ${suggestion.submitterUsername}`,
-            socialLinks: suggestion.socialLinks
-          });
-
-          console.log('New influencer added with ID:', newInfluencerId);
-
-          // Update the suggestion status
-          await updateSuggestionStatus(suggestionId, action);
-          
-          // Invalidate relevant queries to refresh the UI
-          queryClient.invalidateQueries({ queryKey: ['influencers'] });
-          queryClient.invalidateQueries({ queryKey: ['suggestions'] });
+          await addInfluencerMutation.mutateAsync(suggestion);
+          await updateSuggestionMutation.mutateAsync({ suggestionId, status: action });
           
           toast({
             title: "Approved & Added",
-            description: `${suggestion.influencerName} has been approved and added to the influencers list.`,
+            description: `${suggestion.influencer_name} has been approved and added to the influencers list.`,
           });
         } catch (error) {
           console.error('Error adding influencer:', error);
@@ -55,7 +78,7 @@ const SuggestionManagement = () => {
       }
     } else {
       try {
-        await updateSuggestionStatus(suggestionId, action);
+        await updateSuggestionMutation.mutateAsync({ suggestionId, status: action });
         toast({
           title: "Rejected",
           description: "Suggestion has been rejected.",
@@ -87,7 +110,7 @@ const SuggestionManagement = () => {
             <div key={suggestion.id} className="flex items-start justify-between p-4 border rounded-lg">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium">{suggestion.influencerName}</span>
+                  <span className="font-medium">{suggestion.influencer_name}</span>
                   <Badge variant={
                     suggestion.status === 'pending' ? 'default' :
                     suggestion.status === 'approved' ? 'default' : 'destructive'
@@ -96,25 +119,25 @@ const SuggestionManagement = () => {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Suggested by {suggestion.submitterUsername} on {suggestion.timestamp}
+                  Suggested by user on {new Date(suggestion.created_at).toLocaleDateString()}
                 </p>
-                {suggestion.imageUrl && (
+                {suggestion.image_url && (
                   <div className="mb-2">
-                    <img src={suggestion.imageUrl} alt={suggestion.influencerName} className="w-16 h-16 object-cover rounded" />
+                    <img src={suggestion.image_url} alt={suggestion.influencer_name} className="w-16 h-16 object-cover rounded" />
                   </div>
                 )}
-                {Object.keys(suggestion.socialLinks).length > 0 && (
+                {suggestion.social_links && Object.keys(suggestion.social_links).length > 0 && (
                   <div className="text-sm">
                     <strong>Social Links:</strong>
                     <ul className="list-disc list-inside ml-4">
-                      {suggestion.socialLinks.instagram && (
-                        <li>Instagram: {suggestion.socialLinks.instagram}</li>
+                      {suggestion.social_links.instagram && (
+                        <li>Instagram: {suggestion.social_links.instagram}</li>
                       )}
-                      {suggestion.socialLinks.youtube && (
-                        <li>YouTube: {suggestion.socialLinks.youtube}</li>
+                      {suggestion.social_links.youtube && (
+                        <li>YouTube: {suggestion.social_links.youtube}</li>
                       )}
-                      {suggestion.socialLinks.tiktok && (
-                        <li>TikTok: {suggestion.socialLinks.tiktok}</li>
+                      {suggestion.social_links.tiktok && (
+                        <li>TikTok: {suggestion.social_links.tiktok}</li>
                       )}
                     </ul>
                   </div>
@@ -126,6 +149,7 @@ const SuggestionManagement = () => {
                     variant="default" 
                     size="sm"
                     onClick={() => handleSuggestionAction(suggestion.id, 'approved')}
+                    disabled={updateSuggestionMutation.isPending || addInfluencerMutation.isPending}
                   >
                     <Check className="h-4 w-4" />
                   </Button>
@@ -133,6 +157,7 @@ const SuggestionManagement = () => {
                     variant="destructive" 
                     size="sm"
                     onClick={() => handleSuggestionAction(suggestion.id, 'rejected')}
+                    disabled={updateSuggestionMutation.isPending}
                   >
                     <X className="h-4 w-4" />
                   </Button>

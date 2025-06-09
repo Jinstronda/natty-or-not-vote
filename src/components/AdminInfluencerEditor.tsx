@@ -5,9 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useVoteStore } from "@/stores/VoteStore";
 import { useToast } from "@/hooks/use-toast";
-import { Influencer } from "@/types/vote";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Influencer {
+  id: string;
+  name: string;
+  image: string;
+  height: string;
+  weight: string;
+  years_training: string;
+  claimed_status: string;
+  description: string;
+  social_links: any;
+}
 
 interface AdminInfluencerEditorProps {
   influencer: Influencer;
@@ -20,24 +31,39 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     image: influencer.image,
     height: influencer.height,
     weight: influencer.weight,
-    yearsTraining: influencer.yearsTraining,
-    claimedStatus: influencer.claimedStatus,
+    yearsTraining: influencer.years_training,
+    claimedStatus: influencer.claimed_status,
     description: influencer.description,
-    socialLinks: influencer.socialLinks
+    socialLinks: influencer.social_links || {}
   });
 
-  const { updateInfluencer } = useVoteStore();
   const { toast } = useToast();
 
   const handleSave = async () => {
     try {
-      await updateInfluencer(influencer.id, formData);
+      const { error } = await supabase
+        .from('influencers')
+        .update({
+          name: formData.name,
+          image: formData.image,
+          height: formData.height,
+          weight: formData.weight,
+          years_training: formData.yearsTraining,
+          claimed_status: formData.claimedStatus,
+          description: formData.description,
+          social_links: formData.socialLinks
+        })
+        .eq('id', influencer.id);
+
+      if (error) throw error;
+
       setIsEditing(false);
       toast({
         title: "Success",
         description: "Influencer updated successfully",
       });
     } catch (error) {
+      console.error('Error updating influencer:', error);
       toast({
         title: "Error",
         description: "Failed to update influencer",

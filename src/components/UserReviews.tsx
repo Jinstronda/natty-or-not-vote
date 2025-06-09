@@ -5,15 +5,14 @@ import { MessageSquare } from "lucide-react";
 import UserProfile from "@/components/UserProfile";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewReactions from "@/components/ReviewReactions";
-import { useVoteStore, Review } from "@/stores/VoteStore";
 
 interface UserReviewsProps {
   influencerId: string;
 }
 
 const UserReviews = ({ influencerId }: UserReviewsProps) => {
-  const { getInfluencerReviews } = useVoteStore();
-  const userReviews = getInfluencerReviews(influencerId);
+  // TODO: Implement with React Query hooks when reviews functionality is added
+  const userReviews: any[] = [];
 
   return (
     <Card>
@@ -26,25 +25,29 @@ const UserReviews = ({ influencerId }: UserReviewsProps) => {
       <CardContent className="space-y-4">
         <ReviewForm influencerId={influencerId} />
         
-        {userReviews.map((review) => (
-          <div key={review.id} className="border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <UserProfile username={review.username} userId={review.userId} />
-                <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
-                  {review.vote === 'natty' ? '🏆' : '💉'}
-                </Badge>
+        {userReviews.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">No reviews yet</p>
+        ) : (
+          userReviews.map((review) => (
+            <div key={review.id} className="border border-border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <UserProfile username={review.username} userId={review.userId} />
+                  <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
+                    {review.vote === 'natty' ? '🏆' : '💉'}
+                  </Badge>
+                </div>
+                <span className="text-sm text-muted-foreground">{review.timestamp}</span>
               </div>
-              <span className="text-sm text-muted-foreground">{review.timestamp}</span>
+              <p className="text-muted-foreground mb-3">{review.content}</p>
+              <ReviewReactions 
+                reviewId={review.id}
+                likes={review.likes}
+                dislikes={review.dislikes || 0}
+              />
             </div>
-            <p className="text-muted-foreground mb-3">{review.content}</p>
-            <ReviewReactions 
-              reviewId={review.id}
-              likes={review.likes}
-              dislikes={review.dislikes || 0}
-            />
-          </div>
-        ))}
+          ))
+        )}
       </CardContent>
     </Card>
   );

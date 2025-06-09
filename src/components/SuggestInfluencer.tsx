@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Sparkles } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 const SuggestInfluencer = () => {
   const { user } = useAuth();
-  const { submitInfluencerSuggestion } = useVoteStore();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -21,7 +20,7 @@ const SuggestInfluencer = () => {
     tiktok: ''
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!user) {
       toast({
         title: "Login required",
@@ -40,28 +39,46 @@ const SuggestInfluencer = () => {
       return;
     }
 
-    const socialLinks = {
-      ...(formData.instagram && { instagram: formData.instagram }),
-      ...(formData.youtube && { youtube: formData.youtube }),
-      ...(formData.tiktok && { tiktok: formData.tiktok })
-    };
+    try {
+      const socialLinks = {
+        ...(formData.instagram && { instagram: formData.instagram }),
+        ...(formData.youtube && { youtube: formData.youtube }),
+        ...(formData.tiktok && { tiktok: formData.tiktok })
+      };
 
-    submitInfluencerSuggestion(user.id, user.username, formData.name, socialLinks, formData.imageUrl);
+      const { error } = await supabase
+        .from('influencer_suggestions')
+        .insert({
+          influencer_name: formData.name,
+          submitter_id: user.id,
+          image_url: formData.imageUrl,
+          social_links: socialLinks
+        });
 
-    // Reset form
-    setFormData({
-      name: '',
-      imageUrl: '',
-      instagram: '',
-      youtube: '',
-      tiktok: ''
-    });
-    setIsOpen(false);
+      if (error) throw error;
 
-    toast({
-      title: "Suggestion submitted!",
-      description: "Thank you for your suggestion. It will be reviewed by our admin team.",
-    });
+      // Reset form
+      setFormData({
+        name: '',
+        imageUrl: '',
+        instagram: '',
+        youtube: '',
+        tiktok: ''
+      });
+      setIsOpen(false);
+
+      toast({
+        title: "Suggestion submitted!",
+        description: "Thank you for your suggestion. It will be reviewed by our admin team.",
+      });
+    } catch (error) {
+      console.error('Error submitting suggestion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit suggestion. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
