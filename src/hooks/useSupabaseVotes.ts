@@ -11,6 +11,27 @@ export const useSupabaseVotes = () => {
 
   useEffect(() => {
     fetchVotes();
+    
+    // Set up real-time subscription for votes
+    const channel = supabase
+      .channel('votes_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'votes'
+        },
+        () => {
+          console.log('Real-time vote change detected, refetching...');
+          fetchVotes();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchVotes = async () => {
@@ -37,7 +58,10 @@ export const useSupabaseVotes = () => {
   };
 
   const castVote = async (userId: string, influencerId: string, vote: 'natty' | 'juicy') => {
-    if (!user) return;
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
 
     try {
       const { error } = await supabase
