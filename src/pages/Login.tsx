@@ -16,7 +16,7 @@ const Login = () => {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect if already logged in - but wait for loading to complete
   useEffect(() => {
     if (!loading && user) {
       console.log('User already logged in, redirecting to home');
@@ -46,13 +46,14 @@ const Login = () => {
       const success = await login(email, password);
 
       if (success) {
-        console.log('Login successful');
+        console.log('Login successful, redirecting...');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/", { replace: true });
+        // Don't manually navigate here - let the useEffect handle it when user state updates
       } else {
+        console.log('Login failed');
         toast({
           title: "Login failed",
           description: "Invalid email or password.",
@@ -96,7 +97,9 @@ const Login = () => {
           description: error.message,
           variant: "destructive",
         });
+        setIsGoogleLoading(false);
       }
+      // Don't set loading to false here if successful - the redirect will handle it
     } catch (error) {
       console.error('Google login exception:', error);
       toast({
@@ -104,7 +107,6 @@ const Login = () => {
         description: "Failed to initiate Google login. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsGoogleLoading(false);
     }
   };
