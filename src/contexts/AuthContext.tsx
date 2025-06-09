@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading
   }), [user, login, logout, signup, loading]);
 
-  console.log('AuthContext: Rendering - user:', !!user, 'loading:', loading);
+  console.log('🔄 AuthContext: Rendering - user:', !!user, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={contextValue}>

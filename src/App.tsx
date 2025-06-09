@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
+import AuthCallback from "./components/auth/AuthCallback";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
