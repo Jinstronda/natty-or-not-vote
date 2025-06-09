@@ -64,7 +64,7 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
       return;
     }
 
-    submitReview(user.id, user.username, influencerId, userVote.vote, reviewText.trim());
+    submitReview(user.id, user.username, influencerId, userVote.vote as 'natty' | 'juicy', reviewText.trim());
     setReviewText("");
     setShowReviewForm(false);
     
