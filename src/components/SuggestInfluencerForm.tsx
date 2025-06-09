@@ -9,13 +9,14 @@ import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import ImageUpload from "@/components/ImageUpload";
 
 const SuggestInfluencerForm = () => {
   const { user } = useAuth();
   const { submitInfluencerSuggestion } = useVoteStore();
   const [formData, setFormData] = useState({
     name: '',
-    image: '/placeholder.svg',
+    imageUrl: '',
     height: '',
     weight: '',
     yearsTraining: '',
@@ -53,12 +54,12 @@ const SuggestInfluencerForm = () => {
       ...(formData.tiktok && { tiktok: formData.tiktok })
     };
 
-    submitInfluencerSuggestion(user.id, user.username, formData.name, socialLinks);
+    submitInfluencerSuggestion(user.id, user.username, formData.name, socialLinks, formData.imageUrl);
 
     // Reset form
     setFormData({
       name: '',
-      image: '/placeholder.svg',
+      imageUrl: '',
       height: '',
       weight: '',
       yearsTraining: '',
@@ -125,6 +126,14 @@ const SuggestInfluencerForm = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <ImageUpload
+                  onImageUploaded={(url) => setFormData({...formData, imageUrl: url})}
+                  currentImage={formData.imageUrl}
+                  onImageRemoved={() => setFormData({...formData, imageUrl: ''})}
                 />
               </div>
               

@@ -29,6 +29,7 @@ export const useSupabaseSuggestions = () => {
         submittedBy: suggestion.submitted_by,
         submitterUsername: suggestion.profiles.username,
         influencerName: suggestion.influencer_name,
+        imageUrl: suggestion.image_url,
         socialLinks: (suggestion.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {},
         timestamp: suggestion.timestamp,
         status: suggestion.status as 'pending' | 'approved' | 'rejected'
@@ -42,7 +43,7 @@ export const useSupabaseSuggestions = () => {
     }
   };
 
-  const submitInfluencerSuggestion = async (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any) => {
+  const submitInfluencerSuggestion = async (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any, imageUrl?: string) => {
     if (!user) return;
 
     try {
@@ -51,7 +52,8 @@ export const useSupabaseSuggestions = () => {
         .insert({
           submitted_by: submittedBy,
           influencer_name: influencerName,
-          social_links: socialLinks
+          social_links: socialLinks,
+          image_url: imageUrl
         });
 
       if (error) throw error;

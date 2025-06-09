@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 const SuggestInfluencer = () => {
   const { user } = useAuth();
@@ -15,6 +15,7 @@ const SuggestInfluencer = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    imageUrl: '',
     instagram: '',
     youtube: '',
     tiktok: ''
@@ -45,11 +46,12 @@ const SuggestInfluencer = () => {
       ...(formData.tiktok && { tiktok: formData.tiktok })
     };
 
-    submitInfluencerSuggestion(user.id, user.username, formData.name, socialLinks);
+    submitInfluencerSuggestion(user.id, user.username, formData.name, socialLinks, formData.imageUrl);
 
     // Reset form
     setFormData({
       name: '',
+      imageUrl: '',
       instagram: '',
       youtube: '',
       tiktok: ''
@@ -70,7 +72,7 @@ const SuggestInfluencer = () => {
           Suggest an Influencer
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Suggest an Influencer</SheetTitle>
         </SheetHeader>
@@ -88,6 +90,12 @@ const SuggestInfluencer = () => {
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
               />
             </div>
+
+            <ImageUpload
+              onImageUploaded={(url) => setFormData({...formData, imageUrl: url})}
+              currentImage={formData.imageUrl}
+              onImageRemoved={() => setFormData({...formData, imageUrl: ''})}
+            />
             
             <div>
               <label className="text-sm font-medium">Instagram</label>
