@@ -17,6 +17,16 @@ const LoginForm = ({ onLoadingChange }: LoginFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     onLoadingChange(true);
     
@@ -26,7 +36,7 @@ const LoginForm = ({ onLoadingChange }: LoginFormProps) => {
       const success = await login(email, password);
 
       if (success) {
-        console.log('Login successful, redirecting...');
+        console.log('Login successful');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
