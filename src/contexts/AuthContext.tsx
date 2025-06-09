@@ -9,6 +9,7 @@ interface User {
   email: string;
   username: string;
   role: string;
+  profile_picture_url?: string;
 }
 
 interface AuthContextType {
@@ -30,7 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        setUser(createUserFromSupabase(session.user));
+        const user = await createUserFromSupabase(session.user);
+        setUser(user);
       }
       setLoading(false);
     };
@@ -41,7 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          setUser(createUserFromSupabase(session.user));
+          const user = await createUserFromSupabase(session.user);
+          setUser(user);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
         }
@@ -52,7 +55,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const createUserFromSupabase = (supabaseUser: SupabaseUser): User => {
+  const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
+    try {
+      // Try to get profile from database
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (profile) {
+        return {
+          id: profile.id,
+          email: profile.email,
+          username: profile.username,
+          role: profile.role,
+          profile_picture_url: profile.profile_picture_url || undefined
+        };
+      }
+    } catch (error) {
+      console.log('Profile not found, using fallback');
+    }
+
+    // Fallback to user metadata
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',

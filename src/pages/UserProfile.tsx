@@ -1,21 +1,36 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThumbsUp, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-// Mock user data - in real app this would come from API
-const userData = {
-  "1": { username: "FitnessEnthusiast23", joinDate: "January 2024", totalVotes: 47, totalReviews: 23 },
-  "2": { username: "SkepticalLifter", joinDate: "December 2023", totalVotes: 31, totalReviews: 18 },
-};
+import { useAuth } from "@/contexts/AuthContext";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 
 const UserProfile = () => {
   const { id } = useParams();
+  const { user: currentUser } = useAuth();
+  const isOwnProfile = currentUser?.id === id;
   
+  const { data: profileData } = useQuery({
+    queryKey: ['user-profile', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
   const { data: userVotes = [] } = useQuery({
     queryKey: ['user-votes', id],
     queryFn: async () => {
@@ -37,8 +52,12 @@ const UserProfile = () => {
       if (!id) return [];
       const { data, error } = await supabase
         .from('reviews')
-        .select('*')
-        .eq('user_id', id);
+        .select(`
+          *,
+          influencers!inner(name)
+        `)
+        .eq('user_id', id)
+        .order('timestamp', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -46,9 +65,7 @@ const UserProfile = () => {
     enabled: !!id
   });
   
-  const user = userData[id as keyof typeof userData];
-  
-  if (!user) {
+  if (!profileData) {
     return <div>User not found</div>;
   }
 
@@ -61,11 +78,30 @@ const UserProfile = () => {
           {/* User Info */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-3xl font-heading">{user.username}</CardTitle>
-              <p className="text-muted-foreground">Member since {user.joinDate}</p>
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="flex flex-col items-center gap-4">
+                  {isOwnProfile ? (
+                    <ProfilePictureUpload />
+                  ) : (
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={profileData.profile_picture_url} alt={profileData.username} />
+                      <AvatarFallback className="text-xl">
+                        {profileData.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-3xl font-heading">{profileData.username}</CardTitle>
+                  <p className="text-muted-foreground">Member since {new Date(profileData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
+                  {profileData.role === 'admin' && (
+                    <Badge className="mt-2 bg-yellow-500">Admin</Badge>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold">{userVotes.length}</div>
                   <div className="text-sm text-muted-foreground">Total Votes</div>
@@ -81,6 +117,18 @@ const UserProfile = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-juicy">{userVotes.filter(v => v.vote === 'juicy').length}</div>
                   <div className="text-sm text-muted-foreground">Juicy Votes</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-natty">
+                    {userVotes.length > 0 ? Math.round((userVotes.filter(v => v.vote === 'natty').length / userVotes.length) * 100) : 0}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">Natty Rate</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-juicy">
+                    {userVotes.length > 0 ? Math.round((userVotes.filter(v => v.vote === 'juicy').length / userVotes.length) * 100) : 0}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">Juicy Rate</div>
                 </div>
               </div>
             </CardContent>
@@ -105,7 +153,13 @@ const UserProfile = () => {
                         <Badge className={review.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
                           {review.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
                         </Badge>
-                        <span className="text-sm text-muted-foreground">on Influencer</span>
+                        <span className="text-sm text-muted-foreground">on</span>
+                        <Link 
+                          to={`/influencer/${review.influencer_id}`}
+                          className="text-sm font-medium hover:text-primary transition-colors"
+                        >
+                          {review.influencers?.name || 'Unknown Influencer'}
+                        </Link>
                       </div>
                       <span className="text-sm text-muted-foreground">
                         {new Date(review.timestamp).toLocaleDateString()} {/* Fixed: use timestamp */}

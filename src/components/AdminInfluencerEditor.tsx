@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Upload } from "lucide-react";
 
 interface Influencer {
   id: string;
@@ -26,6 +27,7 @@ interface AdminInfluencerEditorProps {
 
 const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: influencer.name,
     image: influencer.image,
@@ -89,6 +91,70 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     }));
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Upload to Supabase storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `influencer-${influencer.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('influencer-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('influencer-photos')
+        .getPublicUrl(fileName);
+
+      // Update form data
+      setFormData(prev => ({
+        ...prev,
+        image: publicUrl
+      }));
+
+      toast({
+        title: "Image uploaded",
+        description: "Image uploaded successfully. Don't forget to save changes.",
+      });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload image.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (!isEditing) {
     return (
       <Card className="mb-6">
@@ -126,6 +192,26 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
             value={formData.image}
             onChange={(e) => handleChange('image', e.target.value)}
           />
+          <div className="mt-2">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={uploading}
+              className="hidden"
+              id="image-upload"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('image-upload')?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              {uploading ? "Uploading..." : "Upload Image"}
+            </Button>
+          </div>
         </div>
 
         <div>
