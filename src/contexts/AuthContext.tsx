@@ -23,7 +23,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [initializing, setInitializing] = React.useState(true);
 
   // Simple logging function that doesn't depend on useAuth
   const logSecurityEvent = (eventType: string, eventDetails: any = {}) => {
@@ -73,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   React.useEffect(() => {
     let isMounted = true;
 
-    // Get initial session
+    // Get initial session first
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -87,17 +86,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } finally {
         if (isMounted) {
           setLoading(false);
-          setInitializing(false);
         }
       }
     };
 
-    // Only initialize if we haven't already
-    if (initializing) {
-      initializeAuth();
-    }
+    // Initialize auth first
+    initializeAuth();
 
-    // Listen for auth changes - but avoid infinite loops
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       
@@ -105,10 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       try {
         if (session?.user) {
-          // Only fetch profile if we don't already have this user
-          if (!user || user.id !== session.user.id) {
-            await fetchUserProfile(session.user);
-          }
+          await fetchUserProfile(session.user);
         } else {
           setUser(null);
         }
@@ -126,7 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, user, initializing]);
+  }, [fetchUserProfile]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
