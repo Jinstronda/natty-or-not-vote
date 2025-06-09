@@ -8,11 +8,9 @@ export const useVoting = (influencerId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const voteMutation = useMutation({
+  return useMutation({
     mutationFn: async (vote: 'natty' | 'juicy') => {
       if (!user?.id) throw new Error('Authentication required');
-
-      console.log('Submitting vote:', vote, 'for user:', user.id, 'on influencer:', influencerId);
 
       const { data, error } = await supabase
         .from('votes')
@@ -24,33 +22,21 @@ export const useVoting = (influencerId: string) => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Vote submission error:', error);
-        throw error;
-      }
-      
-      console.log('Vote submitted successfully:', data);
+      if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      console.log('Vote mutation successful, invalidating queries');
-      
-      // Invalidate all related queries
+    onSuccess: () => {
+      // Invalidate and refetch related queries
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
       queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['votes'] });
-      
-      // Also refetch to ensure immediate update
-      queryClient.refetchQueries({ queryKey: ['vote-stats', influencerId] });
-      queryClient.refetchQueries({ queryKey: ['user-vote', influencerId, user?.id] });
       
       toast({
         title: "Vote recorded!",
-        description: `Your vote for ${data.vote} has been successfully recorded.`,
+        description: "Your vote has been successfully recorded.",
       });
     },
     onError: (error) => {
-      console.error('Vote mutation failed:', error);
+      console.error('Vote error:', error);
       toast({
         title: "Error",
         description: "Failed to record vote. Please try again.",
@@ -58,10 +44,4 @@ export const useVoting = (influencerId: string) => {
       });
     },
   });
-
-  return {
-    castVote: voteMutation.mutate,
-    isVoting: voteMutation.isPending,
-    voteError: voteMutation.error
-  };
 };

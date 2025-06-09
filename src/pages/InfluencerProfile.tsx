@@ -7,8 +7,7 @@ import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
-import { useInfluencer } from "@/hooks/useInfluencer";
-import { useRealTime } from "@/hooks/useRealTime";
+import { useInfluencer } from "@/hooks/api/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Influencer } from "@/types/vote";
@@ -17,12 +16,6 @@ const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
-  
-  // Enable real-time updates for this influencer
-  useRealTime(id, 'InfluencerProfile');
-
-  console.log('InfluencerProfile - ID:', id, 'Loading:', isLoading, 'Error:', error);
-  console.log('InfluencerProfile - User:', user?.role, 'Data exists:', !!influencerData);
   
   // Transform the data to match the Influencer type
   const influencer: Influencer | null = influencerData ? {
@@ -37,7 +30,6 @@ const InfluencerProfile = () => {
     socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
-  // Show loading state while data is loading
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -58,9 +50,7 @@ const InfluencerProfile = () => {
     );
   }
 
-  // Handle error state
   if (error || !influencer) {
-    console.error('InfluencerProfile - Error or no influencer:', error);
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -68,16 +58,11 @@ const InfluencerProfile = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold">Influencer not found</h1>
             <p className="text-muted-foreground">The influencer you're looking for doesn't exist.</p>
-            {error && (
-              <p className="text-sm text-red-500 mt-2">Error: {error.message}</p>
-            )}
           </div>
         </div>
       </div>
     );
   }
-
-  console.log('InfluencerProfile - Rendering with influencer:', influencer.name, 'User role:', user?.role);
 
   return (
     <div className="min-h-screen bg-background">

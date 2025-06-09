@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
-import { useInfluencers } from "@/hooks/useInfluencers";
+import { useInfluencers } from "@/hooks/api/useInfluencers";
 
 interface InfluencerGridProps {
   searchTerm?: string;
@@ -11,7 +11,7 @@ interface InfluencerGridProps {
 
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const {
-    influencers,
+    data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -21,6 +21,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -38,8 +39,9 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+  const allInfluencers = data?.pages.flatMap(page => page.data) || [];
+
   if (error) {
-    console.error('Error loading influencers:', error);
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">
@@ -63,17 +65,12 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  if (!influencers || influencers.length === 0) {
+  if (allInfluencers.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
           {searchTerm ? `No influencers found for "${searchTerm}"` : 'No influencers found'}
         </p>
-        {!searchTerm && (
-          <p className="text-muted-foreground text-sm mt-2">
-            Be the first to suggest an influencer below!
-          </p>
-        )}
       </div>
     );
   }
@@ -81,7 +78,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {influencers.map((influencer) => (
+        {allInfluencers.map((influencer) => (
           <InfluencerCard key={influencer.id} influencer={influencer} />
         ))}
       </div>
@@ -109,7 +106,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
           </Button>
         )}
         
-        {!hasNextPage && influencers.length > 0 && (
+        {!hasNextPage && allInfluencers.length > 0 && (
           <p className="text-muted-foreground text-sm">
             You've reached the end! 🎉
           </p>
