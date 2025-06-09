@@ -13,6 +13,14 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
+    detectSessionInUrl: true,
+    flowType: 'pkce', // Use PKCE flow for better security
+    debug: process.env.NODE_ENV === 'development', // Enable debug in development
+    storageKey: 'natty-auth', // Custom storage key to avoid conflicts
+  },
+  global: {
+    headers: {
+      'x-client-info': 'natty-or-juicy-web@1.0.0',
+    },
+  },
 });

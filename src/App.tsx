@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
+import "./utils/authRecovery"; // Import auth recovery utilities
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
