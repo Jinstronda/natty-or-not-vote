@@ -7,8 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useVoteStore, Influencer, InfluencerSuggestion } from "@/stores/VoteStore";
+import { useVoteStore, Influencer } from "@/stores/VoteStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, Edit, Plus, Check, X, Users, MessageSquare, UserPlus } from "lucide-react";
@@ -27,7 +26,6 @@ const AdminPanel = () => {
     updateSuggestionStatus
   } = useVoteStore();
 
-  const [isEditing, setIsEditing] = useState<string | null>(null);
   const [newInfluencer, setNewInfluencer] = useState<Omit<Influencer, 'id'>>({
     name: '',
     image: '/placeholder.svg',
@@ -151,7 +149,7 @@ const AdminPanel = () => {
                       onChange={(e) => setNewInfluencer({...newInfluencer, name: e.target.value})}
                     />
                     <Input
-                      placeholder="Height (e.g., 5'10\")"
+                      placeholder="Height (e.g., 5'10&quot;)"
                       value={newInfluencer.height}
                       onChange={(e) => setNewInfluencer({...newInfluencer, height: e.target.value})}
                     />
