@@ -80,7 +80,7 @@ const Login = () => {
     
     try {
       console.log('Initiating Google login...');
-      const redirectTo = `${window.location.origin}/`;
+      const redirectTo = "https://nattyorjuicy.com/";
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

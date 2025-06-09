@@ -8,27 +8,42 @@ export const useInfluencers = (searchTerm?: string) => {
   return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', searchTerm],
     queryFn: async ({ pageParam = 0 }) => {
-      let query = supabase
-        .from('influencers')
-        .select('id, name, image, claimed_status')
-        .order('created_at', { ascending: false })
-        .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
+      console.log('Fetching influencers, page:', pageParam, 'search:', searchTerm);
+      
+      try {
+        let query = supabase
+          .from('influencers')
+          .select('id, name, image, claimed_status')
+          .order('created_at', { ascending: false })
+          .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
-      if (searchTerm?.trim()) {
-        query = query.ilike('name', `%${searchTerm.trim()}%`);
+        if (searchTerm?.trim()) {
+          query = query.ilike('name', `%${searchTerm.trim()}%`);
+        }
+
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('Error fetching influencers:', error);
+          throw error;
+        }
+
+        console.log('Fetched influencers:', data?.length);
+
+        return {
+          data: data || [],
+          nextPage: data && data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+          hasMore: data && data.length === ITEMS_PER_PAGE,
+        };
+      } catch (error) {
+        console.error('Error in useInfluencers:', error);
+        throw error;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return {
-        data: data || [],
-        nextPage: data && data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
-        hasMore: data && data.length === ITEMS_PER_PAGE,
-      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
     staleTime: 2 * 60 * 1000, // 2 minutes for frequently changing data
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
