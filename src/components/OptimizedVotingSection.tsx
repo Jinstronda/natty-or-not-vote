@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,8 +31,12 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
   
   const [reviewText, setReviewText] = useState("");
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [optimisticVote, setOptimisticVote] = useState<'natty' | 'juicy' | null>(null);
   
   const { natty, juicy, total } = getVotePercentages();
+
+  // Use optimistic vote if available, otherwise use actual vote
+  const displayVote = optimisticVote || userVote?.vote;
 
   const handleVote = async (vote: 'natty' | 'juicy') => {
     if (!user) {
@@ -43,10 +48,17 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
       return;
     }
 
+    // Set optimistic vote immediately for instant UI feedback
+    setOptimisticVote(vote);
+
     try {
       await castVote({ vote });
       setShowReviewForm(true);
+      // Clear optimistic vote after successful cast
+      setOptimisticVote(null);
     } catch (error) {
+      // Revert optimistic vote on error
+      setOptimisticVote(null);
       console.error('Vote error:', error);
     }
   };
@@ -120,12 +132,12 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
           onClick={() => handleVote('natty')}
           disabled={isCasting}
           className={`h-16 text-lg font-semibold transition-all ${
-            userVote?.vote === 'natty' 
+            displayVote === 'natty' 
               ? 'bg-natty hover:bg-natty/90 text-white' 
               : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
           }`}
         >
-          {isCasting ? '...' : '🏆 Natty'}
+          {isCasting && optimisticVote === 'natty' ? '...' : '🏆 Natty'}
         </Button>
         
         <Button
@@ -133,19 +145,19 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
           onClick={() => handleVote('juicy')}
           disabled={isCasting}
           className={`h-16 text-lg font-semibold transition-all ${
-            userVote?.vote === 'juicy' 
+            displayVote === 'juicy' 
               ? 'bg-juicy hover:bg-juicy/90 text-white' 
               : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
           }`}
         >
-          {isCasting ? '...' : '💉 Juicy'}
+          {isCasting && optimisticVote === 'juicy' ? '...' : '💉 Juicy'}
         </Button>
       </div>
       
-      {userVote && (
+      {(userVote || optimisticVote) && (
         <div className="mb-4 text-center text-sm text-muted-foreground">
-          You voted: <span className={`font-semibold ${userVote.vote === 'natty' ? 'text-natty' : 'text-juicy'}`}>
-            {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+          You voted: <span className={`font-semibold ${displayVote === 'natty' ? 'text-natty' : 'text-juicy'}`}>
+            {displayVote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
           </span>
           <span className="text-xs block">You can change your vote anytime</span>
         </div>

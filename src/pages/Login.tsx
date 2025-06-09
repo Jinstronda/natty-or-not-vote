@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,15 +16,6 @@ const Login = () => {
   const { login, user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Handle redirect for already logged in users
-  useEffect(() => {
-    // Wait for auth to finish loading before redirecting
-    if (!loading && user) {
-      console.log('User is logged in, redirecting to home');
-      navigate("/", { replace: true });
-    }
-  }, [user, loading, navigate]);
-
   // Show loading while auth is initializing
   if (loading) {
     return (
@@ -35,11 +26,6 @@ const Login = () => {
         </div>
       </div>
     );
-  }
-
-  // Don't render login form if user is already logged in
-  if (user) {
-    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +40,7 @@ const Login = () => {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        // Navigation will be handled by the useEffect above
+        navigate("/", { replace: true });
       } else {
         toast({
           title: "Login failed",
@@ -111,6 +97,11 @@ const Login = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-heading">Login</CardTitle>
           <p className="text-muted-foreground">Welcome back to Natty or Juicy</p>
+          {user && (
+            <p className="text-sm text-muted-foreground">
+              Already logged in as {user.username}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -181,6 +172,11 @@ const Login = () => {
               Don't have an account?{" "}
               <Link to="/signup" className="text-primary hover:underline">
                 Sign up
+              </Link>
+            </p>
+            <p className="text-muted-foreground mt-2">
+              <Link to="/" className="text-primary hover:underline">
+                Back to home
               </Link>
             </p>
           </div>
