@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
 import { useInfluencers } from "@/hooks/api/useInfluencers";
+import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
+import { toast } from "@/hooks/use-toast";
+import { quickConnectionTest } from "@/utils/diagnostics";
 
 interface InfluencerGridProps {
   searchTerm?: string;
@@ -20,6 +23,27 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   } = useInfluencers(searchTerm);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Loading watchdog protection for influencer grid
+  useLoadingWatchdog({
+    component: 'InfluencerGrid',
+    isLoading: isLoading,
+    timeout: 15000, // 15 seconds max for initial load
+    onTimeout: async () => {
+      console.error('[InfluencerGrid] Loading timeout - running diagnostics');
+      
+      // Run quick connection test
+      const connectionOk = await quickConnectionTest();
+      
+      toast({
+        title: "Loading Timeout",
+        description: connectionOk 
+          ? "Database query is taking too long. Please refresh the page."
+          : "Connection issues detected. Please check your internet and refresh.",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -44,23 +68,49 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          Error loading influencers. Please try again later.
+        <p className="text-muted-foreground mb-4">
+          {error.message?.includes('timed out') 
+            ? 'Loading timed out. Please check your connection and try again.'
+            : 'Error loading influencers. Please try again later.'
+          }
         </p>
+        <Button 
+          variant="outline" 
+          onClick={() => window.location.reload()}
+          className="mt-4"
+        >
+          Refresh Page
+        </Button>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="space-y-4">
-            <Skeleton className="aspect-square w-full rounded-xl" />
-            <Skeleton className="h-4 w-3/4 mx-auto" />
-            <Skeleton className="h-2 w-full" />
-          </div>
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="aspect-square w-full rounded-xl" />
+              <Skeleton className="h-4 w-3/4 mx-auto" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ))}
+        </div>
+        
+        {/* Emergency refresh button after 10 seconds */}
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground mb-2">
+            Taking longer than expected? 
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
+            Refresh Page
+          </Button>
+        </div>
       </div>
     );
   }
