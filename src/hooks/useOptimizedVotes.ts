@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export const useOptimizedVotes = (influencerId?: string) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
   // Cache vote counts using materialized view for performance
@@ -23,7 +23,7 @@ export const useOptimizedVotes = (influencerId?: string) => {
       if (error && error.code !== 'PGRST116') throw error;
       return data;
     },
-    enabled: !!influencerId,
+    enabled: !!influencerId && !authLoading,
     staleTime: 30000, // Cache for 30 seconds
     refetchInterval: 60000, // Refresh every minute
   });
@@ -44,7 +44,7 @@ export const useOptimizedVotes = (influencerId?: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!influencerId,
+    enabled: !!user && !!influencerId && !authLoading,
     staleTime: 300000, // Cache for 5 minutes
   });
 
@@ -105,10 +105,13 @@ export const useOptimizedVotes = (influencerId?: string) => {
     onSuccess: () => {
       // Invalidate related queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
-      queryClient.invalidateQueries({ queryKey: ['votes'] });
       
-      // Refresh materialized view
-      supabase.rpc('refresh_vote_counts');
+      // Refresh materialized view less aggressively
+      setTimeout(() => {
+        supabase.rpc('refresh_vote_counts').catch(error => 
+          console.error('Failed to refresh vote counts:', error)
+        );
+      }, 1000);
       
       toast({
         title: "Vote recorded!",
@@ -132,7 +135,7 @@ export const useOptimizedVotes = (influencerId?: string) => {
   return {
     voteStats,
     userVote,
-    isLoading: statsLoading || userVoteLoading,
+    isLoading: statsLoading || userVoteLoading || authLoading,
     castVote: voteMutation.mutate,
     isCasting: voteMutation.isPending,
     getVotePercentages
