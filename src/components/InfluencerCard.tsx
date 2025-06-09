@@ -1,6 +1,5 @@
 
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 
 interface InfluencerCardProps {
   id: string;
@@ -18,11 +17,8 @@ const InfluencerCard = ({
   image, 
   nattyPercentage, 
   juicyPercentage, 
-  totalVotes, 
-  platform 
+  totalVotes
 }: InfluencerCardProps) => {
-  const isNattyMajority = nattyPercentage > juicyPercentage;
-
   return (
     <Link to={`/influencer/${id}`}>
       <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-200 hover:scale-105 group">
@@ -32,11 +28,6 @@ const InfluencerCard = ({
             alt={name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-xs">
-              {platform}
-            </Badge>
-          </div>
         </div>
         
         <div className="p-4">
