@@ -3,8 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { useVotes } from "@/hooks/useVotes";
-import { useRealTime } from "@/hooks/useRealTime";
+import { useVoteStats } from "@/hooks/useVoteStats";
 
 interface InfluencerCardProps {
   influencer: {
@@ -16,12 +15,11 @@ interface InfluencerCardProps {
 }
 
 const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
-  const { getVotePercentages, isLoading } = useVotes(influencer.id);
-  
-  // Enable real-time updates for this influencer
-  useRealTime(influencer.id, 'card');
-  
-  const { natty, juicy, total } = getVotePercentages();
+  const { data: voteStats, isLoading } = useVoteStats(influencer.id);
+
+  const natty = voteStats?.natty_percentage || 0;
+  const juicy = voteStats?.juicy_percentage || 0;
+  const total = voteStats?.total_votes || 0;
 
   return (
     <Link to={`/influencer/${influencer.id}`}>

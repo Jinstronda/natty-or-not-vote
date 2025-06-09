@@ -5,8 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVotes } from "@/hooks/useVotes";
-import { useRealTimeVotes } from "@/hooks/useRealTime";
+import { useVoteStats } from "@/hooks/useVoteStats";
+import { useUserVote } from "@/hooks/useUserVote";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
@@ -16,23 +18,53 @@ interface VotingSectionProps {
 
 const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { user } = useAuth();
-  const { 
-    userVote, 
-    userReview,
-    castVote, 
-    submitReview,
-    isCasting, 
-    isSubmittingReview,
-    isLoading, 
-    getVotePercentages 
-  } = useVotes(influencerId);
-  
-  useRealTimeVotes(influencerId);
+  const queryClient = useQueryClient();
+  const { data: voteStats, isLoading: statsLoading } = useVoteStats(influencerId);
+  const { data: userVote, isLoading: voteLoading } = useUserVote(influencerId);
   
   const [reviewText, setReviewText] = useState("");
   const [showReviewForm, setShowReviewForm] = useState(false);
   
-  const { natty, juicy, total } = getVotePercentages();
+  const natty = voteStats?.natty_percentage || 0;
+  const juicy = voteStats?.juicy_percentage || 0;
+  const total = voteStats?.total_votes || 0;
+
+  // Vote mutation
+  const voteMutation = useMutation({
+    mutationFn: async (vote: 'natty' | 'juicy') => {
+      if (!user?.id) throw new Error('Authentication required');
+
+      const { data, error } = await supabase
+        .from('votes')
+        .upsert({
+          user_id: user.id,
+          influencer_id: influencerId,
+          vote: vote
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
+      queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
+      toast({
+        title: "Vote recorded!",
+        description: "Your vote has been successfully recorded.",
+      });
+      setShowReviewForm(true);
+    },
+    onError: (error) => {
+      console.error('Vote error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record vote. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleVote = async (vote: 'natty' | 'juicy') => {
     if (!user) {
@@ -44,34 +76,7 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
-    try {
-      await castVote({ vote });
-      // Show review form only if user hasn't already submitted a review
-      if (!userReview) {
-        setShowReviewForm(true);
-      }
-    } catch (error) {
-      console.error('Vote error:', error);
-    }
-  };
-
-  const handleReviewSubmit = async () => {
-    if (!reviewText.trim()) {
-      toast({
-        title: "Review required",
-        description: "Please write a review before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      await submitReview({ content: reviewText.trim() });
-      setReviewText("");
-      setShowReviewForm(false);
-    } catch (error) {
-      console.error('Review submission error:', error);
-    }
+    voteMutation.mutate(vote);
   };
 
   if (!user) {
@@ -95,7 +100,7 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
     );
   }
 
-  if (isLoading) {
+  if (statsLoading || voteLoading) {
     return (
       <div className="bg-card border border-border rounded-lg p-6">
         <Skeleton className="h-8 w-48 mx-auto mb-6" />
@@ -119,27 +124,27 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         <Button
           size="lg"
           onClick={() => handleVote('natty')}
-          disabled={isCasting}
+          disabled={voteMutation.isPending}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'natty' 
               ? 'bg-natty hover:bg-natty/90 text-white' 
               : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
           }`}
         >
-          {isCasting ? '...' : '🏆 Natty'}
+          {voteMutation.isPending ? '...' : '🏆 Natty'}
         </Button>
         
         <Button
           size="lg"
           onClick={() => handleVote('juicy')}
-          disabled={isCasting}
+          disabled={voteMutation.isPending}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'juicy' 
               ? 'bg-juicy hover:bg-juicy/90 text-white' 
               : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
           }`}
         >
-          {isCasting ? '...' : '💉 Juicy'}
+          {voteMutation.isPending ? '...' : '💉 Juicy'}
         </Button>
       </div>
       
@@ -152,49 +157,6 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         </div>
       )}
 
-      {/* Show existing review if user has one */}
-      {userReview && (
-        <div className="mb-6 border border-border rounded-lg p-4 bg-muted/50">
-          <div className="mb-3">
-            <Badge className={userReview.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
-              Your review: {userReview.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground italic">"{userReview.content}"</p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Note: You can only submit one review per influencer
-          </p>
-        </div>
-      )}
-
-      {/* Show review form only if user voted but hasn't submitted a review yet */}
-      {showReviewForm && userVote && !userReview && (
-        <div className="mb-6 border border-border rounded-lg p-4">
-          <div className="mb-3">
-            <Badge className={userVote.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
-              Your vote: {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
-            </Badge>
-          </div>
-          <Textarea
-            placeholder="Share your thoughts on this influencer's natural status... (Optional - you can only submit one review)"
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            className="mb-3"
-          />
-          <div className="flex gap-2">
-            <Button 
-              onClick={handleReviewSubmit} 
-              disabled={!reviewText.trim() || isSubmittingReview}
-            >
-              {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
-            </Button>
-            <Button variant="outline" onClick={() => setShowReviewForm(false)}>
-              Skip Review
-            </Button>
-          </div>
-        </div>
-      )}
-      
       {total > 0 && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -212,7 +174,7 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
           </div>
           
           <div className="text-center text-sm text-muted-foreground">
-            {total.toLocaleString()} total votes • Live updates
+            {total.toLocaleString()} total votes
           </div>
         </div>
       )}
