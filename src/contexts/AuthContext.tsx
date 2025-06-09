@@ -40,41 +40,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   React.useEffect(() => {
     // Get initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await fetchUserProfile(session.user);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (session?.user) {
+          await fetchUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('Failed to get initial session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await fetchUserProfile(session.user);
-      } else {
-        setUser(null);
+      try {
+        if (session?.user) {
+          await fetchUserProfile(session.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', supabaseUser.id)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
 
-    if (profile && !error) {
+      if (profile && !error) {
+        setUser({
+          id: profile.id,
+          username: profile.username,
+          email: profile.email,
+          role: profile.role as 'user' | 'admin'
+        });
+      } else {
+        // If no profile exists, create a basic user object
+        setUser({
+          id: supabaseUser.id,
+          username: supabaseUser.email?.split('@')[0] || 'user',
+          email: supabaseUser.email || '',
+          role: 'user'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Still set a basic user object even if profile fetch fails
       setUser({
-        id: profile.id,
-        username: profile.username,
-        email: profile.email,
-        role: profile.role as 'user' | 'admin'
+        id: supabaseUser.id,
+        username: supabaseUser.email?.split('@')[0] || 'user',
+        email: supabaseUser.email || '',
+        role: 'user'
       });
     }
   };
