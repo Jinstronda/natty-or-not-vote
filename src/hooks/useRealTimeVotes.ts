@@ -51,7 +51,7 @@ export const useRealTimeVotes = (influencerId?: string, channelSuffix?: string) 
             table: 'votes',
             filter: `influencer_id=eq.${influencerId}`
           },
-          (payload) => {
+          async (payload) => {
             console.log('Real-time vote update:', payload);
             
             // Use debounced invalidation to prevent excessive queries
@@ -59,9 +59,11 @@ export const useRealTimeVotes = (influencerId?: string, channelSuffix?: string) 
             
             // Refresh materialized view less frequently
             if (Math.random() < 0.3) { // Only 30% of the time
-              supabase.rpc('refresh_vote_counts').catch(error => 
-                console.error('Failed to refresh vote counts:', error)
-              );
+              try {
+                await supabase.rpc('refresh_vote_counts');
+              } catch (error) {
+                console.error('Failed to refresh vote counts:', error);
+              }
             }
           }
         )

@@ -102,15 +102,17 @@ export const useOptimizedVotes = (influencerId?: string) => {
         variant: "destructive",
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate related queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
       
       // Refresh materialized view less aggressively
-      setTimeout(() => {
-        supabase.rpc('refresh_vote_counts').catch(error => 
-          console.error('Failed to refresh vote counts:', error)
-        );
+      setTimeout(async () => {
+        try {
+          await supabase.rpc('refresh_vote_counts');
+        } catch (error) {
+          console.error('Failed to refresh vote counts:', error);
+        }
       }, 1000);
       
       toast({
