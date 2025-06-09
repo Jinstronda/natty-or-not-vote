@@ -48,7 +48,8 @@ const SignUp = () => {
         options: {
           data: {
             username: username,
-          }
+          },
+          emailRedirectTo: "https://nattyorjuicy.com/"
         },
       });
 
