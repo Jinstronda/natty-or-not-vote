@@ -1,19 +1,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Influencer } from "@/types/vote";
 
 interface InfluencerInfoProps {
-  influencer: {
-    name: string;
-    image: string;
-    platform: string;
-    followers: string;
-    height: string;
-    weight: string;
-    yearsTraining: string;
-    claimedStatus: string;
-    bio: string;
-  };
+  influencer: Influencer;
 }
 
 const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
@@ -32,15 +23,8 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
           {influencer.name}
         </h1>
         
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="secondary">{influencer.platform}</Badge>
-          <span className="text-sm text-muted-foreground">
-            {influencer.followers} followers
-          </span>
-        </div>
-        
         <p className="text-muted-foreground mb-6">
-          {influencer.bio}
+          {influencer.description}
         </p>
         
         <div className="space-y-3">
