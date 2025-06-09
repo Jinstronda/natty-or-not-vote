@@ -3,11 +3,15 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
+import UserProfile from "@/components/UserProfile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, ThumbsUp, MessageSquare } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useVoteStore } from "@/stores/VoteStore";
+import { toast } from "@/hooks/use-toast";
 
 // Mock data - in real app this would come from API
 const influencerData = {
@@ -20,8 +24,6 @@ const influencerData = {
     weight: "185 lbs",
     yearsTraining: "8",
     claimedStatus: "Natural",
-    nattyVotes: 1123,
-    juicyVotes: 415,
     bio: "Aesthetic physique enthusiast. Sharing my natural transformation journey.",
     expertReviews: [
       {
@@ -38,47 +40,59 @@ const influencerData = {
         content: "The timeline and progression photos support natural development.",
         likes: 189
       }
-    ],
-    userReviews: [
-      {
-        id: 1,
-        author: "FitnessEnthusiast23",
-        rating: 5,
-        content: "Been following his journey for years. Definitely achievable naturally with good genetics.",
-        likes: 45,
-        timestamp: "2 hours ago"
-      },
-      {
-        id: 2,
-        author: "SkepticalLifter",
-        rating: 2,
-        content: "Too dry and full at the same time. Classic enhanced look.",
-        likes: 23,
-        timestamp: "1 day ago"
-      }
     ]
   }
 };
 
 const InfluencerProfile = () => {
   const { id } = useParams();
-  const [userVote, setUserVote] = useState<'natty' | 'juicy' | null>(null);
+  const { user } = useAuth();
+  const { submitReview, getUserVote, getInfluencerReviews } = useVoteStore();
   const [newReview, setNewReview] = useState("");
   
   const influencer = influencerData[id as keyof typeof influencerData];
+  const userVote = user ? getUserVote(user.id, id!) : null;
+  const userReviews = getInfluencerReviews(id!);
   
   if (!influencer) {
     return <div>Influencer not found</div>;
   }
 
-  const handleVote = (vote: 'natty' | 'juicy') => {
-    setUserVote(vote);
-    console.log(`Voted ${vote} for ${influencer.name}`);
-  };
-
   const handleReviewSubmit = () => {
-    console.log("Submitting review:", newReview);
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to submit a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userVote) {
+      toast({
+        title: "Vote first",
+        description: "Please cast your vote before submitting a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newReview.trim()) {
+      toast({
+        title: "Review required",
+        description: "Please write a review before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    submitReview(user.id, user.username, id!, userVote.vote, newReview.trim());
     setNewReview("");
+    
+    toast({
+      title: "Review submitted!",
+      description: "Your review has been added.",
+    });
   };
 
   return (
@@ -142,10 +156,9 @@ const InfluencerProfile = () => {
           <div className="lg:col-span-2 space-y-8">
             {/* Voting Section */}
             <VotingSection
-              nattyVotes={influencer.nattyVotes}
-              juicyVotes={influencer.juicyVotes}
-              userVote={userVote}
-              onVote={handleVote}
+              influencerId={id!}
+              nattyVotes={0}
+              juicyVotes={0}
             />
             
             {/* Expert Reviews */}
@@ -190,32 +203,36 @@ const InfluencerProfile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Add Review */}
-                <div className="border border-border rounded-lg p-4">
-                  <Textarea
-                    placeholder="Share your thoughts on this influencer's natural status..."
-                    value={newReview}
-                    onChange={(e) => setNewReview(e.target.value)}
-                    className="mb-3"
-                  />
-                  <Button onClick={handleReviewSubmit} disabled={!newReview.trim()}>
-                    Submit Review
-                  </Button>
-                </div>
+                {user && userVote && (
+                  <div className="border border-border rounded-lg p-4">
+                    <div className="mb-3">
+                      <Badge className={userVote.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
+                        Your vote: {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+                      </Badge>
+                    </div>
+                    <Textarea
+                      placeholder="Share your thoughts on this influencer's natural status..."
+                      value={newReview}
+                      onChange={(e) => setNewReview(e.target.value)}
+                      className="mb-3"
+                    />
+                    <Button onClick={handleReviewSubmit} disabled={!newReview.trim()}>
+                      Submit Review
+                    </Button>
+                  </div>
+                )}
                 
                 {/* User Reviews List */}
-                {influencer.userReviews.map((review) => (
+                {userReviews.map((review) => (
                   <div key={review.id} className="border border-border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{review.author}</span>
+                      <div className="flex items-center gap-2">
+                        <UserProfile username={review.username} userId={review.userId} />
+                        <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
+                          {review.vote === 'natty' ? '🏆' : '💉'}
+                        </Badge>
+                      </div>
                       <span className="text-sm text-muted-foreground">{review.timestamp}</span>
-                    </div>
-                    <div className="flex items-center gap-1 mb-2">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'}`} 
-                        />
-                      ))}
                     </div>
                     <p className="text-muted-foreground mb-3">{review.content}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
