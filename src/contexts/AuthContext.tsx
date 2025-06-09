@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { useSecurityAudit } from '@/hooks/useSecurityAudit';
 
 interface User {
   id: string;
@@ -24,7 +23,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const { logLoginAttempt, logLogout } = useSecurityAudit();
+
+  // Simple security logging function that doesn't depend on useAuth
+  const logSecurityEvent = async (eventType: string, eventDetails: any = {}) => {
+    try {
+      console.log('Security Event:', {
+        event_type: eventType,
+        event_details: eventDetails,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to log security event:', error);
+    }
+  };
 
   React.useEffect(() => {
     // Get initial session
@@ -76,17 +87,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       const success = !error;
-      await logLoginAttempt(success, email);
+      await logSecurityEvent(
+        success ? 'login_attempt' : 'failed_login',
+        { email, success }
+      );
       
       return success;
     } catch (error) {
-      await logLoginAttempt(false, email);
+      await logSecurityEvent('failed_login', { email, success: false });
       return false;
     }
   };
 
   const logout = async () => {
-    await logLogout();
+    await logSecurityEvent('logout');
     await supabase.auth.signOut();
     setUser(null);
   };
