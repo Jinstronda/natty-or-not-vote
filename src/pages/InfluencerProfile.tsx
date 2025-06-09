@@ -2,6 +2,7 @@
 import { useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
+import VotingResults from "@/components/VotingResults";
 import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews from "@/components/UserReviews";
@@ -12,10 +13,9 @@ import { useAuth } from "@/contexts/AuthContext";
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const { influencers, getVotePercentages } = useVoteStore();
+  const { influencers } = useVoteStore();
   
   const influencer = influencers.find(inf => inf.id === id);
-  const { natty, juicy } = getVotePercentages(id || '');
   
   if (!influencer) {
     return (
@@ -36,6 +36,9 @@ const InfluencerProfile = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Prominent Voting Results */}
+        <VotingResults influencerId={id!} />
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
@@ -47,11 +50,7 @@ const InfluencerProfile = () => {
           
           {/* Right Column - Voting & Reviews */}
           <div className="lg:col-span-2 space-y-8">
-            <VotingSection
-              influencerId={id!}
-              nattyVotes={natty}
-              juicyVotes={juicy}
-            />
+            <VotingSection influencerId={id!} />
             
             <ExpertReviews influencerId={id!} />
             
