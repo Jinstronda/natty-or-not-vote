@@ -45,32 +45,8 @@ export const useInfluencers = (searchTerm?: string) => {
     getNextPageParam: (lastPage) => lastPage.nextPage,
     staleTime: 300000,
     initialPageParam: 0,
+    retry: 1,
   });
-
-  // Get single influencer
-  const useInfluencer = (id: string) => {
-    return useQuery({
-      queryKey: ['influencer', id],
-      queryFn: async () => {
-        if (!id) return null;
-        
-        const { data, error } = await supabase
-          .from('influencers')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching influencer:', error);
-          throw error;
-        }
-        
-        return data;
-      },
-      staleTime: 600000,
-      enabled: !!id,
-    });
-  };
 
   const allInfluencers = data?.pages.flatMap(page => page.influencers) || [];
 
@@ -81,6 +57,5 @@ export const useInfluencers = (searchTerm?: string) => {
     isFetchingNextPage,
     isLoading,
     error,
-    useInfluencer
   };
 };

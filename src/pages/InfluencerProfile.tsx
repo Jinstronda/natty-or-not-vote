@@ -7,26 +7,18 @@ import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
-import { useInfluencers } from "@/hooks/useInfluencers";
+import { useInfluencer } from "@/hooks/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Influencer } from "@/types/vote";
-import { useEffect, useState } from "react";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
-  const { user, loading: authLoading } = useAuth();
-  const { useInfluencer } = useInfluencers();
-  const { data: influencerData, isLoading: influencerLoading, error } = useInfluencer(id!);
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { user } = useAuth();
+  const { data: influencerData, isLoading, error } = useInfluencer(id!);
 
-  console.log('InfluencerProfile - Mounted:', mounted, 'Auth loading:', authLoading, 'Influencer loading:', influencerLoading);
-  console.log('InfluencerProfile - User exists:', !!user, 'User role:', user?.role);
-  console.log('InfluencerProfile - Influencer data:', !!influencerData, 'Error:', error);
+  console.log('InfluencerProfile - ID:', id, 'Loading:', isLoading, 'Error:', error);
+  console.log('InfluencerProfile - User:', user?.role, 'Data exists:', !!influencerData);
   
   // Transform the data to match the Influencer type
   const influencer: Influencer | null = influencerData ? {
@@ -41,8 +33,8 @@ const InfluencerProfile = () => {
     socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
-  // Show loading state while any critical data is loading or not mounted
-  if (!mounted || authLoading || influencerLoading) {
+  // Show loading state while data is loading
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
