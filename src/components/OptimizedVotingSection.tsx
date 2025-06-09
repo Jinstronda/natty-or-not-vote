@@ -17,7 +17,7 @@ interface OptimizedVotingSectionProps {
 
 const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) => {
   const { user } = useAuth();
-  const { submitReview } = useVoteStore();
+  const { submitReview, castVote: storeVote } = useVoteStore();
   const { 
     userVote, 
     castVote, 
@@ -48,23 +48,41 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
       return;
     }
 
+    console.log('Casting vote:', vote, 'for influencer:', influencerId, 'by user:', user.id);
+
     // Set optimistic vote immediately for instant UI feedback
     setOptimisticVote(vote);
 
     try {
-      await castVote({ vote });
+      // Use both the optimized vote hook and store vote for compatibility
+      await Promise.all([
+        castVote({ vote }),
+        storeVote(user.id, influencerId, vote)
+      ]);
+      
       setShowReviewForm(true);
       // Clear optimistic vote after successful cast
       setOptimisticVote(null);
+      
+      toast({
+        title: "Vote recorded!",
+        description: "Your vote has been successfully recorded.",
+      });
     } catch (error) {
       // Revert optimistic vote on error
       setOptimisticVote(null);
       console.error('Vote error:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to record vote. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleReviewSubmit = () => {
-    if (!user || !userVote) return;
+    if (!user || !displayVote) return;
 
     if (!reviewText.trim()) {
       toast({
@@ -75,7 +93,7 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
       return;
     }
 
-    submitReview(user.id, user.username, influencerId, userVote.vote as 'natty' | 'juicy', reviewText.trim());
+    submitReview(user.id, user.username, influencerId, displayVote as 'natty' | 'juicy', reviewText.trim());
     setReviewText("");
     setShowReviewForm(false);
     
@@ -163,11 +181,11 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
         </div>
       )}
 
-      {showReviewForm && userVote && (
+      {showReviewForm && displayVote && (
         <div className="mb-6 border border-border rounded-lg p-4">
           <div className="mb-3">
-            <Badge className={userVote.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
-              Your vote: {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+            <Badge className={displayVote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
+              Your vote: {displayVote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
             </Badge>
           </div>
           <Textarea
