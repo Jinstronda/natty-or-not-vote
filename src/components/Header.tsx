@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import SuggestInfluencer from "@/components/SuggestInfluencer";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -15,6 +16,11 @@ const Header = () => {
           </Link>
           
           <nav className="flex items-center gap-4">
+            <Button asChild variant="ghost">
+              <Link to="/">Trending</Link>
+            </Button>
+            <SuggestInfluencer />
+            
             {user ? (
               <div className="flex items-center gap-4">
                 {user.role === 'admin' && (
