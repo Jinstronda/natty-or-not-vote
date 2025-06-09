@@ -2,9 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteStats } from "@/hooks/useVoteStats";
-import { useUserVote } from "@/hooks/useUserVote";
-import { useVoting } from "@/hooks/useVoting";
+import { useVoteStats } from "@/hooks/api/useVoteStats";
+import { useUserVote } from "@/hooks/api/useUserVote";
+import { useVoting } from "@/hooks/api/useVoting";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
@@ -16,11 +16,7 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { user } = useAuth();
   const { data: voteStats, isLoading: statsLoading } = useVoteStats(influencerId);
   const { data: userVote, isLoading: voteLoading } = useUserVote(influencerId);
-  const { castVote, isVoting } = useVoting(influencerId);
-  
-  const natty = voteStats?.natty_percentage || 0;
-  const juicy = voteStats?.juicy_percentage || 0;
-  const total = voteStats?.total_votes || 0;
+  const { mutate: castVote, isPending: isVoting } = useVoting(influencerId);
 
   const handleVote = (vote: 'natty' | 'juicy') => {
     if (!user) {
@@ -32,7 +28,6 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
-    console.log('Voting button clicked:', vote);
     castVote(vote);
   };
 
@@ -114,24 +109,24 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         </div>
       )}
 
-      {total > 0 && (
+      {voteStats && voteStats.total_votes > 0 && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-natty font-semibold">Natty: {natty}%</span>
-            <span className="text-juicy font-semibold">Juicy: {juicy}%</span>
+            <span className="text-natty font-semibold">Natty: {voteStats.natty_percentage}%</span>
+            <span className="text-juicy font-semibold">Juicy: {voteStats.juicy_percentage}%</span>
           </div>
           
           <div className="relative">
             <div className="w-full bg-secondary rounded-full h-4 overflow-hidden">
               <div 
                 className="h-full bg-natty transition-all duration-500"
-                style={{ width: `${natty}%` }}
+                style={{ width: `${voteStats.natty_percentage}%` }}
               />
             </div>
           </div>
           
           <div className="text-center text-sm text-muted-foreground">
-            {total.toLocaleString()} total votes
+            {voteStats.total_votes.toLocaleString()} total votes
           </div>
         </div>
       )}

@@ -6,8 +6,6 @@ export const useInfluencer = (id: string) => {
   return useQuery({
     queryKey: ['influencer', id],
     queryFn: async () => {
-      if (!id) throw new Error('Influencer ID is required');
-      
       const { data, error } = await supabase
         .from('influencers')
         .select('*')
@@ -18,7 +16,6 @@ export const useInfluencer = (id: string) => {
       return data;
     },
     enabled: !!id,
-    staleTime: 300000, // 5 minutes
-    retry: 1,
+    staleTime: 10 * 60 * 1000, // 10 minutes for profile data
   });
 };

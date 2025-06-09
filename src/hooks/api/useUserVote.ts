@@ -9,7 +9,7 @@ export const useUserVote = (influencerId: string) => {
   return useQuery({
     queryKey: ['user-vote', influencerId, user?.id],
     queryFn: async () => {
-      if (!user?.id || !influencerId) return null;
+      if (!user?.id) return null;
       
       const { data, error } = await supabase
         .from('votes')
@@ -22,7 +22,6 @@ export const useUserVote = (influencerId: string) => {
       return data;
     },
     enabled: !!user?.id && !!influencerId,
-    staleTime: 300000,
-    retry: 1,
+    staleTime: 60 * 1000, // 1 minute for user votes
   });
 };
