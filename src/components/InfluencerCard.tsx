@@ -16,42 +16,57 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
 
   return (
     <Link to={`/influencer/${influencer.id}`}>
-      <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-200 hover:scale-105 group">
+      <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-lg group">
         <div className="aspect-square relative overflow-hidden">
           <img 
             src={influencer.image || "/placeholder.svg"} 
             alt={influencer.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
+          
+          {/* Percentage Overlay */}
+          {total > 0 && (
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div className="text-center text-white">
+                <div className="text-2xl font-bold mb-1">
+                  <span className="text-natty">{natty}%</span>
+                  <span className="text-muted-foreground mx-2">vs</span>
+                  <span className="text-juicy">{juicy}%</span>
+                </div>
+                <div className="text-xs opacity-90">{total} votes</div>
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="p-4">
-          <h3 className="font-heading font-semibold text-lg mb-3 truncate">
+          <h3 className="font-heading font-semibold text-sm mb-3 truncate text-center">
             {influencer.name}
           </h3>
           
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-natty font-medium">Natty</span>
-              <span className="text-natty font-bold">{natty}%</span>
+          {total > 0 ? (
+            <div className="space-y-2">
+              {/* Visual percentage bar */}
+              <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-natty to-natty/80 transition-all duration-500"
+                  style={{ width: `${natty}%` }}
+                />
+              </div>
+              
+              {/* Percentage text */}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-natty font-bold">{natty}%</span>
+                <span className="text-juicy font-bold">{juicy}%</span>
+              </div>
             </div>
-            
-            <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-              <div 
-                className="h-full bg-natty transition-all duration-300"
-                style={{ width: `${natty}%` }}
-              />
+          ) : (
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground bg-secondary/50 rounded-full py-2 px-3">
+                No votes yet
+              </div>
             </div>
-            
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-juicy font-medium">Juicy</span>
-              <span className="text-juicy font-bold">{juicy}%</span>
-            </div>
-            
-            <div className="text-xs text-muted-foreground text-center mt-3">
-              {total.toLocaleString()} votes
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </Link>
