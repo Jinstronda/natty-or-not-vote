@@ -31,13 +31,22 @@ const Index = () => {
         {/* Influencers Grid */}
         <OptimizedInfluencerGrid searchTerm={searchTerm} />
         
-        {/* Suggest Influencer Section */}
-        <div className="mt-20 text-center">
-          <h2 className="text-3xl font-heading font-semibold mb-6">Don't see your favorite influencer?</h2>
-          <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">
-            Help us grow the community by suggesting new influencers to add to the platform!
-          </p>
-          <SuggestInfluencer />
+        {/* Suggest Influencer Section - Enhanced */}
+        <div className="mt-32 mb-16">
+          <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl p-12 text-center border border-border/50">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Don't see your favorite influencer?
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
+                Help us grow the community by suggesting new fitness influencers to add to the platform! 
+                Your suggestions help make the database more comprehensive.
+              </p>
+              <div className="flex justify-center">
+                <SuggestInfluencer />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

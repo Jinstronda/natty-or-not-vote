@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Sparkles } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
 
 const SuggestInfluencer = () => {
@@ -67,17 +67,21 @@ const SuggestInfluencer = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
+        <Button 
+          size="lg" 
+          className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+        >
+          <Sparkles className="h-5 w-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
           Suggest an Influencer
+          <UserPlus className="h-5 w-5 ml-2" />
         </Button>
       </SheetTrigger>
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Suggest an Influencer</SheetTitle>
+          <SheetTitle className="text-2xl font-heading">Suggest an Influencer</SheetTitle>
         </SheetHeader>
         <div className="space-y-6 mt-6">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground">
             Know a fitness influencer that should be on Natty or Not? Submit their information and we'll review it for inclusion.
           </p>
           

@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { useVoteStore } from "@/stores/VoteStore";
+import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
 
 interface InfluencerCardProps {
   influencer: {
@@ -11,8 +11,8 @@ interface InfluencerCardProps {
 }
 
 const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
-  const { getVotePercentages } = useVoteStore();
-  const { natty, juicy, total } = getVotePercentages(influencer.id);
+  const { getVotePercentages } = useOptimizedVotes(influencer.id);
+  const { natty, juicy, total } = getVotePercentages();
 
   return (
     <Link to={`/influencer/${influencer.id}`}>
