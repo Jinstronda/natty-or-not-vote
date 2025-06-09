@@ -50,7 +50,17 @@ export const useAuthState = () => {
       try {
         console.log('AuthState: Starting initialization...');
         
-        // Get initial session first
+        // Handle OAuth redirect first - this is critical for Google login
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hasOAuthParams = hashParams.has('access_token') || hashParams.has('code');
+        
+        if (hasOAuthParams) {
+          console.log('AuthState: OAuth redirect detected, waiting for session...');
+          // Wait a bit for Supabase to process the OAuth callback
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Get session after potential OAuth processing
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
