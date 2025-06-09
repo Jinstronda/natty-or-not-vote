@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Users, Shield, AlertTriangle } from "lucide-react";
+import { Users, Shield, AlertTriangle, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +49,7 @@ const AdminRoleManagement = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: string, username: string) => {
     try {
       // Prevent removing admin role from current user
       if (userId === user?.id && newRole !== 'admin') {
@@ -72,16 +72,20 @@ const AdminRoleManagement = () => {
       console.log('Admin Action:', {
         action: 'role_change',
         admin_user: user?.id,
+        admin_username: user?.username,
         target_user: userId,
+        target_username: username,
         new_role: newRole,
         timestamp: new Date().toISOString()
       });
 
       await fetchUsers();
       
+      const roleText = newRole === 'admin' ? 'Administrator' : newRole === 'moderator' ? 'Moderator' : 'User';
+      
       toast({
         title: "Success",
-        description: "User role updated successfully",
+        description: `${username} is now a ${roleText}`,
       });
     } catch (error) {
       console.error('Error updating user role:', error);
@@ -96,11 +100,22 @@ const AdminRoleManagement = () => {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'moderator':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-200';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return <Crown className="h-3 w-3" />;
+      case 'moderator':
+        return <Shield className="h-3 w-3" />;
+      default:
+        return null;
     }
   };
 
@@ -117,13 +132,23 @@ const AdminRoleManagement = () => {
     );
   }
 
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  const moderatorCount = users.filter(u => u.role === 'moderator').length;
+  const userCount = users.filter(u => u.role === 'user').length;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          User Role Management ({users.length} users)
+          User Role Management
         </CardTitle>
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <span>{adminCount} Admin{adminCount !== 1 ? 's' : ''}</span>
+          <span>{moderatorCount} Moderator{moderatorCount !== 1 ? 's' : ''}</span>
+          <span>{userCount} User{userCount !== 1 ? 's' : ''}</span>
+          <span className="font-medium">Total: {users.length}</span>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -133,15 +158,16 @@ const AdminRoleManagement = () => {
         ) : (
           <div className="space-y-4">
             {users.map((userProfile) => (
-              <div key={userProfile.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={userProfile.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium">{userProfile.username}</span>
-                    <Badge className={getRoleBadgeColor(userProfile.role)}>
+                    <Badge className={`${getRoleBadgeColor(userProfile.role)} flex items-center gap-1`}>
+                      {getRoleIcon(userProfile.role)}
                       {userProfile.role}
                     </Badge>
                     {userProfile.id === user?.id && (
-                      <Badge variant="outline">You</Badge>
+                      <Badge variant="outline" className="text-xs">You</Badge>
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -154,24 +180,46 @@ const AdminRoleManagement = () => {
                 <div className="flex items-center gap-2">
                   <Select
                     value={userProfile.role}
-                    onValueChange={(newRole) => updateUserRole(userProfile.id, newRole)}
+                    onValueChange={(newRole) => updateUserRole(userProfile.id, newRole, userProfile.username)}
                     disabled={userProfile.id === user?.id}
                   >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-36">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="moderator">Moderator</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="user">
+                        <div className="flex items-center gap-2">
+                          <span>User</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="moderator">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-3 w-3" />
+                          <span>Moderator</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="admin">
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-3 w-3" />
+                          <span>Admin</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
-                  {userProfile.role === 'admin' && (
-                    <Shield className="h-4 w-4 text-red-600" />
+                  {userProfile.id === user?.id && (
+                    <div className="text-xs text-muted-foreground">
+                      (Cannot change own role)
+                    </div>
                   )}
                 </div>
               </div>
             ))}
+            
+            {users.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No users found
+              </div>
+            )}
           </div>
         )}
       </CardContent>
