@@ -101,12 +101,47 @@ const AdminPanel = () => {
     }
   };
 
-  const handleSuggestionAction = (suggestionId: string, action: 'approved' | 'rejected') => {
-    updateSuggestionStatus(suggestionId, action);
-    toast({
-      title: action === 'approved' ? "Approved" : "Rejected",
-      description: `Suggestion has been ${action}.`,
-    });
+  const handleSuggestionAction = async (suggestionId: string, action: 'approved' | 'rejected') => {
+    if (action === 'approved') {
+      // Find the suggestion to approve
+      const suggestion = suggestions.find(s => s.id === suggestionId);
+      if (suggestion) {
+        try {
+          // Add the suggestion as a new influencer
+          await addInfluencer({
+            name: suggestion.influencerName,
+            image: suggestion.imageUrl || '/placeholder.svg',
+            height: '',
+            weight: '',
+            yearsTraining: '',
+            claimedStatus: '',
+            description: `Suggested by ${suggestion.submitterUsername}`,
+            socialLinks: suggestion.socialLinks
+          });
+
+          // Update the suggestion status
+          updateSuggestionStatus(suggestionId, action);
+          
+          toast({
+            title: "Approved & Added",
+            description: `${suggestion.influencerName} has been approved and added to the influencers list.`,
+          });
+        } catch (error) {
+          console.error('Error adding influencer:', error);
+          toast({
+            title: "Error",
+            description: "Failed to add influencer. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      updateSuggestionStatus(suggestionId, action);
+      toast({
+        title: "Rejected",
+        description: "Suggestion has been rejected.",
+      });
+    }
   };
 
   const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
@@ -305,6 +340,11 @@ const AdminPanel = () => {
                         <p className="text-sm text-muted-foreground mb-2">
                           Suggested by {suggestion.submitterUsername} on {suggestion.timestamp}
                         </p>
+                        {suggestion.imageUrl && (
+                          <div className="mb-2">
+                            <img src={suggestion.imageUrl} alt={suggestion.influencerName} className="w-16 h-16 object-cover rounded" />
+                          </div>
+                        )}
                         {Object.keys(suggestion.socialLinks).length > 0 && (
                           <div className="text-sm">
                             <strong>Social Links:</strong>
