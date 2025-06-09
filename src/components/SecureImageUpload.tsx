@@ -60,30 +60,15 @@ const SecureImageUpload = ({
     if (!user) return false;
 
     try {
-      // Try to use the rate limit function, fall back to manual check
-      const { data, error } = await supabase.rpc('check_upload_rate_limit', {
-        user_id: user.id
-      }).then(async (result) => {
-        if (result.error?.code === '42883') {
-          // Function doesn't exist, do manual check
-          const { data: uploads } = await supabase.storage
-            .from('influencer-images')
-            .list('uploads', {
-              limit: 100,
-              search: `${user.id}`
-            });
-          
-          return { data: (uploads?.length || 0) < 10, error: null };
-        }
-        return result;
-      });
-
-      if (error) {
-        console.error('Rate limit check failed:', error);
-        return false;
-      }
-
-      return data;
+      // Simple manual check for now
+      const { data: uploads } = await supabase.storage
+        .from('influencer-images')
+        .list('uploads', {
+          limit: 100,
+          search: `${user.id}`
+        });
+      
+      return (uploads?.length || 0) < 10;
     } catch (error) {
       console.error('Rate limit check error:', error);
       return false;
