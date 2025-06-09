@@ -79,3 +79,15 @@ export const useRealTimeReviews = (influencerId?: string) => {
     };
   }, [influencerId, queryClient]);
 };
+
+// Combined hook that sets up both votes and reviews real-time updates
+export const useRealTime = (influencerId?: string, context?: string) => {
+  useRealTimeVotes(influencerId);
+  useRealTimeReviews(influencerId);
+  
+  useEffect(() => {
+    if (context && influencerId) {
+      console.log(`Real-time updates enabled for ${context} with influencer:`, influencerId);
+    }
+  }, [influencerId, context]);
+};
