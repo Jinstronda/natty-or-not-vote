@@ -42,22 +42,42 @@ const Login = () => {
     
     try {
       console.log('Login form submitted for:', email);
-      const success = await login(email, password);
       
-      if (success) {
-        console.log('Login successful, showing success toast');
+      // Try direct Supabase login to get better error handling
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        
+        if (error.message.includes('email_not_confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your email and click the confirmation link, or try signing up again.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Login failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } else if (data.user) {
+        console.log('Login successful');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
         // Navigation will happen automatically via the useEffect above
-      } else {
-        console.log('Login failed, showing error toast');
-        toast({
-          title: "Login failed",
-          description: "Invalid email or password.",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       console.error('Login form error:', error);
@@ -107,6 +127,44 @@ const Login = () => {
     }
   };
 
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+
+      if (error) {
+        toast({
+          title: "Failed to resend confirmation",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Confirmation email sent",
+          description: "Please check your email for the confirmation link.",
+        });
+      }
+    } catch (error) {
+      console.error('Resend confirmation error:', error);
+      toast({
+        title: "Failed to resend confirmation",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -140,6 +198,18 @@ const Login = () => {
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
+          
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full" 
+              onClick={handleResendConfirmation}
+              disabled={isLoading || isGoogleLoading}
+            >
+              Resend confirmation email
+            </Button>
+          </div>
           
           <div className="mt-4">
             <div className="relative">

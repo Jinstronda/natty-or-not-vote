@@ -1,41 +1,93 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signup } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while auth is initializing
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    const success = await signup(username, email, password);
-    
-    if (success) {
-      toast({
-        title: "Account created!",
-        description: "Welcome to Natty or Not.",
+    try {
+      console.log('Signup form submitted for:', email);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+          },
+          emailRedirectTo: `${window.location.origin}/`
+        },
       });
-      navigate("/");
-    } else {
+
+      if (error) {
+        console.error('Signup error:', error);
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        console.log('Signup response:', data);
+        
+        if (data.user && !data.session) {
+          // Email confirmation required
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+          });
+        } else if (data.session) {
+          // Auto-confirmed (shouldn't happen in production with email confirmation enabled)
+          toast({
+            title: "Account created!",
+            description: "Welcome to Natty or Juicy!",
+          });
+          navigate("/");
+        }
+      }
+    } catch (error) {
+      console.error('Signup exception:', error);
       toast({
         title: "Signup failed",
-        description: "Please try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
@@ -43,7 +95,7 @@ const SignUp = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-heading">Sign Up</CardTitle>
-          <p className="text-muted-foreground">Join the Natty or Not community</p>
+          <p className="text-muted-foreground">Join the Natty or Juicy community</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,6 +106,7 @@ const SignUp = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -63,15 +116,18 @@ const SignUp = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder="Password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
+                disabled={isLoading}
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -84,6 +140,11 @@ const SignUp = () => {
               Already have an account?{" "}
               <Link to="/login" className="text-primary hover:underline">
                 Login
+              </Link>
+            </p>
+            <p className="text-muted-foreground mt-2">
+              <Link to="/" className="text-primary hover:underline">
+                Back to home
               </Link>
             </p>
           </div>
