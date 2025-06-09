@@ -1,5 +1,7 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -13,49 +15,87 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signup: (username: string, email: string, password: string) => Promise<boolean>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo - including an admin user
-const mockUsers: User[] = [
-  { id: '1', username: 'FitnessEnthusiast23', email: 'fitness@example.com', role: 'user' },
-  { id: '2', username: 'SkepticalLifter', email: 'skeptical@example.com', role: 'user' },
-  { id: 'admin', username: 'AdminUser', email: 'admin@nattyornot.com', role: 'admin' },
-];
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock login logic
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser) {
-      setUser(foundUser);
-      return true;
+  useEffect(() => {
+    // Get initial session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await fetchUserProfile(session.user);
+      }
+      setLoading(false);
+    };
+
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .single();
+
+    if (profile && !error) {
+      setUser({
+        id: profile.id,
+        username: profile.username,
+        email: profile.email,
+        role: profile.role as 'user' | 'admin'
+      });
     }
-    return false;
   };
 
-  const logout = () => {
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    return !error;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
   };
 
   const signup = async (username: string, email: string, password: string): Promise<boolean> => {
-    // Mock signup logic
-    const newUser: User = {
-      id: String(mockUsers.length + 1),
-      username,
+    const { error } = await supabase.auth.signUp({
       email,
-      role: 'user'
-    };
-    mockUsers.push(newUser);
-    setUser(newUser);
-    return true;
+      password,
+      options: {
+        data: {
+          username: username,
+        },
+      },
+    });
+
+    return !error;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup }}>
+    <AuthContext.Provider value={{ user, login, logout, signup, loading }}>
       {children}
     </AuthContext.Provider>
   );
