@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Header from "@/components/Header";
 import InfluencerCard from "@/components/InfluencerCard";
@@ -6,17 +5,14 @@ import SearchBar from "@/components/SearchBar";
 import SuggestInfluencerForm from "@/components/SuggestInfluencerForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVoteStore } from "@/stores/VoteStore";
-
 const Index = () => {
-  const { influencers, getVotePercentages } = useVoteStore();
+  const {
+    influencers,
+    getVotePercentages
+  } = useVoteStore();
   const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredInfluencers = influencers.filter(influencer =>
-    influencer.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className="min-h-screen bg-background">
+  const filteredInfluencers = influencers.filter(influencer => influencer.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  return <div className="min-h-screen bg-background">
       <Header />
       
       {/* Hero Section */}
@@ -38,7 +34,7 @@ const Index = () => {
           <Tabs defaultValue="trending" className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
               <TabsTrigger value="trending">Trending</TabsTrigger>
-              <TabsTrigger value="suggest">Suggest An Influencer</TabsTrigger>
+              
             </TabsList>
             
             <TabsContent value="trending" className="space-y-8">
@@ -52,21 +48,10 @@ const Index = () => {
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredInfluencers.map((influencer) => {
-                    const percentages = getVotePercentages(influencer.id);
-                    return (
-                      <InfluencerCard
-                        key={influencer.id}
-                        id={influencer.id}
-                        name={influencer.name}
-                        image={influencer.image}
-                        nattyPercentage={percentages.natty}
-                        juicyPercentage={percentages.juicy}
-                        totalVotes={percentages.total}
-                        platform=""
-                      />
-                    );
-                  })}
+                  {filteredInfluencers.map(influencer => {
+                  const percentages = getVotePercentages(influencer.id);
+                  return <InfluencerCard key={influencer.id} id={influencer.id} name={influencer.name} image={influencer.image} nattyPercentage={percentages.natty} juicyPercentage={percentages.juicy} totalVotes={percentages.total} platform="" />;
+                })}
                 </div>
               </div>
             </TabsContent>
@@ -77,8 +62,6 @@ const Index = () => {
           </Tabs>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
