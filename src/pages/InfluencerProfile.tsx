@@ -31,19 +31,6 @@ const InfluencerProfile = () => {
     );
   }
 
-  // Create the admin editor props with required fields
-  const adminEditorProps = {
-    name: influencer.name,
-    image: influencer.image,
-    platform: influencer.socialLinks?.instagram ? 'Instagram' : 'Unknown',
-    followers: '0', // Default value since this field doesn't exist in our Influencer type
-    height: influencer.height,
-    weight: influencer.weight,
-    yearsTraining: influencer.yearsTraining,
-    claimedStatus: influencer.claimedStatus,
-    bio: influencer.description
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -53,7 +40,7 @@ const InfluencerProfile = () => {
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
             {user?.role === 'admin' && (
-              <AdminInfluencerEditor influencer={adminEditorProps} />
+              <AdminInfluencerEditor influencer={influencer} />
             )}
             <InfluencerInfo influencer={influencer} />
           </div>
