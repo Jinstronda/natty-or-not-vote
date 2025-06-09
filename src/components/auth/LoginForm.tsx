@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
   onLoadingChange: (loading: boolean) => void;
@@ -14,6 +15,7 @@ const LoginForm = ({ onLoadingChange }: LoginFormProps) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,29 +33,18 @@ const LoginForm = ({ onLoadingChange }: LoginFormProps) => {
     onLoadingChange(true);
     
     try {
-      console.log('Login form submitted for:', email);
+      await login(email, password);
       
-      const success = await login(email, password);
-
-      if (success) {
-        console.log('Login successful');
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-      } else {
-        console.log('Login failed');
-        toast({
-          title: "Login failed",
-          description: "Invalid email or password.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Login form error:', error);
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+      
+      navigate("/");
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: "An unexpected error occurred.",
+        description: error?.message || "Invalid email or password.",
         variant: "destructive",
       });
     } finally {
