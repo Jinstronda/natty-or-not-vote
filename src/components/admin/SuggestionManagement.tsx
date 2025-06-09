@@ -22,7 +22,7 @@ const SuggestionManagement = () => {
       const { data, error } = await supabase
         .from('influencer_suggestions')
         .select('*')
-        .order('timestamp', { ascending: false }); // Fixed: use timestamp
+        .order('timestamp', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -113,7 +113,6 @@ const SuggestionManagement = () => {
       <CardContent>
         <div className="space-y-4">
           {suggestions.map((suggestion) => {
-            // Type assertion for social_links with proper handling
             const socialLinks = suggestion.social_links as SocialLinks | null;
             
             return (
@@ -129,7 +128,7 @@ const SuggestionManagement = () => {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Suggested by user on {new Date(suggestion.timestamp).toLocaleDateString()} {/* Fixed: use timestamp */}
+                    Suggested by user on {new Date(suggestion.timestamp).toLocaleDateString()}
                   </p>
                   {suggestion.image_url && (
                     <div className="mb-2">
@@ -141,13 +140,13 @@ const SuggestionManagement = () => {
                       <strong>Social Links:</strong>
                       <ul className="list-disc list-inside ml-4">
                         {socialLinks.instagram && (
-                          <li>Instagram: {socialLinks.instagram}</li> {/* Fixed: proper type casting */}
+                          <li>Instagram: {socialLinks.instagram}</li>
                         )}
                         {socialLinks.youtube && (
-                          <li>YouTube: {socialLinks.youtube}</li> {/* Fixed: proper type casting */}
+                          <li>YouTube: {socialLinks.youtube}</li>
                         )}
                         {socialLinks.tiktok && (
-                          <li>TikTok: {socialLinks.tiktok}</li> {/* Fixed: proper type casting */}
+                          <li>TikTok: {socialLinks.tiktok}</li>
                         )}
                       </ul>
                     </div>
