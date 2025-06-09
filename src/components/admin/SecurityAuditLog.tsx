@@ -30,7 +30,8 @@ const SecurityAuditLog = () => {
 
   const fetchAuditLogs = async () => {
     try {
-      const { data, error } = await supabase
+      // Use type assertion to access security_audit_log until types are updated
+      const { data, error } = await (supabase as any)
         .from('security_audit_log')
         .select('*')
         .order('created_at', { ascending: false })
@@ -40,6 +41,8 @@ const SecurityAuditLog = () => {
       setAuditLogs(data || []);
     } catch (error) {
       console.error('Error fetching audit logs:', error);
+      // If table doesn't exist yet, just show empty state
+      setAuditLogs([]);
     } finally {
       setLoading(false);
     }
