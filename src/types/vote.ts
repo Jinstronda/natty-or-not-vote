@@ -15,6 +15,7 @@ export interface Review {
   content: string;
   timestamp: string;
   likes: number;
+  dislikes?: number;
 }
 
 export interface Influencer {
@@ -46,4 +47,24 @@ export interface InfluencerSuggestion {
   };
   timestamp: string;
   status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface ExpertReview {
+  id: string;
+  influencer_id: string;
+  author: string;
+  content: string;
+  rating: number;
+  link_url?: string;
+  likes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewReaction {
+  id: string;
+  user_id: string;
+  review_id: string;
+  reaction_type: 'like' | 'dislike';
+  created_at: string;
 }
