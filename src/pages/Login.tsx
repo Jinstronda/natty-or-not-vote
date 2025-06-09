@@ -13,7 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, login } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -43,25 +43,21 @@ const Login = () => {
     try {
       console.log('Login form submitted for:', email);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const success = await login(email, password);
 
-      if (error) {
-        console.error('Login error:', error);
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (data.user) {
+      if (success) {
         console.log('Login successful');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
         navigate("/", { replace: true });
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Login form error:', error);
@@ -80,12 +76,11 @@ const Login = () => {
     
     try {
       console.log('Initiating Google login...');
-      const redirectTo = "https://nattyorjuicy.com/";
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectTo
+          redirectTo: "https://nattyorjuicy.com/"
         }
       });
 
