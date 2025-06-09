@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
-import ImageUpload from "@/components/ImageUpload";
+import SecureImageUpload from "@/components/SecureImageUpload";
 
 const SuggestInfluencer = () => {
   const { user } = useAuth();
@@ -91,7 +91,7 @@ const SuggestInfluencer = () => {
               />
             </div>
 
-            <ImageUpload
+            <SecureImageUpload
               onImageUploaded={(url) => setFormData({...formData, imageUrl: url})}
               currentImage={formData.imageUrl}
               onImageRemoved={() => setFormData({...formData, imageUrl: ''})}

@@ -14,15 +14,27 @@ export const useSecurityAudit = () => {
     try {
       if (!user) return;
 
-      await supabase
-        .from('security_audit_log')
-        .insert({
-          user_id: user.id,
-          event_type: eventType,
-          event_details: eventDetails,
-          ip_address: ipAddress,
-          user_agent: userAgent
-        });
+      // Use rpc call to insert into security_audit_log until types are updated
+      await supabase.rpc('log_security_event', {
+        p_user_id: user.id,
+        p_event_type: eventType,
+        p_event_details: eventDetails,
+        p_ip_address: ipAddress,
+        p_user_agent: userAgent
+      }).then(async (result) => {
+        // If the function doesn't exist, fall back to direct insert
+        if (result.error?.code === '42883') {
+          await (supabase as any)
+            .from('security_audit_log')
+            .insert({
+              user_id: user.id,
+              event_type: eventType,
+              event_details: eventDetails,
+              ip_address: ipAddress,
+              user_agent: userAgent
+            });
+        }
+      });
     } catch (error) {
       console.error('Failed to log security event:', error);
     }
