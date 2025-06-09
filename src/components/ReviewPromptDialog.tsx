@@ -18,9 +18,10 @@ interface ReviewPromptDialogProps {
   onClose: () => void;
   influencerId: string;
   vote: 'natty' | 'juicy';
+  onReviewSubmitted?: () => void;
 }
 
-const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote }: ReviewPromptDialogProps) => {
+const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmitted }: ReviewPromptDialogProps) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
   const [reviewContent, setReviewContent] = useState("");
@@ -40,6 +41,7 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote }: ReviewPromp
       
       setReviewContent("");
       onClose();
+      onReviewSubmitted?.();
     } catch (error: any) {
       toast({
         title: "Error",

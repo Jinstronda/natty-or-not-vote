@@ -15,30 +15,37 @@ export const useSupabaseReviews = () => {
 
   const fetchReviews = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('reviews')
         .select(`
           *,
-          profiles!inner(username, profile_picture_url)
-        `);
+          profiles(username, profile_picture_url)
+        `)
+        .order('timestamp', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       const formattedReviews: Review[] = data?.map(review => ({
         id: review.id,
         userId: review.user_id,
-        username: review.profiles.username,
-        profilePicture: review.profiles.profile_picture_url,
+        username: review.profiles?.username || 'Unknown User',
+        profilePicture: review.profiles?.profile_picture_url || undefined,
         influencerId: review.influencer_id,
         vote: review.vote as 'natty' | 'juicy',
         content: review.content,
         timestamp: review.timestamp,
-        likes: review.likes
+        likes: review.likes || 0
       })) || [];
 
+      console.log('Fetched reviews:', formattedReviews.length);
       setReviews(formattedReviews);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setReviews([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

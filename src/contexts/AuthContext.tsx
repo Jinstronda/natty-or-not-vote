@@ -58,13 +58,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
       // Try to get profile from database
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (profile) {
+      if (profile && !error) {
         return {
           id: profile.id,
           email: profile.email,
@@ -73,16 +73,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           profile_picture_url: profile.profile_picture_url || undefined
         };
       }
+
+      // If profile doesn't exist, create it
+      console.log('Profile not found, creating one...');
+      const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
+      const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
+      
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          id: supabaseUser.id,
+          email: supabaseUser.email || '',
+          username: username,
+          role: isAdmin ? 'admin' : 'user'
+        })
+        .select('*')
+        .single();
+
+      if (newProfile && !createError) {
+        return {
+          id: newProfile.id,
+          email: newProfile.email,
+          username: newProfile.username,
+          role: newProfile.role,
+          profile_picture_url: newProfile.profile_picture_url || undefined
+        };
+      }
     } catch (error) {
-      console.log('Profile not found, using fallback');
+      console.error('Error creating user profile:', error);
     }
 
-    // Fallback to user metadata
+    // Ultimate fallback to user metadata
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       username: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user',
-      role: 'user'
+      role: supabaseUser.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
     };
   };
 

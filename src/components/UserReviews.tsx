@@ -1,4 +1,5 @@
 
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,26 +7,93 @@ import { MessageSquare, Trash2 } from "lucide-react";
 import UserProfile from "@/components/UserProfile";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewReactions from "@/components/ReviewReactions";
-import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Review } from "@/types/vote";
 
 interface UserReviewsProps {
   influencerId: string;
 }
 
-const UserReviews = ({ influencerId }: UserReviewsProps) => {
-  const { getInfluencerReviews, deleteReview, loading } = useSupabaseReviews();
+export interface UserReviewsRef {
+  fetchReviews: () => Promise<void>;
+}
+
+const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId }, ref) => {
   const { user } = useAuth();
-  const userReviews = getInfluencerReviews(influencerId);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Fetching reviews for influencer:', influencerId);
+      
+      const { data, error: fetchError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          profiles(username, profile_picture_url)
+        `)
+        .eq('influencer_id', influencerId)
+        .order('timestamp', { ascending: false });
+
+      if (fetchError) {
+        console.error('Error fetching reviews:', fetchError);
+        throw fetchError;
+      }
+
+      const formattedReviews: Review[] = data?.map(review => ({
+        id: review.id,
+        userId: review.user_id,
+        username: review.profiles?.username || 'Unknown User',
+        profilePicture: review.profiles?.profile_picture_url || undefined,
+        influencerId: review.influencer_id,
+        vote: review.vote as 'natty' | 'juicy',
+        content: review.content,
+        timestamp: review.timestamp,
+        likes: review.likes || 0
+      })) || [];
+
+      console.log('Found reviews:', formattedReviews.length);
+      setReviews(formattedReviews);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    fetchReviews
+  }), [fetchReviews]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [influencerId, fetchReviews]);
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
-      await deleteReview(reviewId);
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
       toast({
         title: "Review deleted",
         description: "The review has been successfully deleted.",
       });
+
+      // Refresh reviews
+      await fetchReviews();
     } catch (error) {
       toast({
         title: "Error",
@@ -62,10 +130,16 @@ const UserReviews = ({ influencerId }: UserReviewsProps) => {
       <CardContent className="space-y-4">
         <ReviewForm influencerId={influencerId} />
         
-        {userReviews.length === 0 ? (
+        {error && (
+          <div className="text-center py-4 text-red-500">
+            Error loading reviews: {error}
+          </div>
+        )}
+        
+        {reviews.length === 0 && !error ? (
           <p className="text-muted-foreground text-center py-4">No reviews yet</p>
         ) : (
-          userReviews.map((review) => (
+          reviews.map((review) => (
             <div key={review.id} className="border border-border rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -106,6 +180,8 @@ const UserReviews = ({ influencerId }: UserReviewsProps) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+UserReviews.displayName = 'UserReviews';
 
 export default UserReviews;
