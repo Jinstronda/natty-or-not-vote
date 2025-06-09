@@ -69,6 +69,29 @@ export const useVotes = (influencerId?: string) => {
     staleTime: 300000,
   });
 
+  // Get user's review (if any)
+  const { data: userReview } = useQuery({
+    queryKey: ['user-review', influencerId, user?.id],
+    queryFn: async () => {
+      if (!user || !influencerId) return null;
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('influencer_id', influencerId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user review:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    enabled: !!user && !!influencerId,
+  });
+
   // Vote mutation
   const voteMutation = useMutation({
     mutationFn: async ({ vote }: { vote: 'natty' | 'juicy' }) => {
@@ -97,12 +120,59 @@ export const useVotes = (influencerId?: string) => {
       console.log('Vote successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
       queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
+      toast({
+        title: "Vote recorded!",
+        description: "Your vote has been successfully recorded.",
+      });
     },
     onError: (error) => {
       console.error('Vote error:', error);
       toast({
         title: "Error",
         description: "Failed to record vote. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Review submission mutation
+  const reviewMutation = useMutation({
+    mutationFn: async ({ content }: { content: string }) => {
+      if (!user || !influencerId || !userVote) {
+        throw new Error('Vote required before review');
+      }
+
+      const { data, error } = await supabase
+        .from('reviews')
+        .upsert({
+          user_id: user.id,
+          influencer_id: influencerId,
+          vote: userVote.vote,
+          content: content
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error submitting review:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-review', influencerId, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      toast({
+        title: "Review submitted!",
+        description: "Your review has been added.",
+      });
+    },
+    onError: (error) => {
+      console.error('Review error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
         variant: "destructive",
       });
     },
@@ -123,9 +193,12 @@ export const useVotes = (influencerId?: string) => {
   return {
     voteStats,
     userVote,
+    userReview,
     isLoading: statsLoading || userVoteLoading,
     castVote: voteMutation.mutate,
+    submitReview: reviewMutation.mutate,
     isCasting: voteMutation.isPending,
+    isSubmittingReview: reviewMutation.isPending,
     getVotePercentages
   };
 };

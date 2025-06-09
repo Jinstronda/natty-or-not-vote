@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteStore } from "@/stores/VoteStore";
 import { useVotes } from "@/hooks/useVotes";
 import { useRealTimeVotes } from "@/hooks/useRealTime";
 import { toast } from "@/hooks/use-toast";
@@ -17,11 +16,13 @@ interface VotingSectionProps {
 
 const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { user } = useAuth();
-  const { submitReview } = useVoteStore();
   const { 
     userVote, 
+    userReview,
     castVote, 
+    submitReview,
     isCasting, 
+    isSubmittingReview,
     isLoading, 
     getVotePercentages 
   } = useVotes(influencerId);
@@ -45,20 +46,16 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
 
     try {
       await castVote({ vote });
-      setShowReviewForm(true);
-      
-      toast({
-        title: "Vote recorded!",
-        description: "Your vote has been successfully recorded.",
-      });
+      // Show review form only if user hasn't already submitted a review
+      if (!userReview) {
+        setShowReviewForm(true);
+      }
     } catch (error) {
       console.error('Vote error:', error);
     }
   };
 
-  const handleReviewSubmit = () => {
-    if (!user || !userVote) return;
-
+  const handleReviewSubmit = async () => {
     if (!reviewText.trim()) {
       toast({
         title: "Review required",
@@ -68,14 +65,13 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
-    submitReview(user.id, user.username, influencerId, userVote.vote as 'natty' | 'juicy', reviewText.trim());
-    setReviewText("");
-    setShowReviewForm(false);
-    
-    toast({
-      title: "Review submitted!",
-      description: "Your review has been added.",
-    });
+    try {
+      await submitReview({ content: reviewText.trim() });
+      setReviewText("");
+      setShowReviewForm(false);
+    } catch (error) {
+      console.error('Review submission error:', error);
+    }
   };
 
   if (!user) {
@@ -156,7 +152,23 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         </div>
       )}
 
-      {showReviewForm && userVote && (
+      {/* Show existing review if user has one */}
+      {userReview && (
+        <div className="mb-6 border border-border rounded-lg p-4 bg-muted/50">
+          <div className="mb-3">
+            <Badge className={userReview.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
+              Your review: {userReview.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground italic">"{userReview.content}"</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Note: You can only submit one review per influencer
+          </p>
+        </div>
+      )}
+
+      {/* Show review form only if user voted but hasn't submitted a review yet */}
+      {showReviewForm && userVote && !userReview && (
         <div className="mb-6 border border-border rounded-lg p-4">
           <div className="mb-3">
             <Badge className={userVote.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
@@ -164,17 +176,20 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
             </Badge>
           </div>
           <Textarea
-            placeholder="Share your thoughts on this influencer's natural status..."
+            placeholder="Share your thoughts on this influencer's natural status... (Optional - you can only submit one review)"
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
             className="mb-3"
           />
           <div className="flex gap-2">
-            <Button onClick={handleReviewSubmit} disabled={!reviewText.trim()}>
-              Submit Review
+            <Button 
+              onClick={handleReviewSubmit} 
+              disabled={!reviewText.trim() || isSubmittingReview}
+            >
+              {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
             </Button>
             <Button variant="outline" onClick={() => setShowReviewForm(false)}>
-              Skip
+              Skip Review
             </Button>
           </div>
         </div>
