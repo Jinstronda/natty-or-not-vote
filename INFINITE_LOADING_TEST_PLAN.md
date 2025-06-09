@@ -26,7 +26,35 @@ The infinite loading bug has been permanently resolved through a multi-layered a
 
 ### **🔴 Critical Tests (Must Pass)**
 
-#### **Test 1: Token Refresh Scenario**
+#### **Test 1: Influencer Grid Loading (URGENT)**
+**Objective:** Verify influencer grid loads without hanging on "Fetching influencers"
+
+**Steps:**
+1. Navigate to home page
+2. Watch browser console for: `[useInfluencers] Fetching influencers, page: 0 search:`
+3. Wait maximum 15 seconds
+4. If still loading, check for timeout protection
+
+**Expected Result:**
+- Influencers load within 8 seconds OR timeout protection activates
+- Loading watchdog shows timeout warning after 15 seconds
+- Emergency "Refresh Page" button appears in loading state
+- Console shows: `[useInfluencers] Fetched influencers: X` where X > 0
+
+**If Still Stuck:**
+- Open browser console
+- Run: `window.runDiagnostics()` to identify connection issues
+- Run: `window.quickTest()` for immediate connection check
+- Use "Refresh Page" button in loading state
+
+**Failure Indicators:**
+- Infinite loading with no timeout protection
+- Console stuck on "Fetching influencers" with no progress
+- No diagnostic tools responding
+
+---
+
+#### **Test 2: Token Refresh Scenario**
 **Objective:** Verify app handles token refresh without infinite loading
 
 **Steps:**
