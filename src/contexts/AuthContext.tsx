@@ -47,22 +47,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let initializationComplete = false;
 
     const initializeAuth = async () => {
-      if (initializationComplete) return;
-      
       try {
         console.log('AuthContext: Initializing authentication...');
         
-        // Get initial session with proper error handling
+        // Get initial session
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthContext: Session fetch error:', error);
         }
 
-        if (mounted && !initializationComplete) {
+        if (mounted) {
           if (initialSession) {
             console.log('AuthContext: Found existing session');
             await updateUser(initialSession);
@@ -71,16 +68,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
             setSession(null);
           }
+          console.log('AuthContext: Initialization complete, setting loading to false');
           setLoading(false);
-          initializationComplete = true;
         }
       } catch (error) {
         console.error('AuthContext: Initialization error:', error);
-        if (mounted && !initializationComplete) {
+        if (mounted) {
           setUser(null);
           setSession(null);
           setLoading(false);
-          initializationComplete = true;
         }
       }
     };
@@ -95,38 +91,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (event === 'SIGNED_IN' && session) {
           console.log('AuthContext: User signed in');
           await updateUser(session);
-          if (!initializationComplete) {
-            setLoading(false);
-            initializationComplete = true;
-          }
+          setLoading(false);
         } else if (event === 'SIGNED_OUT' || !session) {
           console.log('AuthContext: User signed out');
           setUser(null);
           setSession(null);
-          if (!initializationComplete) {
-            setLoading(false);
-            initializationComplete = true;
-          }
+          setLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session) {
           console.log('AuthContext: Token refreshed');
           await updateUser(session);
         }
       } catch (error) {
         console.error('AuthContext: Auth state change error:', error);
-        if (!initializationComplete) {
-          setLoading(false);
-          initializationComplete = true;
-        }
+        setLoading(false);
       }
     });
 
-    // Initialize auth after a small delay to ensure everything is set up
-    const timeoutId = setTimeout(initializeAuth, 50);
+    // Initialize auth
+    initializeAuth();
 
     return () => {
       console.log('AuthContext: Cleaning up');
       mounted = false;
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [updateUser]);
@@ -147,7 +133,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data.user && data.session) {
         console.log('AuthContext: Login successful');
-        // Don't manually update user here - let the auth state change handler do it
         return true;
       }
 
