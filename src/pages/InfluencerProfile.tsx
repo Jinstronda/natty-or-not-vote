@@ -12,9 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const { influencers } = useVoteStore();
+  const { influencers, getVotePercentages } = useVoteStore();
   
   const influencer = influencers.find(inf => inf.id === id);
+  const { natty, juicy } = getVotePercentages(id || '');
   
   if (!influencer) {
     return (
@@ -48,8 +49,8 @@ const InfluencerProfile = () => {
           <div className="lg:col-span-2 space-y-8">
             <VotingSection
               influencerId={id!}
-              nattyVotes={0}
-              juicyVotes={0}
+              nattyVotes={natty}
+              juicyVotes={juicy}
             />
             
             <ExpertReviews influencerId={id!} />
