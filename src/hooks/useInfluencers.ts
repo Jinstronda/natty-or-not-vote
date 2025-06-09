@@ -1,65 +1,86 @@
 
-import { useState } from 'react';
-import { Influencer } from '@/types/vote';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-const mockInfluencers: Influencer[] = [
-  {
-    id: '1',
-    name: 'Mike Mentzer',
-    image: '/placeholder.svg',
-    height: '5\'8"',
-    weight: '225 lbs',
-    yearsTraining: '15+',
-    claimedStatus: 'Natural',
-    description: 'Professional bodybuilder known for high-intensity training.',
-    socialLinks: {
-      instagram: 'https://instagram.com/mikementzer',
-      youtube: 'https://youtube.com/mikementzer'
-    }
-  },
-  {
-    id: '2',
-    name: 'David Laid',
-    image: '/placeholder.svg',
-    height: '6\'2"',
-    weight: '190 lbs',
-    yearsTraining: '10+',
-    claimedStatus: 'Natural',
-    description: 'Aesthetic bodybuilder and fitness influencer.',
-    socialLinks: {
-      instagram: 'https://instagram.com/davidlaid',
-      youtube: 'https://youtube.com/davidlaid'
-    }
-  }
-];
+const INFLUENCERS_PER_PAGE = 12;
 
-export const useInfluencers = () => {
-  const [influencers, setInfluencers] = useState<Influencer[]>(mockInfluencers);
+export const useInfluencers = (searchTerm?: string) => {
+  // Infinite scroll for influencers list
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error
+  } = useInfiniteQuery({
+    queryKey: ['influencers', searchTerm],
+    queryFn: async ({ pageParam = 0 }) => {
+      console.log('Fetching influencers page:', pageParam, 'search:', searchTerm);
+      
+      let query = supabase
+        .from('influencers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(pageParam * INFLUENCERS_PER_PAGE, (pageParam + 1) * INFLUENCERS_PER_PAGE - 1);
 
-  const addInfluencer = (influencer: Omit<Influencer, 'id'>): string => {
-    const newId = Date.now().toString();
-    const newInfluencer: Influencer = {
-      ...influencer,
-      id: newId
-    };
-    setInfluencers([...influencers, newInfluencer]);
-    return newId;
+      if (searchTerm && searchTerm.trim()) {
+        query = query.ilike('name', `%${searchTerm.trim()}%`);
+      }
+
+      const { data: influencers, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching influencers:', error);
+        throw error;
+      }
+
+      console.log('Fetched influencers:', influencers?.length);
+      
+      return {
+        influencers: influencers || [],
+        nextPage: influencers && influencers.length === INFLUENCERS_PER_PAGE ? pageParam + 1 : undefined
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    staleTime: 300000,
+    initialPageParam: 0,
+  });
+
+  // Get single influencer
+  const useInfluencer = (id: string) => {
+    return useQuery({
+      queryKey: ['influencer', id],
+      queryFn: async () => {
+        if (!id) return null;
+        
+        const { data, error } = await supabase
+          .from('influencers')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching influencer:', error);
+          throw error;
+        }
+        
+        return data;
+      },
+      staleTime: 600000,
+      enabled: !!id,
+    });
   };
 
-  const updateInfluencer = (id: string, updates: Partial<Influencer>) => {
-    setInfluencers(influencers.map(inf => 
-      inf.id === id ? { ...inf, ...updates } : inf
-    ));
-  };
-
-  const deleteInfluencer = (id: string) => {
-    setInfluencers(influencers.filter(inf => inf.id !== id));
-  };
+  const allInfluencers = data?.pages.flatMap(page => page.influencers) || [];
 
   return {
-    influencers,
-    addInfluencer,
-    updateInfluencer,
-    deleteInfluencer
+    influencers: allInfluencers,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error,
+    useInfluencer
   };
 };

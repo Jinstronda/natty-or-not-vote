@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import SearchBar from "@/components/SearchBar";
-import OptimizedInfluencerGrid from "@/components/OptimizedInfluencerGrid";
+import InfluencerGrid from "@/components/InfluencerGrid";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
 
 const Index = () => {
@@ -13,7 +13,6 @@ const Index = () => {
       <Header />
       
       <div className="container mx-auto px-6 py-12 max-w-7xl">
-        {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-7xl font-heading font-bold mb-8 bg-gradient-to-r from-natty to-juicy bg-clip-text text-transparent leading-tight">
             Natty or Not?
@@ -23,15 +22,12 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Search */}
         <div className="mb-16 max-w-2xl mx-auto">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
         
-        {/* Influencers Grid */}
-        <OptimizedInfluencerGrid searchTerm={searchTerm} />
+        <InfluencerGrid searchTerm={searchTerm} />
         
-        {/* Suggest Influencer Section - Enhanced */}
         <div className="mt-32 mb-16">
           <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl p-12 text-center border border-border/50">
             <div className="max-w-2xl mx-auto">

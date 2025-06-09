@@ -7,17 +7,37 @@ import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
-import { useVoteStore } from "@/stores/VoteStore";
+import { useInfluencers } from "@/hooks/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const { influencers } = useVoteStore();
+  const { useInfluencer } = useInfluencers();
+  const { data: influencer, isLoading, error } = useInfluencer(id!);
   
-  const influencer = influencers.find(inf => inf.id === id);
-  
-  if (!influencer) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-32 w-full mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <Skeleton className="h-96 w-full" />
+            </div>
+            <div className="lg:col-span-2 space-y-8">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-48 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !influencer) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -36,11 +56,9 @@ const InfluencerProfile = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Prominent Voting Results */}
         <VotingResults influencerId={id!} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
             {user?.role === 'admin' && (
               <AdminInfluencerEditor influencer={influencer} />
@@ -48,12 +66,9 @@ const InfluencerProfile = () => {
             <InfluencerInfo influencer={influencer} />
           </div>
           
-          {/* Right Column - Voting & Reviews */}
           <div className="lg:col-span-2 space-y-8">
             <VotingSection influencerId={id!} />
-            
             <ExpertReviews influencerId={id!} />
-            
             <UserReviews influencerId={id!} />
           </div>
         </div>
