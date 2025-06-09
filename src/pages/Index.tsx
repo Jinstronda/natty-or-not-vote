@@ -39,38 +39,6 @@ const Index = () => {
             Welcome to the ultimate fitness community platform where transparency meets accountability. 
             Vote on your favorite fitness influencers and help determine who's keeping it natural and who might be enhanced.
           </p>
-          <div className="bg-card border border-border rounded-lg p-6 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-heading font-semibold mb-4">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-6 text-left">
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-natty/10 rounded-lg flex items-center justify-center mb-3">
-                  <span className="text-2xl">🏆</span>
-                </div>
-                <h3 className="font-semibold">Vote Natty</h3>
-                <p className="text-sm text-muted-foreground">
-                  Think they achieved their physique naturally? Cast your natty vote and share your reasoning.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-juicy/10 rounded-lg flex items-center justify-center mb-3">
-                  <span className="text-2xl">💉</span>
-                </div>
-                <h3 className="font-semibold">Vote Juicy</h3>
-                <p className="text-sm text-muted-foreground">
-                  Suspect enhancement use? Vote juicy and explain what makes you think so.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                  <span className="text-2xl">💬</span>
-                </div>
-                <h3 className="font-semibold">Community Discussion</h3>
-                <p className="text-sm text-muted-foreground">
-                  Read expert reviews, engage with community thoughts, and form your own educated opinion.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Search and Suggest */}

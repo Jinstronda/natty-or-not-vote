@@ -10,6 +10,7 @@ import AdminPanel from "./pages/AdminPanel";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
+import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { VoteStoreProvider } from "./stores/VoteStore";
 import UserProfile from "./pages/UserProfile";
@@ -33,6 +34,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/influencer/:id" element={<InfluencerProfile />} />
       <Route path="/user/:id" element={<UserProfile />} />
       <Route path="/admin" element={<AdminPanel />} />
