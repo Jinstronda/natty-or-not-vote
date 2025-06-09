@@ -1,38 +1,35 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useVoteStore } from "@/stores/VoteStore";
 import InfluencerManagement from "./InfluencerManagement";
-import ReviewModeration from "./ReviewModeration";
 import SuggestionManagement from "./SuggestionManagement";
+import ReviewModeration from "./ReviewModeration";
+import SecurityAuditLog from "./SecurityAuditLog";
+import AdminRoleManagement from "./AdminRoleManagement";
 
 const AdminTabs = () => {
-  const { suggestions } = useVoteStore();
-  const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
-
   return (
-    <Tabs defaultValue="influencers" className="space-y-6">
-      <TabsList>
+    <Tabs defaultValue="influencers" className="w-full">
+      <TabsList className="grid grid-cols-5 w-full">
         <TabsTrigger value="influencers">Influencers</TabsTrigger>
+        <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
         <TabsTrigger value="reviews">Reviews</TabsTrigger>
-        <TabsTrigger value="suggestions" className="relative">
-          Suggestions
-          {pendingSuggestions.length > 0 && (
-            <Badge className="ml-2 h-5 w-5 p-0 text-xs">{pendingSuggestions.length}</Badge>
-          )}
-        </TabsTrigger>
+        <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsTrigger value="security">Security</TabsTrigger>
       </TabsList>
-
       <TabsContent value="influencers">
         <InfluencerManagement />
       </TabsContent>
-
+      <TabsContent value="suggestions">
+        <SuggestionManagement />
+      </TabsContent>
       <TabsContent value="reviews">
         <ReviewModeration />
       </TabsContent>
-
-      <TabsContent value="suggestions">
-        <SuggestionManagement />
+      <TabsContent value="users">
+        <AdminRoleManagement />
+      </TabsContent>
+      <TabsContent value="security">
+        <SecurityAuditLog />
       </TabsContent>
     </Tabs>
   );

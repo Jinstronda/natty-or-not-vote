@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useSecurityAudit } from '@/hooks/useSecurityAudit';
 
 interface User {
   id: string;
@@ -20,12 +21,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Admin emails
-const ADMIN_EMAILS = ['joaopanizzutti@gmail.com', 'jistronda100@gmail.com'];
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const { logLoginAttempt, logLogout } = useSecurityAudit();
 
   React.useEffect(() => {
     // Get initial session
@@ -60,36 +59,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (profile && !error) {
-      // Determine role based on email
-      const isAdmin = ADMIN_EMAILS.includes(profile.email);
-      
       setUser({
         id: profile.id,
         username: profile.username,
         email: profile.email,
-        role: isAdmin ? 'admin' : 'user'
+        role: profile.role as 'user' | 'admin'
       });
-
-      // Update role in database if it's different
-      if (isAdmin && profile.role !== 'admin') {
-        await supabase
-          .from('profiles')
-          .update({ role: 'admin' })
-          .eq('id', profile.id);
-      }
     }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    return !error;
+      const success = !error;
+      await logLoginAttempt(success, email);
+      
+      return success;
+    } catch (error) {
+      await logLoginAttempt(false, email);
+      return false;
+    }
   };
 
   const logout = async () => {
+    await logLogout();
     await supabase.auth.signOut();
     setUser(null);
   };
