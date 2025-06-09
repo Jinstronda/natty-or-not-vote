@@ -47,36 +47,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
+    let initializationComplete = false;
 
     const initializeAuth = async () => {
+      if (initializationComplete) return;
+      
       try {
         console.log('AuthContext: Initializing authentication...');
         
-        // Add retry logic for production environments
-        const getSessionWithRetry = async (): Promise<{ data: { session: Session | null }, error: any }> => {
-          while (retryCount < maxRetries) {
-            try {
-              const result = await supabase.auth.getSession();
-              return result;
-            } catch (error) {
-              retryCount++;
-              console.log(`AuthContext: Session fetch attempt ${retryCount} failed:`, error);
-              if (retryCount >= maxRetries) throw error;
-              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-            }
-          }
-          throw new Error('Max retries exceeded');
-        };
-
-        const { data: { session: initialSession }, error } = await getSessionWithRetry();
+        // Get initial session with proper error handling
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthContext: Session fetch error:', error);
         }
 
-        if (mounted) {
+        if (mounted && !initializationComplete) {
           if (initialSession) {
             console.log('AuthContext: Found existing session');
             await updateUser(initialSession);
@@ -86,18 +72,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setSession(null);
           }
           setLoading(false);
+          initializationComplete = true;
         }
       } catch (error) {
         console.error('AuthContext: Initialization error:', error);
-        if (mounted) {
+        if (mounted && !initializationComplete) {
           setUser(null);
           setSession(null);
           setLoading(false);
+          initializationComplete = true;
         }
       }
     };
 
-    // Set up auth state listener with improved error handling
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state changed:', event, 'Has session:', !!session);
       
@@ -107,24 +95,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (event === 'SIGNED_IN' && session) {
           console.log('AuthContext: User signed in');
           await updateUser(session);
+          if (!initializationComplete) {
+            setLoading(false);
+            initializationComplete = true;
+          }
         } else if (event === 'SIGNED_OUT' || !session) {
           console.log('AuthContext: User signed out');
           setUser(null);
           setSession(null);
+          if (!initializationComplete) {
+            setLoading(false);
+            initializationComplete = true;
+          }
         } else if (event === 'TOKEN_REFRESHED' && session) {
           console.log('AuthContext: Token refreshed');
           await updateUser(session);
         }
-        
-        setLoading(false);
       } catch (error) {
         console.error('AuthContext: Auth state change error:', error);
-        setLoading(false);
+        if (!initializationComplete) {
+          setLoading(false);
+          initializationComplete = true;
+        }
       }
     });
 
-    // Initialize auth with a small delay to ensure DOM is ready
-    const timeoutId = setTimeout(initializeAuth, 100);
+    // Initialize auth after a small delay to ensure everything is set up
+    const timeoutId = setTimeout(initializeAuth, 50);
 
     return () => {
       console.log('AuthContext: Cleaning up');
@@ -150,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data.user && data.session) {
         console.log('AuthContext: Login successful');
+        // Don't manually update user here - let the auth state change handler do it
         return true;
       }
 
