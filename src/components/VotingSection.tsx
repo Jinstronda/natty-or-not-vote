@@ -1,14 +1,10 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStats } from "@/hooks/useVoteStats";
 import { useUserVote } from "@/hooks/useUserVote";
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useVoting } from "@/hooks/useVoting";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
@@ -18,55 +14,15 @@ interface VotingSectionProps {
 
 const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const { data: voteStats, isLoading: statsLoading } = useVoteStats(influencerId);
   const { data: userVote, isLoading: voteLoading } = useUserVote(influencerId);
-  
-  const [reviewText, setReviewText] = useState("");
-  const [showReviewForm, setShowReviewForm] = useState(false);
+  const { castVote, isVoting } = useVoting(influencerId);
   
   const natty = voteStats?.natty_percentage || 0;
   const juicy = voteStats?.juicy_percentage || 0;
   const total = voteStats?.total_votes || 0;
 
-  // Vote mutation
-  const voteMutation = useMutation({
-    mutationFn: async (vote: 'natty' | 'juicy') => {
-      if (!user?.id) throw new Error('Authentication required');
-
-      const { data, error } = await supabase
-        .from('votes')
-        .upsert({
-          user_id: user.id,
-          influencer_id: influencerId,
-          vote: vote
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
-      queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
-      toast({
-        title: "Vote recorded!",
-        description: "Your vote has been successfully recorded.",
-      });
-      setShowReviewForm(true);
-    },
-    onError: (error) => {
-      console.error('Vote error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to record vote. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleVote = async (vote: 'natty' | 'juicy') => {
+  const handleVote = (vote: 'natty' | 'juicy') => {
     if (!user) {
       toast({
         title: "Login required",
@@ -76,7 +32,8 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
-    voteMutation.mutate(vote);
+    console.log('Voting button clicked:', vote);
+    castVote(vote);
   };
 
   if (!user) {
@@ -124,27 +81,27 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
         <Button
           size="lg"
           onClick={() => handleVote('natty')}
-          disabled={voteMutation.isPending}
+          disabled={isVoting}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'natty' 
               ? 'bg-natty hover:bg-natty/90 text-white' 
               : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
           }`}
         >
-          {voteMutation.isPending ? '...' : '🏆 Natty'}
+          {isVoting ? '...' : '🏆 Natty'}
         </Button>
         
         <Button
           size="lg"
           onClick={() => handleVote('juicy')}
-          disabled={voteMutation.isPending}
+          disabled={isVoting}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'juicy' 
               ? 'bg-juicy hover:bg-juicy/90 text-white' 
               : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
           }`}
         >
-          {voteMutation.isPending ? '...' : '💉 Juicy'}
+          {isVoting ? '...' : '💉 Juicy'}
         </Button>
       </div>
       
