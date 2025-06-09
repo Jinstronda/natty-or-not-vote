@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
@@ -24,10 +23,10 @@ const InfluencerProfile = () => {
     image: influencerData.image || '/placeholder.svg',
     height: influencerData.height || '',
     weight: influencerData.weight || '',
-    yearsTraining: influencerData.years_training || '', // Fixed: added missing property
-    claimedStatus: influencerData.claimed_status || '', // Fixed: added missing property
+    yearsTraining: influencerData.years_training || '',
+    claimedStatus: influencerData.claimed_status || '',
     description: influencerData.description || '',
-    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {} // Fixed: added missing property
+    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
   if (isLoading) {
