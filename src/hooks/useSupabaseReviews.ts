@@ -1,35 +1,41 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/types/vote';
 import { useAuth } from '@/contexts/AuthContext';
+import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 export const useSupabaseReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
-
-  const fetchReviews = async () => {
+  // Memoize fetchReviews to prevent infinite re-renders
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          profiles(username, profile_picture_url)
-        `)
-        .order('timestamp', { ascending: false });
+      setError(null);
+      
+      console.log('[useSupabaseReviews] Fetching reviews...');
+      
+      const result = await withDatabaseTimeout(
+        () => supabase
+          .from('reviews')
+          .select(`
+            *,
+            profiles(username, profile_picture_url)
+          `)
+          .order('timestamp', { ascending: false }),
+        { timeout: 8000, operation: 'fetchReviews' }
+      );
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (result.error) {
+        console.error('[useSupabaseReviews] Supabase error:', result.error);
+        throw result.error;
       }
 
-      const formattedReviews: Review[] = data?.map(review => ({
+      const formattedReviews: Review[] = result.data?.map(review => ({
         id: review.id,
         userId: review.user_id,
         username: review.profiles?.username || 'Unknown User',
@@ -41,15 +47,21 @@ export const useSupabaseReviews = () => {
         likes: review.likes || 0
       })) || [];
 
-      console.log('Fetched reviews:', formattedReviews.length);
+      console.log('[useSupabaseReviews] Fetched reviews:', formattedReviews.length);
       setReviews(formattedReviews);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('[useSupabaseReviews] Error fetching reviews:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch reviews';
+      setError(errorMessage);
       setReviews([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // No dependencies - this hook fetches all reviews
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
 
   const submitReview = async (userId: string, username: string, influencerId: string, vote: 'natty' | 'juicy', content: string) => {
     if (!user) return;
@@ -102,6 +114,7 @@ export const useSupabaseReviews = () => {
   return {
     reviews,
     loading,
+    error,
     submitReview,
     getInfluencerReviews,
     getUserReviews,
