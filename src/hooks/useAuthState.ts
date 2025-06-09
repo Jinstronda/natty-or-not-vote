@@ -12,35 +12,25 @@ export const useAuthState = () => {
   const { fetchUserProfile } = useUserProfile();
 
   const updateUser = useCallback(async (newSession: Session | null) => {
-    console.log('🔄 AuthState: updateUser called with session:', {
-      hasSession: !!newSession,
-      userId: newSession?.user?.id,
-      userEmail: newSession?.user?.email
-    });
+    console.log('🔄 AuthState: updateUser called with session:', !!newSession);
     
     if (!newSession?.user) {
       console.log('❌ AuthState: No session/user, clearing state');
       setUser(null);
       setSession(null);
-      setLoading(false); // Important: Set loading to false here
+      setLoading(false);
       return;
     }
 
     try {
       console.log('👤 AuthState: Fetching user profile for:', newSession.user.id);
       const userData = await fetchUserProfile(newSession.user);
-      console.log('✅ AuthState: Profile fetched successfully:', {
-        username: userData.username,
-        email: userData.email,
-        role: userData.role
-      });
+      console.log('✅ AuthState: Profile fetched successfully');
       setUser(userData);
       setSession(newSession);
-      setLoading(false); // Set loading to false after successful update
-      console.log('✅ AuthState: User and session state updated, loading set to false');
     } catch (error) {
       console.error('❌ AuthState: Profile fetch failed, using fallback:', error);
-      // Create fallback user object
+      // Create simple fallback user
       const fallbackUser: User = {
         id: newSession.user.id,
         username: newSession.user.user_metadata?.username || 
@@ -49,76 +39,24 @@ export const useAuthState = () => {
         email: newSession.user.email || '',
         role: 'user'
       };
-      console.log('🔄 AuthState: Using fallback user:', fallbackUser);
       setUser(fallbackUser);
       setSession(newSession);
-      setLoading(false); // Set loading to false even on error
+    } finally {
+      setLoading(false);
     }
   }, [fetchUserProfile]);
 
   useEffect(() => {
-    console.log('🚀 AuthState: useEffect starting...');
+    console.log('🚀 AuthState: Initializing...');
     let mounted = true;
 
-    // Set up auth state listener first
-    console.log('👂 AuthState: Setting up auth state listener...');
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔔 AuthState: Auth state changed:', {
-        event,
-        hasSession: !!session,
-        userId: session?.user?.id,
-        mounted
-      });
-      
-      if (!mounted) {
-        console.log('❌ AuthState: Component unmounted, ignoring auth state change');
-        return;
-      }
-
-      // Handle different auth events
-      if (event === 'SIGNED_IN' && session) {
-        console.log('✅ AuthState: User signed in, updating user...');
-        await updateUser(session);
-      } else if (event === 'SIGNED_OUT' || !session) {
-        console.log('🚪 AuthState: User signed out, clearing state...');
-        setUser(null);
-        setSession(null);
-        setLoading(false);
-      } else if (event === 'TOKEN_REFRESHED' && session) {
-        console.log('🔄 AuthState: Token refreshed, updating user...');
-        await updateUser(session);
-      } else if (event === 'INITIAL_SESSION') {
-        console.log('🔄 AuthState: Initial session event...');
-        if (session) {
-          await updateUser(session);
-        } else {
-          setUser(null);
-          setSession(null);
-          setLoading(false);
-        }
-      }
-    });
-
-    // Then check for existing session
-    const initializeAuth = async () => {
+    const initAuth = async () => {
       try {
-        console.log('🔧 AuthState: Starting initialization...');
-        console.log('🔧 AuthState: Current URL:', window.location.href);
-        console.log('🔧 AuthState: Mounted status:', mounted);
-        
-        // Get initial session
-        console.log('📡 AuthState: Calling supabase.auth.getSession()...');
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        console.log('📡 AuthState: getSession result:', {
-          hasSession: !!initialSession,
-          hasError: !!error,
-          errorMessage: error?.message,
-          userId: initialSession?.user?.id
-        });
+        // Get current session
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('❌ AuthState: Session fetch error:', error);
+          console.error('❌ AuthState: Session error:', error);
           if (mounted) {
             setLoading(false);
           }
@@ -126,23 +64,11 @@ export const useAuthState = () => {
         }
 
         if (mounted) {
-          console.log('✅ AuthState: Still mounted, processing session...');
-          if (initialSession) {
-            console.log('🔄 AuthState: Found existing session, updating user...');
-            await updateUser(initialSession);
-          } else {
-            console.log('🔄 AuthState: No existing session, clearing state...');
-            setUser(null);
-            setSession(null);
-            setLoading(false);
-          }
-        } else {
-          console.log('❌ AuthState: Component unmounted during initialization');
+          await updateUser(session);
         }
       } catch (error) {
-        console.error('❌ AuthState: Initialization error:', error);
+        console.error('❌ AuthState: Init error:', error);
         if (mounted) {
-          console.log('🔄 AuthState: Error occurred but still mounted, clearing state');
           setUser(null);
           setSession(null);
           setLoading(false);
@@ -150,24 +76,29 @@ export const useAuthState = () => {
       }
     };
 
-    console.log('✅ AuthState: Auth state listener set up, starting initialization...');
-    initializeAuth();
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 AuthState: Auth state changed:', event, !!session);
+      
+      if (!mounted) return;
+
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+      } else {
+        await updateUser(session);
+      }
+    });
+
+    initAuth();
 
     return () => {
-      console.log('🧹 AuthState: Cleaning up...');
+      console.log('🧹 AuthState: Cleanup');
       mounted = false;
       subscription.unsubscribe();
-      console.log('✅ AuthState: Cleanup complete');
     };
   }, [updateUser]);
-
-  console.log('📊 AuthState: Current state:', {
-    hasUser: !!user,
-    hasSession: !!session,
-    loading,
-    userId: user?.id,
-    userEmail: user?.email
-  });
 
   return { user, session, loading };
 };
