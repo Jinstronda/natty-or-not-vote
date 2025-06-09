@@ -1,5 +1,7 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
 import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
 import { useRealTimeVotes } from "@/hooks/useRealTimeVotes";
@@ -65,33 +67,37 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
           </div>
           
           {totalExpertReviews > 0 ? (
-            <>
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-natty font-bold text-2xl">{expertNattyPercentage}% Natty</span>
-                <span className="text-juicy font-bold text-2xl">{expertJuicyPercentage}% Juicy</span>
+            <div className="space-y-4">
+              {/* Natty Bar */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-natty font-semibold">🏆 Natty</span>
+                  <span className="text-natty font-bold text-lg">{expertNattyPercentage}%</span>
+                </div>
+                <Progress 
+                  value={expertNattyPercentage} 
+                  className="h-3"
+                  style={{
+                    background: 'hsl(var(--muted))',
+                  }}
+                />
               </div>
               
-              <div className="relative">
-                <div className="w-full bg-juicy/20 rounded-full h-8 overflow-hidden">
-                  <div 
-                    className="h-full bg-natty transition-all duration-1000 ease-out flex items-center justify-center text-white font-bold"
-                    style={{ width: `${expertNattyPercentage}%` }}
-                  >
-                    {expertNattyPercentage > 15 && `${expertNattyPercentage}%`}
-                  </div>
+              {/* Juicy Bar */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-juicy font-semibold">💉 Juicy</span>
+                  <span className="text-juicy font-bold text-lg">{expertJuicyPercentage}%</span>
                 </div>
-                {expertNattyPercentage <= 15 && expertNattyPercentage > 0 && (
-                  <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-natty font-bold text-sm">
-                    {expertNattyPercentage}%
-                  </div>
-                )}
-                {expertJuicyPercentage <= 15 && expertJuicyPercentage > 0 && (
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-juicy font-bold text-sm">
-                    {expertJuicyPercentage}%
-                  </div>
-                )}
+                <Progress 
+                  value={expertJuicyPercentage} 
+                  className="h-3 [&>div]:bg-juicy"
+                  style={{
+                    background: 'hsl(var(--muted))',
+                  }}
+                />
               </div>
-            </>
+            </div>
           ) : (
             <div className="text-center py-4 text-muted-foreground">
               No expert reviews yet
@@ -109,33 +115,37 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
           </div>
           
           {communityResults.total > 0 ? (
-            <>
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-natty font-bold text-2xl">{communityResults.natty}% Natty</span>
-                <span className="text-juicy font-bold text-2xl">{communityResults.juicy}% Juicy</span>
+            <div className="space-y-4">
+              {/* Natty Bar */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-natty font-semibold">🏆 Natty</span>
+                  <span className="text-natty font-bold text-lg">{communityResults.natty}%</span>
+                </div>
+                <Progress 
+                  value={communityResults.natty} 
+                  className="h-3"
+                  style={{
+                    background: 'hsl(var(--muted))',
+                  }}
+                />
               </div>
               
-              <div className="relative">
-                <div className="w-full bg-juicy/20 rounded-full h-8 overflow-hidden">
-                  <div 
-                    className="h-full bg-natty transition-all duration-1000 ease-out flex items-center justify-center text-white font-bold"
-                    style={{ width: `${communityResults.natty}%` }}
-                  >
-                    {communityResults.natty > 15 && `${communityResults.natty}%`}
-                  </div>
+              {/* Juicy Bar */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-juicy font-semibold">💉 Juicy</span>
+                  <span className="text-juicy font-bold text-lg">{communityResults.juicy}%</span>
                 </div>
-                {communityResults.natty <= 15 && communityResults.natty > 0 && (
-                  <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-natty font-bold text-sm">
-                    {communityResults.natty}%
-                  </div>
-                )}
-                {communityResults.juicy <= 15 && communityResults.juicy > 0 && (
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-juicy font-bold text-sm">
-                    {communityResults.juicy}%
-                  </div>
-                )}
+                <Progress 
+                  value={communityResults.juicy} 
+                  className="h-3 [&>div]:bg-juicy"
+                  style={{
+                    background: 'hsl(var(--muted))',
+                  }}
+                />
               </div>
-            </>
+            </div>
           ) : (
             <div className="text-center py-4 text-muted-foreground">
               No community votes yet
