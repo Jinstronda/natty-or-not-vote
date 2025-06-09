@@ -3,8 +3,6 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import InfluencerCard from "@/components/InfluencerCard";
 import SearchBar from "@/components/SearchBar";
-import SuggestInfluencerForm from "@/components/SuggestInfluencerForm";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVoteStore } from "@/stores/VoteStore";
 
 const Index = () => {
@@ -15,7 +13,8 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const filteredInfluencers = influencers.filter(influencer => influencer.name.toLowerCase().includes(searchTerm.toLowerCase()));
   
-  return <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen bg-background">
       <Header />
       
       {/* Hero Section */}
@@ -31,41 +30,42 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Main Content with Tabs */}
+      {/* Main Content */}
       <section className="py-8 px-4">
         <div className="container mx-auto">
-          <Tabs defaultValue="trending" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
-              <TabsTrigger value="trending">Trending</TabsTrigger>
-              <TabsTrigger value="suggest">Suggest An Influencer</TabsTrigger>
-            </TabsList>
+          <div className="space-y-8">
+            <div className="text-center">
+              <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+            </div>
             
-            <TabsContent value="trending" className="space-y-8">
-              <div className="text-center">
-                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-              </div>
+            <div>
+              <h2 className="text-3xl font-heading font-bold text-center mb-8">
+                Trending Discussions
+              </h2>
               
-              <div>
-                <h2 className="text-3xl font-heading font-bold text-center mb-8">
-                  Trending Discussions
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredInfluencers.map(influencer => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredInfluencers.map(influencer => {
                   const percentages = getVotePercentages(influencer.id);
-                  return <InfluencerCard key={influencer.id} id={influencer.id} name={influencer.name} image={influencer.image} nattyPercentage={percentages.natty} juicyPercentage={percentages.juicy} totalVotes={percentages.total} platform="" />;
+                  return (
+                    <InfluencerCard 
+                      key={influencer.id} 
+                      id={influencer.id} 
+                      name={influencer.name} 
+                      image={influencer.image} 
+                      nattyPercentage={percentages.natty} 
+                      juicyPercentage={percentages.juicy} 
+                      totalVotes={percentages.total} 
+                      platform="" 
+                    />
+                  );
                 })}
-                </div>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="suggest">
-              <SuggestInfluencerForm />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
       </section>
-    </div>;
+    </div>
+  );
 };
 
 export default Index;
