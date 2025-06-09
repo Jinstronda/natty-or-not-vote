@@ -47,13 +47,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     const initializeAuth = async () => {
       try {
         console.log('AuthContext: Initializing authentication...');
         
-        // Get initial session
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        // Add retry logic for production environments
+        const getSessionWithRetry = async (): Promise<{ data: { session: Session | null }, error: any }> => {
+          while (retryCount < maxRetries) {
+            try {
+              const result = await supabase.auth.getSession();
+              return result;
+            } catch (error) {
+              retryCount++;
+              console.log(`AuthContext: Session fetch attempt ${retryCount} failed:`, error);
+              if (retryCount >= maxRetries) throw error;
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            }
+          }
+          throw new Error('Max retries exceeded');
+        };
+
+        const { data: { session: initialSession }, error } = await getSessionWithRetry();
         
         if (error) {
           console.error('AuthContext: Session fetch error:', error);
@@ -80,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener with improved error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state changed:', event, 'Has session:', !!session);
       
@@ -106,12 +123,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Initialize auth
-    initializeAuth();
+    // Initialize auth with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(initializeAuth, 100);
 
     return () => {
       console.log('AuthContext: Cleaning up');
       mounted = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [updateUser]);

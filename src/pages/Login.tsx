@@ -77,10 +77,15 @@ const Login = () => {
     try {
       console.log('Initiating Google login...');
       
+      // Use the production domain for redirects
+      const redirectTo = window.location.hostname === 'localhost' 
+        ? "http://localhost:3000/"
+        : "https://nattyorjuicy.com/";
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: "https://nattyorjuicy.com/"
+          redirectTo: redirectTo
         }
       });
 
