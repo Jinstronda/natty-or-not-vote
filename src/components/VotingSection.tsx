@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStore } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
@@ -12,10 +14,11 @@ interface VotingSectionProps {
   juicyVotes: number;
 }
 
-const VotingSection = ({ influencerId, nattyVotes, juicyVotes }: VotingSectionProps) => {
+const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { user } = useAuth();
-  const { submitVote, getUserVote, getInfluencerVotes } = useVoteStore();
-  const [hasVoted, setHasVoted] = useState(false);
+  const { submitVote, getUserVote, getInfluencerVotes, submitReview } = useVoteStore();
+  const [reviewText, setReviewText] = useState("");
+  const [showReviewForm, setShowReviewForm] = useState(false);
   
   // Get current vote counts and user's existing vote
   const currentVotes = getInfluencerVotes(influencerId);
@@ -36,11 +39,34 @@ const VotingSection = ({ influencerId, nattyVotes, juicyVotes }: VotingSectionPr
     }
 
     submitVote(user.id, influencerId, vote);
-    setHasVoted(true);
+    setShowReviewForm(true);
+    
+    const voteText = userVote ? "Vote updated!" : "Vote submitted!";
+    toast({
+      title: voteText,
+      description: `You voted ${vote === 'natty' ? 'Natty 🏆' : 'Juicy 💉'}`,
+    });
+  };
+
+  const handleReviewSubmit = () => {
+    if (!user || !userVote) return;
+
+    if (!reviewText.trim()) {
+      toast({
+        title: "Review required",
+        description: "Please write a review before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    submitReview(user.id, user.username, influencerId, userVote.vote, reviewText.trim());
+    setReviewText("");
+    setShowReviewForm(false);
     
     toast({
-      title: "Vote submitted!",
-      description: `You voted ${vote === 'natty' ? 'Natty 🏆' : 'Juicy 💉'}`,
+      title: "Review submitted!",
+      description: "Your review has been added.",
     });
   };
 
@@ -75,12 +101,9 @@ const VotingSection = ({ influencerId, nattyVotes, juicyVotes }: VotingSectionPr
         <Button
           size="lg"
           onClick={() => handleVote('natty')}
-          disabled={!!userVote}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'natty' 
               ? 'bg-natty hover:bg-natty/90 text-white' 
-              : userVote
-              ? 'opacity-50 cursor-not-allowed'
               : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
           }`}
         >
@@ -90,12 +113,9 @@ const VotingSection = ({ influencerId, nattyVotes, juicyVotes }: VotingSectionPr
         <Button
           size="lg"
           onClick={() => handleVote('juicy')}
-          disabled={!!userVote}
           className={`h-16 text-lg font-semibold transition-all ${
             userVote?.vote === 'juicy' 
               ? 'bg-juicy hover:bg-juicy/90 text-white' 
-              : userVote
-              ? 'opacity-50 cursor-not-allowed'
               : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
           }`}
         >
@@ -108,6 +128,31 @@ const VotingSection = ({ influencerId, nattyVotes, juicyVotes }: VotingSectionPr
           You voted: <span className={`font-semibold ${userVote.vote === 'natty' ? 'text-natty' : 'text-juicy'}`}>
             {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
           </span>
+          <span className="text-xs block">You can change your vote anytime</span>
+        </div>
+      )}
+
+      {showReviewForm && userVote && (
+        <div className="mb-6 border border-border rounded-lg p-4">
+          <div className="mb-3">
+            <Badge className={userVote.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
+              Your vote: {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+            </Badge>
+          </div>
+          <Textarea
+            placeholder="Share your thoughts on this influencer's natural status..."
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            className="mb-3"
+          />
+          <div className="flex gap-2">
+            <Button onClick={handleReviewSubmit} disabled={!reviewText.trim()}>
+              Submit Review
+            </Button>
+            <Button variant="outline" onClick={() => setShowReviewForm(false)}>
+              Skip
+            </Button>
+          </div>
         </div>
       )}
       
