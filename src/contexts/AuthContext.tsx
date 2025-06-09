@@ -51,10 +51,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Start auth timeout protection
     authTimeout.startLoading();
 
-    // Get initial session with timeout protection
+    // Check for stale auth state and clear if necessary
+    const clearStaleState = () => {
+      const lastActivity = localStorage.getItem('lastAuthActivity');
+      const now = Date.now();
+      
+      // If no activity recorded or it's been more than 1 hour, clear everything
+      if (!lastActivity || now - parseInt(lastActivity) > 3600000) {
+        console.log('[AuthContext] Clearing potentially stale auth state');
+        localStorage.removeItem('lastAuthActivity');
+        // Clear any stale Supabase state
+        supabase.auth.signOut({ scope: 'local' });
+      }
+    };
+
+    // Get initial session with timeout protection and stale state handling
     const getInitialSession = async () => {
       try {
         console.log('[AuthContext] Initializing session...');
+        
+        // Clear stale state first
+        clearStaleState();
         
         const sessionResult = await withDatabaseTimeout(
           () => supabase.auth.getSession(),
@@ -65,10 +82,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (sessionResult.data.session?.user) {
           console.log('[AuthContext] Found existing session for user:', sessionResult.data.session.user.id);
+          
+          // Record successful auth activity
+          localStorage.setItem('lastAuthActivity', Date.now().toString());
+          
           const user = await createUserFromSupabase(sessionResult.data.session.user);
           setUser(user);
         } else {
           console.log('[AuthContext] No existing session found');
+          // Ensure we're in a clean state
+          setUser(null);
         }
         
         authTimeout.completeLoading();
@@ -76,6 +99,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('[AuthContext] Error getting initial session:', error);
         if (mounted) {
+          // Force clean state on initialization error
+          setUser(null);
           authTimeout.completeLoading(error instanceof Error ? error.message : 'Session initialization failed');
           setLoading(false);
         }
@@ -93,6 +118,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         try {
           if (event === 'SIGNED_IN' && session?.user) {
+            console.log('[AuthContext] User signed in:', session.user.id);
+            
+            // Record successful auth activity
+            localStorage.setItem('lastAuthActivity', Date.now().toString());
+            
             const user = await createUserFromSupabase(session.user);
             setUser(user);
             // Invalidate auth-dependent queries
@@ -102,23 +132,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Handle token refresh without expensive DB calls
             if (!user || user.id !== session.user.id) {
               console.log('[AuthContext] Token refreshed, updating user data');
+              
+              // Update activity timestamp
+              localStorage.setItem('lastAuthActivity', Date.now().toString());
+              
               const refreshedUser = await createUserFromSupabase(session.user);
               setUser(refreshedUser);
               queryClient.invalidateQueries({ queryKey: ['user-vote'] });
             } else {
               console.log('[AuthContext] Token refreshed, user data unchanged');
+              // Still update activity timestamp
+              localStorage.setItem('lastAuthActivity', Date.now().toString());
             }
           } else if (event === 'SIGNED_OUT') {
             console.log('[AuthContext] User signed out');
             setUser(null);
             queryClient.clear();
+            // Clear activity tracking
+            localStorage.removeItem('lastAuthActivity');
           }
         } catch (error) {
           console.error('[AuthContext] Error in auth state change:', error);
-          // Don't sign out on token refresh errors
-          if (event === 'SIGNED_OUT') {
+          
+          // On critical auth errors, force clean state
+          if (event === 'SIGNED_OUT' || error instanceof Error && error.message.includes('JWT')) {
+            console.warn('[AuthContext] Forcing clean auth state due to error');
             setUser(null);
             queryClient.clear();
+            localStorage.removeItem('lastAuthActivity');
           }
         }
         
