@@ -8,6 +8,7 @@ import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
 import { useInfluencer } from "@/hooks/useInfluencer";
+import { useRealTime } from "@/hooks/useRealTime";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Influencer } from "@/types/vote";
@@ -16,6 +17,9 @@ const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
+  
+  // Enable real-time updates for this influencer
+  useRealTime(id, 'InfluencerProfile');
 
   console.log('InfluencerProfile - ID:', id, 'Loading:', isLoading, 'Error:', error);
   console.log('InfluencerProfile - User:', user?.role, 'Data exists:', !!influencerData);
