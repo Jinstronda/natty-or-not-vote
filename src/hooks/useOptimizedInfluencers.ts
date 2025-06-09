@@ -16,22 +16,30 @@ export const useOptimizedInfluencers = (searchTerm?: string) => {
   } = useInfiniteQuery({
     queryKey: ['influencers', searchTerm],
     queryFn: async ({ pageParam = 0 }) => {
+      console.log('Fetching influencers page:', pageParam, 'search:', searchTerm);
+      
       let query = supabase
         .from('influencers')
         .select('*')
         .order('created_at', { ascending: false })
         .range(pageParam * INFLUENCERS_PER_PAGE, (pageParam + 1) * INFLUENCERS_PER_PAGE - 1);
 
-      if (searchTerm) {
-        query = query.ilike('name', `%${searchTerm}%`);
+      if (searchTerm && searchTerm.trim()) {
+        query = query.ilike('name', `%${searchTerm.trim()}%`);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data: influencers, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching influencers:', error);
+        throw error;
+      }
 
+      console.log('Fetched influencers:', influencers?.length);
+      
       return {
-        influencers: data || [],
-        nextPage: data?.length === INFLUENCERS_PER_PAGE ? pageParam + 1 : undefined
+        influencers: influencers || [],
+        nextPage: influencers && influencers.length === INFLUENCERS_PER_PAGE ? pageParam + 1 : undefined
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
