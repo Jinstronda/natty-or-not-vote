@@ -10,8 +10,6 @@ import { Link } from "react-router-dom";
 
 interface VotingSectionProps {
   influencerId: string;
-  nattyVotes: number;
-  juicyVotes: number;
 }
 
 const VotingSection = ({ influencerId }: VotingSectionProps) => {
