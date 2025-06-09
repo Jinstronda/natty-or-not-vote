@@ -20,6 +20,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Admin emails
+const ADMIN_EMAILS = ['joaopanizzutti@gmail.com', 'jistronda100@gmail.com'];
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,12 +60,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (profile && !error) {
+      // Determine role based on email
+      const isAdmin = ADMIN_EMAILS.includes(profile.email);
+      
       setUser({
         id: profile.id,
         username: profile.username,
         email: profile.email,
-        role: profile.role as 'user' | 'admin'
+        role: isAdmin ? 'admin' : 'user'
       });
+
+      // Update role in database if it's different
+      if (isAdmin && profile.role !== 'admin') {
+        await supabase
+          .from('profiles')
+          .update({ role: 'admin' })
+          .eq('id', profile.id);
+      }
     }
   };
 
