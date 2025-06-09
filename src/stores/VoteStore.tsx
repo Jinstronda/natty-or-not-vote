@@ -1,8 +1,6 @@
-
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Vote {
-  id: string;
   userId: string;
   influencerId: string;
   vote: 'natty' | 'juicy';
@@ -20,60 +18,102 @@ export interface Review {
   likes: number;
 }
 
-interface VoteStoreType {
-  votes: Vote[];
-  reviews: Review[];
-  submitVote: (userId: string, influencerId: string, vote: 'natty' | 'juicy') => void;
-  submitReview: (userId: string, username: string, influencerId: string, vote: 'natty' | 'juicy', content: string) => void;
-  getUserVote: (userId: string, influencerId: string) => Vote | undefined;
-  getInfluencerVotes: (influencerId: string) => { natty: number; juicy: number };
-  getInfluencerReviews: (influencerId: string) => Review[];
-  getUserHistory: (userId: string) => { votes: Vote[]; reviews: Review[] };
+export interface Influencer {
+  id: string;
+  name: string;
+  image: string;
+  height: string;
+  weight: string;
+  yearsTraining: string;
+  claimedStatus: string;
+  description: string;
+  socialLinks: {
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
 }
 
-const VoteStoreContext = createContext<VoteStoreType | undefined>(undefined);
+export interface InfluencerSuggestion {
+  id: string;
+  submittedBy: string;
+  submitterUsername: string;
+  influencerName: string;
+  socialLinks: {
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
+  timestamp: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
 
-// Mock initial data
-const initialVotes: Vote[] = [
-  { id: '1', userId: '1', influencerId: '1', vote: 'natty', timestamp: '2024-01-15T10:30:00Z' },
-  { id: '2', userId: '2', influencerId: '1', vote: 'juicy', timestamp: '2024-01-15T11:00:00Z' },
-];
+interface VoteStoreContextType {
+  votes: Vote[];
+  reviews: Review[];
+  influencers: Influencer[];
+  suggestions: InfluencerSuggestion[];
+  castVote: (userId: string, influencerId: string, vote: 'natty' | 'juicy') => void;
+  getUserVote: (userId: string, influencerId: string) => Vote | null;
+  getVotePercentages: (influencerId: string) => { natty: number; juicy: number; total: number };
+  submitReview: (userId: string, username: string, influencerId: string, vote: 'natty' | 'juicy', content: string) => void;
+  getInfluencerReviews: (influencerId: string) => Review[];
+  getUserReviews: (userId: string) => Review[];
+  addInfluencer: (influencer: Omit<Influencer, 'id'>) => string;
+  updateInfluencer: (id: string, influencer: Partial<Influencer>) => void;
+  deleteInfluencer: (id: string) => void;
+  deleteReview: (reviewId: string) => void;
+  submitInfluencerSuggestion: (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any) => void;
+  updateSuggestionStatus: (suggestionId: string, status: 'approved' | 'rejected') => void;
+}
 
-const initialReviews: Review[] = [
+const VoteStoreContext = createContext<VoteStoreContextType | undefined>(undefined);
+
+// Mock data
+const mockInfluencers: Influencer[] = [
   {
     id: '1',
-    userId: '1',
-    username: 'FitnessEnthusiast23',
-    influencerId: '1',
-    vote: 'natty',
-    content: "Been following his journey for years. Definitely achievable naturally with good genetics.",
-    timestamp: '2 hours ago',
-    likes: 45
+    name: 'Mike Mentzer',
+    image: '/placeholder.svg',
+    height: '5\'8"',
+    weight: '225 lbs',
+    yearsTraining: '15+',
+    claimedStatus: 'Natural',
+    description: 'Professional bodybuilder known for high-intensity training.',
+    socialLinks: {
+      instagram: 'https://instagram.com/mikementzer',
+      youtube: 'https://youtube.com/mikementzer'
+    }
   },
   {
     id: '2',
-    userId: '2',
-    username: 'SkepticalLifter',
-    influencerId: '1',
-    vote: 'juicy',
-    content: "Too dry and full at the same time. Classic enhanced look.",
-    timestamp: '1 day ago',
-    likes: 23
+    name: 'David Laid',
+    image: '/placeholder.svg',
+    height: '6\'2"',
+    weight: '190 lbs',
+    yearsTraining: '10+',
+    claimedStatus: 'Natural',
+    description: 'Aesthetic bodybuilder and fitness influencer.',
+    socialLinks: {
+      instagram: 'https://instagram.com/davidlaid',
+      youtube: 'https://youtube.com/davidlaid'
+    }
   }
 ];
 
 export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
-  const [votes, setVotes] = useState<Vote[]>(initialVotes);
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [votes, setVotes] = useState<Vote[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [influencers, setInfluencers] = useState<Influencer[]>(mockInfluencers);
+  const [suggestions, setSuggestions] = useState<InfluencerSuggestion[]>([]);
 
-  const submitVote = (userId: string, influencerId: string, vote: 'natty' | 'juicy') => {
+  const castVote = (userId: string, influencerId: string, vote: 'natty' | 'juicy') => {
     const existingVoteIndex = votes.findIndex(v => v.userId === userId && v.influencerId === influencerId);
     const newVote: Vote = {
-      id: String(votes.length + 1),
       userId,
       influencerId,
       vote,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toLocaleDateString()
     };
 
     if (existingVoteIndex >= 0) {
@@ -85,51 +125,108 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const getUserVote = (userId: string, influencerId: string): Vote | null => {
+    return votes.find(v => v.userId === userId && v.influencerId === influencerId) || null;
+  };
+
+  const getVotePercentages = (influencerId: string) => {
+    const influencerVotes = votes.filter(v => v.influencerId === influencerId);
+    const total = influencerVotes.length;
+    const nattyCount = influencerVotes.filter(v => v.vote === 'natty').length;
+    const juicyCount = total - nattyCount;
+
+    return {
+      natty: total > 0 ? Math.round((nattyCount / total) * 100) : 0,
+      juicy: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
+      total
+    };
+  };
+
   const submitReview = (userId: string, username: string, influencerId: string, vote: 'natty' | 'juicy', content: string) => {
     const newReview: Review = {
-      id: String(reviews.length + 1),
+      id: Date.now().toString(),
       userId,
       username,
       influencerId,
       vote,
       content,
-      timestamp: 'just now',
+      timestamp: new Date().toLocaleDateString(),
       likes: 0
     };
-    setReviews([newReview, ...reviews]);
+    setReviews([...reviews, newReview]);
   };
 
-  const getUserVote = (userId: string, influencerId: string) => {
-    return votes.find(v => v.userId === userId && v.influencerId === influencerId);
-  };
-
-  const getInfluencerVotes = (influencerId: string) => {
-    const influencerVotes = votes.filter(v => v.influencerId === influencerId);
-    const natty = influencerVotes.filter(v => v.vote === 'natty').length;
-    const juicy = influencerVotes.filter(v => v.vote === 'juicy').length;
-    return { natty, juicy };
-  };
-
-  const getInfluencerReviews = (influencerId: string) => {
+  const getInfluencerReviews = (influencerId: string): Review[] => {
     return reviews.filter(r => r.influencerId === influencerId);
   };
 
-  const getUserHistory = (userId: string) => {
-    const userVotes = votes.filter(v => v.userId === userId);
-    const userReviews = reviews.filter(r => r.userId === userId);
-    return { votes: userVotes, reviews: userReviews };
+  const getUserReviews = (userId: string): Review[] => {
+    return reviews.filter(r => r.userId === userId);
+  };
+
+  const addInfluencer = (influencer: Omit<Influencer, 'id'>): string => {
+    const newId = Date.now().toString();
+    const newInfluencer: Influencer = {
+      ...influencer,
+      id: newId
+    };
+    setInfluencers([...influencers, newInfluencer]);
+    return newId;
+  };
+
+  const updateInfluencer = (id: string, updates: Partial<Influencer>) => {
+    setInfluencers(influencers.map(inf => 
+      inf.id === id ? { ...inf, ...updates } : inf
+    ));
+  };
+
+  const deleteInfluencer = (id: string) => {
+    setInfluencers(influencers.filter(inf => inf.id !== id));
+    setVotes(votes.filter(v => v.influencerId !== id));
+    setReviews(reviews.filter(r => r.influencerId !== id));
+  };
+
+  const deleteReview = (reviewId: string) => {
+    setReviews(reviews.filter(r => r.id !== reviewId));
+  };
+
+  const submitInfluencerSuggestion = (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any) => {
+    const newSuggestion: InfluencerSuggestion = {
+      id: Date.now().toString(),
+      submittedBy,
+      submitterUsername,
+      influencerName,
+      socialLinks,
+      timestamp: new Date().toLocaleDateString(),
+      status: 'pending'
+    };
+    setSuggestions([...suggestions, newSuggestion]);
+  };
+
+  const updateSuggestionStatus = (suggestionId: string, status: 'approved' | 'rejected') => {
+    setSuggestions(suggestions.map(s => 
+      s.id === suggestionId ? { ...s, status } : s
+    ));
   };
 
   return (
     <VoteStoreContext.Provider value={{
       votes,
       reviews,
-      submitVote,
-      submitReview,
+      influencers,
+      suggestions,
+      castVote,
       getUserVote,
-      getInfluencerVotes,
+      getVotePercentages,
+      submitReview,
       getInfluencerReviews,
-      getUserHistory
+      getUserReviews,
+      addInfluencer,
+      updateInfluencer,
+      deleteInfluencer,
+      deleteReview,
+      submitInfluencerSuggestion,
+      updateSuggestionStatus
     }}>
       {children}
     </VoteStoreContext.Provider>
