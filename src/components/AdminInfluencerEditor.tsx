@@ -1,14 +1,13 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Pencil, Save, X } from "lucide-react";
-import { Influencer } from '@/types/vote';
-import { useVoteStore } from '@/stores/VoteStore';
-import { toast } from "@/hooks/use-toast";
+import { useVoteStore } from "@/stores/VoteStore";
+import { useToast } from "@/hooks/use-toast";
+import { Influencer } from "@/types/vote";
 
 interface AdminInfluencerEditorProps {
   influencer: Influencer;
@@ -16,33 +15,46 @@ interface AdminInfluencerEditorProps {
 
 const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(influencer);
+  const [formData, setFormData] = useState({
+    name: influencer.name,
+    image: influencer.image,
+    height: influencer.height,
+    weight: influencer.weight,
+    yearsTraining: influencer.yearsTraining,
+    claimedStatus: influencer.claimedStatus,
+    description: influencer.description,
+    socialLinks: influencer.socialLinks
+  });
+
   const { updateInfluencer } = useVoteStore();
+  const { toast } = useToast();
 
   const handleSave = async () => {
     try {
-      await updateInfluencer(influencer.id, editData);
+      await updateInfluencer(influencer.id, formData);
       setIsEditing(false);
       toast({
-        title: "Influencer updated",
-        description: "The influencer data has been successfully updated.",
+        title: "Success",
+        description: "Influencer updated successfully",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update influencer data.",
+        description: "Failed to update influencer",
         variant: "destructive",
       });
     }
   };
 
-  const handleCancel = () => {
-    setEditData(influencer);
-    setIsEditing(false);
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSocialLinkChange = (platform: string, value: string) => {
-    setEditData(prev => ({
+    setFormData(prev => ({
       ...prev,
       socialLinks: {
         ...prev.socialLinks,
@@ -53,103 +65,76 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
 
   if (!isEditing) {
     return (
-      <Card className="mb-4">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Admin Controls</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit Influencer
-            </Button>
-          </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Admin Controls</CardTitle>
         </CardHeader>
+        <CardContent>
+          <Button onClick={() => setIsEditing(true)} className="w-full">
+            Edit Influencer
+          </Button>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Edit Influencer</span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              className="flex items-center gap-2"
-            >
-              <X className="h-4 w-4" />
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleSave}
-              className="flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-          </div>
-        </CardTitle>
+        <CardTitle className="text-lg">Edit Influencer</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <Label htmlFor="name">Name</Label>
           <Input
             id="name"
-            value={editData.name}
-            onChange={(e) => setEditData(prev => ({ ...prev, name: e.target.value }))}
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
           />
         </div>
-        
+
         <div>
           <Label htmlFor="image">Image URL</Label>
           <Input
             id="image"
-            value={editData.image || ''}
-            onChange={(e) => setEditData(prev => ({ ...prev, image: e.target.value }))}
+            value={formData.image}
+            onChange={(e) => handleChange('image', e.target.value)}
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="height">Height</Label>
-            <Input
-              id="height"
-              value={editData.height || ''}
-              onChange={(e) => setEditData(prev => ({ ...prev, height: e.target.value }))}
-            />
-          </div>
-          <div>
-            <Label htmlFor="weight">Weight</Label>
-            <Input
-              id="weight"
-              value={editData.weight || ''}
-              onChange={(e) => setEditData(prev => ({ ...prev, weight: e.target.value }))}
-            />
-          </div>
-          <div>
-            <Label htmlFor="yearsTraining">Years Training</Label>
-            <Input
-              id="yearsTraining"
-              value={editData.yearsTraining || ''}
-              onChange={(e) => setEditData(prev => ({ ...prev, yearsTraining: e.target.value }))}
-            />
-          </div>
+        <div>
+          <Label htmlFor="height">Height</Label>
+          <Input
+            id="height"
+            value={formData.height}
+            onChange={(e) => handleChange('height', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="weight">Weight</Label>
+          <Input
+            id="weight"
+            value={formData.weight}
+            onChange={(e) => handleChange('weight', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="yearsTraining">Years Training</Label>
+          <Input
+            id="yearsTraining"
+            value={formData.yearsTraining}
+            onChange={(e) => handleChange('yearsTraining', e.target.value)}
+          />
         </div>
 
         <div>
           <Label htmlFor="claimedStatus">Claimed Status</Label>
           <Input
             id="claimedStatus"
-            value={editData.claimedStatus || ''}
-            onChange={(e) => setEditData(prev => ({ ...prev, claimedStatus: e.target.value }))}
+            value={formData.claimedStatus}
+            onChange={(e) => handleChange('claimedStatus', e.target.value)}
           />
         </div>
 
@@ -157,42 +142,50 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
-            value={editData.description || ''}
-            onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
+            value={formData.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            rows={3}
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Social Links</Label>
-          <div className="grid grid-cols-1 gap-2">
-            <div>
-              <Label htmlFor="instagram" className="text-sm">Instagram</Label>
-              <Input
-                id="instagram"
-                value={editData.socialLinks?.instagram || ''}
-                onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-                placeholder="Instagram URL"
-              />
-            </div>
-            <div>
-              <Label htmlFor="youtube" className="text-sm">YouTube</Label>
-              <Input
-                id="youtube"
-                value={editData.socialLinks?.youtube || ''}
-                onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
-                placeholder="YouTube URL"
-              />
-            </div>
-            <div>
-              <Label htmlFor="tiktok" className="text-sm">TikTok</Label>
-              <Input
-                id="tiktok"
-                value={editData.socialLinks?.tiktok || ''}
-                onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
-                placeholder="TikTok URL"
-              />
-            </div>
-          </div>
+        <div>
+          <Label htmlFor="instagram">Instagram URL</Label>
+          <Input
+            id="instagram"
+            value={formData.socialLinks?.instagram || ''}
+            onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="youtube">YouTube URL</Label>
+          <Input
+            id="youtube"
+            value={formData.socialLinks?.youtube || ''}
+            onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="tiktok">TikTok URL</Label>
+          <Input
+            id="tiktok"
+            value={formData.socialLinks?.tiktok || ''}
+            onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <Button onClick={handleSave} className="flex-1">
+            Save Changes
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(false)}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
         </div>
       </CardContent>
     </Card>
