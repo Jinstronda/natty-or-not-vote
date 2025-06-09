@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
@@ -13,8 +12,8 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
   const { getVotePercentages, isLoading } = useOptimizedVotes(influencerId);
   const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
   
-  // Enable real-time updates
-  useRealTimeVotes(influencerId);
+  // Enable real-time updates with unique channel suffix
+  useRealTimeVotes(influencerId, 'results');
   
   const communityResults = getVotePercentages();
   const expertReviews = getInfluencerExpertReviews(influencerId);
