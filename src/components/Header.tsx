@@ -11,7 +11,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="font-heading font-bold text-2xl">
-            <span className="text-natty">Natty</span> or <span className="text-juicy">Not</span>
+            <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span>
           </Link>
           
           <nav className="flex items-center gap-4">
