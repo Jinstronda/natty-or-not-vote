@@ -5,6 +5,8 @@ import { useSupabaseVotes } from '@/hooks/useSupabaseVotes';
 import { useSupabaseReviews } from '@/hooks/useSupabaseReviews';
 import { useSupabaseInfluencers } from '@/hooks/useSupabaseInfluencers';
 import { useSupabaseSuggestions } from '@/hooks/useSupabaseSuggestions';
+import { useSupabaseExpertReviews } from '@/hooks/useSupabaseExpertReviews';
+import { useSupabaseReactions } from '@/hooks/useSupabaseReactions';
 
 interface VoteStoreContextType {
   votes: Vote[];
@@ -27,6 +29,16 @@ interface VoteStoreContextType {
   deleteReview: (reviewId: string) => void;
   submitInfluencerSuggestion: (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any, imageUrl?: string) => void;
   updateSuggestionStatus: (suggestionId: string, status: 'approved' | 'rejected') => void;
+  // Expert reviews
+  expertReviews: any[];
+  addExpertReview: (expertReview: any) => void;
+  updateExpertReview: (id: string, updates: any) => void;
+  deleteExpertReview: (id: string) => void;
+  getInfluencerExpertReviews: (influencerId: string) => any[];
+  // Reactions
+  reactions: any[];
+  toggleReaction: (reviewId: string, reactionType: 'like' | 'dislike') => void;
+  getUserReaction: (reviewId: string) => any;
 }
 
 const VoteStoreContext = createContext<VoteStoreContextType | undefined>(undefined);
@@ -36,8 +48,10 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
   const reviewHooks = useSupabaseReviews();
   const influencerHooks = useSupabaseInfluencers();
   const suggestionHooks = useSupabaseSuggestions();
+  const expertReviewHooks = useSupabaseExpertReviews();
+  const reactionHooks = useSupabaseReactions();
 
-  const loading = voteHooks.loading || reviewHooks.loading || influencerHooks.loading || suggestionHooks.loading;
+  const loading = voteHooks.loading || reviewHooks.loading || influencerHooks.loading || suggestionHooks.loading || expertReviewHooks.loading || reactionHooks.loading;
 
   // Enhanced getUserHistory that includes both votes and reviews
   const getUserHistory = (userId: string) => {
@@ -62,6 +76,8 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
       ...reviewHooks,
       ...influencerHooks,
       ...suggestionHooks,
+      ...expertReviewHooks,
+      ...reactionHooks,
       loading,
       getUserHistory,
       deleteInfluencer

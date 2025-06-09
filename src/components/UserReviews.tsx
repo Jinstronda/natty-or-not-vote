@@ -1,9 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import UserProfile from "@/components/UserProfile";
 import ReviewForm from "@/components/ReviewForm";
+import ReviewReactions from "@/components/ReviewReactions";
 import { useVoteStore, Review } from "@/stores/VoteStore";
 
 interface UserReviewsProps {
@@ -37,10 +38,11 @@ const UserReviews = ({ influencerId }: UserReviewsProps) => {
               <span className="text-sm text-muted-foreground">{review.timestamp}</span>
             </div>
             <p className="text-muted-foreground mb-3">{review.content}</p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ThumbsUp className="h-4 w-4" />
-              <span>{review.likes}</span>
-            </div>
+            <ReviewReactions 
+              reviewId={review.id}
+              likes={review.likes}
+              dislikes={review.dislikes || 0}
+            />
           </div>
         ))}
       </CardContent>

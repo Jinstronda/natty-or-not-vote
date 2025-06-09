@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      expert_reviews: {
+        Row: {
+          author: string
+          content: string
+          created_at: string
+          id: string
+          influencer_id: string
+          likes: number
+          link_url: string | null
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          content: string
+          created_at?: string
+          id?: string
+          influencer_id: string
+          likes?: number
+          link_url?: string | null
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string
+          id?: string
+          influencer_id?: string
+          likes?: number
+          link_url?: string | null
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_reviews_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       influencer_suggestions: {
         Row: {
           id: string
@@ -116,9 +160,42 @@ export type Database = {
         }
         Relationships: []
       }
+      review_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction_type: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction_type: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction_type?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reactions_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           content: string
+          dislikes: number
           id: string
           influencer_id: string
           likes: number
@@ -128,6 +205,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          dislikes?: number
           id?: string
           influencer_id: string
           likes?: number
@@ -137,6 +215,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          dislikes?: number
           id?: string
           influencer_id?: string
           likes?: number
