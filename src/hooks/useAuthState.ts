@@ -22,6 +22,7 @@ export const useAuthState = () => {
       console.log('❌ AuthState: No session/user, clearing state');
       setUser(null);
       setSession(null);
+      setLoading(false); // Important: Set loading to false here
       return;
     }
 
@@ -35,7 +36,8 @@ export const useAuthState = () => {
       });
       setUser(userData);
       setSession(newSession);
-      console.log('✅ AuthState: User and session state updated');
+      setLoading(false); // Set loading to false after successful update
+      console.log('✅ AuthState: User and session state updated, loading set to false');
     } catch (error) {
       console.error('❌ AuthState: Profile fetch failed, using fallback:', error);
       // Create fallback user object
@@ -50,6 +52,7 @@ export const useAuthState = () => {
       console.log('🔄 AuthState: Using fallback user:', fallbackUser);
       setUser(fallbackUser);
       setSession(newSession);
+      setLoading(false); // Set loading to false even on error
     }
   }, [fetchUserProfile]);
 
@@ -57,6 +60,46 @@ export const useAuthState = () => {
     console.log('🚀 AuthState: useEffect starting...');
     let mounted = true;
 
+    // Set up auth state listener first
+    console.log('👂 AuthState: Setting up auth state listener...');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 AuthState: Auth state changed:', {
+        event,
+        hasSession: !!session,
+        userId: session?.user?.id,
+        mounted
+      });
+      
+      if (!mounted) {
+        console.log('❌ AuthState: Component unmounted, ignoring auth state change');
+        return;
+      }
+
+      // Handle different auth events
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ AuthState: User signed in, updating user...');
+        await updateUser(session);
+      } else if (event === 'SIGNED_OUT' || !session) {
+        console.log('🚪 AuthState: User signed out, clearing state...');
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        console.log('🔄 AuthState: Token refreshed, updating user...');
+        await updateUser(session);
+      } else if (event === 'INITIAL_SESSION') {
+        console.log('🔄 AuthState: Initial session event...');
+        if (session) {
+          await updateUser(session);
+        } else {
+          setUser(null);
+          setSession(null);
+          setLoading(false);
+        }
+      }
+    });
+
+    // Then check for existing session
     const initializeAuth = async () => {
       try {
         console.log('🔧 AuthState: Starting initialization...');
@@ -76,6 +119,10 @@ export const useAuthState = () => {
         
         if (error) {
           console.error('❌ AuthState: Session fetch error:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
         }
 
         if (mounted) {
@@ -87,10 +134,8 @@ export const useAuthState = () => {
             console.log('🔄 AuthState: No existing session, clearing state...');
             setUser(null);
             setSession(null);
+            setLoading(false);
           }
-          
-          console.log('✅ AuthState: Initialization complete, setting loading to false');
-          setLoading(false);
         } else {
           console.log('❌ AuthState: Component unmounted during initialization');
         }
@@ -105,45 +150,7 @@ export const useAuthState = () => {
       }
     };
 
-    // Set up auth state listener
-    console.log('👂 AuthState: Setting up auth state listener...');
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔔 AuthState: Auth state changed:', {
-        event,
-        hasSession: !!session,
-        userId: session?.user?.id,
-        mounted
-      });
-      
-      if (!mounted) {
-        console.log('❌ AuthState: Component unmounted, ignoring auth state change');
-        return;
-      }
-
-      try {
-        if (event === 'SIGNED_IN' && session) {
-          console.log('✅ AuthState: User signed in, updating user...');
-          await updateUser(session);
-        } else if (event === 'SIGNED_OUT' || !session) {
-          console.log('🚪 AuthState: User signed out, clearing state...');
-          setUser(null);
-          setSession(null);
-        } else if (event === 'TOKEN_REFRESHED' && session) {
-          console.log('🔄 AuthState: Token refreshed, updating user...');
-          await updateUser(session);
-        }
-        
-        // Ensure loading is false after any auth state change
-        console.log('✅ AuthState: Auth state change processed, setting loading to false');
-        setLoading(false);
-      } catch (error) {
-        console.error('❌ AuthState: Auth state change error:', error);
-        setLoading(false);
-      }
-    });
-
     console.log('✅ AuthState: Auth state listener set up, starting initialization...');
-    // Initialize after setting up the listener
     initializeAuth();
 
     return () => {
