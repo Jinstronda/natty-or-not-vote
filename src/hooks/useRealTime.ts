@@ -9,7 +9,7 @@ export const useRealTimeVotes = (influencerId?: string) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!influencerId || !user) return;
+    if (!influencerId) return;
 
     console.log('Setting up real-time vote updates for influencer:', influencerId);
 
@@ -26,6 +26,9 @@ export const useRealTimeVotes = (influencerId?: string) => {
         (payload) => {
           console.log('Real-time vote update:', payload);
           queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
+          if (user) {
+            queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user.id] });
+          }
         }
       )
       .subscribe();
@@ -34,7 +37,7 @@ export const useRealTimeVotes = (influencerId?: string) => {
       console.log('Cleaning up real-time vote subscription');
       supabase.removeChannel(channel);
     };
-  }, [influencerId, user, queryClient]);
+  }, [influencerId, user?.id, queryClient]);
 };
 
 export const useRealTimeReviews = (influencerId?: string) => {

@@ -17,26 +17,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        console.log('Initializing auth...');
+        console.log('AuthContext: Initializing auth...');
         
         // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Session error:', error);
+          console.error('AuthContext: Session error:', error);
         }
 
-        console.log('Current session:', !!session);
+        console.log('AuthContext: Current session exists:', !!session);
 
         if (mounted) {
           if (session?.user) {
-            console.log('User found in session, fetching profile...');
+            console.log('AuthContext: User found in session, fetching profile...');
             try {
               const userData = await fetchUserProfile(session.user);
-              console.log('User profile fetched:', userData);
+              console.log('AuthContext: User profile fetched successfully:', userData.username);
               setUser(userData);
             } catch (profileError) {
-              console.error('Profile fetch error:', profileError);
+              console.error('AuthContext: Profile fetch error, using fallback:', profileError);
               // Still set basic user data even if profile fetch fails
               setUser({
                 id: session.user.id,
@@ -46,13 +46,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               });
             }
           } else {
-            console.log('No user session found');
+            console.log('AuthContext: No user session found');
             setUser(null);
           }
           setLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('AuthContext: Auth initialization error:', error);
         if (mounted) {
           setUser(null);
           setLoading(false);
@@ -62,19 +62,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, !!session?.user);
+      console.log('AuthContext: Auth state change:', event, 'Session exists:', !!session?.user);
       
       if (!mounted) return;
 
       try {
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, fetching profile...');
+          console.log('AuthContext: User signed in, fetching profile...');
           try {
             const userData = await fetchUserProfile(session.user);
-            console.log('Profile fetched after sign in:', userData);
+            console.log('AuthContext: Profile fetched after sign in:', userData.username);
             setUser(userData);
           } catch (profileError) {
-            console.error('Profile fetch error after sign in:', profileError);
+            console.error('AuthContext: Profile fetch error after sign in, using fallback:', profileError);
             // Still set basic user data even if profile fetch fails
             setUser({
               id: session.user.id,
@@ -84,28 +84,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
           }
         } else if (event === 'SIGNED_OUT' || !session) {
-          console.log('User signed out or no session');
+          console.log('AuthContext: User signed out or no session');
           setUser(null);
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          console.log('Token refreshed, updating user data');
-          // Don't refetch profile on token refresh, just ensure user is still set
+          console.log('AuthContext: Token refreshed');
+          // Only refetch if we don't have user data
           if (!user && session.user) {
             try {
               const userData = await fetchUserProfile(session.user);
               setUser(userData);
             } catch (profileError) {
-              console.error('Profile fetch error on token refresh:', profileError);
+              console.error('AuthContext: Profile fetch error on token refresh:', profileError);
             }
           }
         }
       } catch (error) {
-        console.error('Error in auth state change:', error);
+        console.error('AuthContext: Error in auth state change:', error);
         if (event === 'SIGNED_OUT' || !session) {
           setUser(null);
         }
       }
       
-      if (mounted) {
+      if (mounted && event !== 'TOKEN_REFRESHED') {
         setLoading(false);
       }
     });
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
 
     return () => {
-      console.log('Cleaning up auth context');
+      console.log('AuthContext: Cleaning up auth context');
       mounted = false;
       subscription.unsubscribe();
     };
@@ -122,35 +122,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log('Attempting login for:', email);
+      console.log('AuthContext: Attempting login for:', email);
       const success = await loginWithEmail(email, password);
-      console.log('Login result:', success);
+      console.log('AuthContext: Login result:', success);
       return success;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('AuthContext: Login error:', error);
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      console.log('Logging out...');
+      console.log('AuthContext: Logging out...');
       await signOut();
       setUser(null);
-      console.log('Logout complete');
+      console.log('AuthContext: Logout complete');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('AuthContext: Logout error:', error);
     }
   };
 
   const signup = async (username: string, email: string, password: string): Promise<boolean> => {
     try {
-      console.log('Attempting signup for:', email);
+      console.log('AuthContext: Attempting signup for:', email);
       const success = await signupWithEmail(username, email, password);
-      console.log('Signup result:', success);
+      console.log('AuthContext: Signup result:', success);
       return success;
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('AuthContext: Signup error:', error);
       return false;
     }
   };
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading
   };
 
-  console.log('AuthContext render - user:', !!user, 'loading:', loading);
+  console.log('AuthContext: Render - user exists:', !!user, 'loading:', loading, 'user role:', user?.role);
 
   return (
     <AuthContext.Provider value={contextValue}>
