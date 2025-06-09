@@ -3,16 +3,18 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useRealTimeVotes = (influencerId?: string) => {
+export const useRealTimeVotes = (influencerId?: string, channelSuffix?: string) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!influencerId) return;
 
-    console.log('Setting up real-time vote updates for influencer:', influencerId);
+    // Create unique channel name to avoid conflicts
+    const channelName = `vote-updates-${channelSuffix || 'default'}-${influencerId}`;
+    console.log('Setting up real-time vote updates for influencer:', influencerId, 'with channel:', channelName);
 
     const channel = supabase
-      .channel('vote-updates')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -36,8 +38,8 @@ export const useRealTimeVotes = (influencerId?: string) => {
       .subscribe();
 
     return () => {
-      console.log('Cleaning up real-time vote subscription');
+      console.log('Cleaning up real-time vote subscription for channel:', channelName);
       supabase.removeChannel(channel);
     };
-  }, [influencerId, queryClient]);
+  }, [influencerId, channelSuffix, queryClient]);
 };

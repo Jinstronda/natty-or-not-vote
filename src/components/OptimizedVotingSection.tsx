@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,8 +25,8 @@ const OptimizedVotingSection = ({ influencerId }: OptimizedVotingSectionProps) =
     getVotePercentages 
   } = useOptimizedVotes(influencerId);
   
-  // Enable real-time updates
-  useRealTimeVotes(influencerId);
+  // Enable real-time updates with unique channel suffix
+  useRealTimeVotes(influencerId, 'voting-section');
   
   const [reviewText, setReviewText] = useState("");
   const [showReviewForm, setShowReviewForm] = useState(false);
