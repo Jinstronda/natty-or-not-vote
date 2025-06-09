@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,30 +13,57 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in (but wait for auth to finish loading)
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
+
+  // Don't render if still loading auth or if user is already logged in
+  if (loading || user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    const success = await login(email, password);
-    
-    if (success) {
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-      navigate("/");
-    } else {
+    try {
+      const success = await login(email, password);
+      
+      if (success) {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+        navigate("/");
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password.",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -65,9 +93,9 @@ const Login = () => {
         description: "Failed to initiate Google login. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsGoogleLoading(false);
     }
-    
-    setIsGoogleLoading(false);
   };
 
   return (

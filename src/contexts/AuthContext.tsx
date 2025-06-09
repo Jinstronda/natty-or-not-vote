@@ -24,24 +24,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-  // Simple security logging function that doesn't depend on useAuth
-  const logSecurityEvent = async (eventType: string, eventDetails: any = {}) => {
-    try {
-      console.log('Security Event:', {
-        event_type: eventType,
-        event_details: eventDetails,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Failed to log security event:', error);
-    }
+  // Simple logging function that doesn't depend on useAuth
+  const logSecurityEvent = (eventType: string, eventDetails: any = {}) => {
+    console.log('Security Event:', {
+      event_type: eventType,
+      event_details: eventDetails,
+      timestamp: new Date().toISOString()
+    });
   };
 
   React.useEffect(() => {
     let isMounted = true;
 
     // Get initial session
-    const getSession = async () => {
+    const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
@@ -58,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    getSession();
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -73,7 +69,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Error in auth state change:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     });
 
@@ -127,20 +125,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       const success = !error;
-      await logSecurityEvent(
+      logSecurityEvent(
         success ? 'login_attempt' : 'failed_login',
         { email, success }
       );
       
       return success;
     } catch (error) {
-      await logSecurityEvent('failed_login', { email, success: false });
+      logSecurityEvent('failed_login', { email, success: false });
       return false;
     }
   };
 
   const logout = async () => {
-    await logSecurityEvent('logout');
+    logSecurityEvent('logout');
     await supabase.auth.signOut();
     setUser(null);
   };

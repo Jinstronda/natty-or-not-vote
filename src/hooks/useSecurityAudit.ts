@@ -1,19 +1,5 @@
 
-import { useAuth } from "@/contexts/AuthContext";
-
 export const useSecurityAudit = () => {
-  // Only call useAuth if we're inside a component that has access to AuthProvider
-  // This prevents the circular dependency issue
-  let user = null;
-  try {
-    const authContext = useAuth();
-    user = authContext.user;
-  } catch (error) {
-    // If useAuth fails, it means we're not in an AuthProvider context
-    // In this case, we'll just log without user info
-    console.warn('useSecurityAudit called outside AuthProvider context');
-  }
-
   const logSecurityEvent = async (
     eventType: string,
     eventDetails: any = {},
@@ -21,9 +7,8 @@ export const useSecurityAudit = () => {
     userAgent?: string
   ) => {
     try {
-      // Log to console for now until types are updated
+      // Log to console for now - no user context needed to avoid circular dependency
       console.log('Security Event:', {
-        user_id: user?.id || 'unknown',
         event_type: eventType,
         event_details: eventDetails,
         ip_address: ipAddress,
