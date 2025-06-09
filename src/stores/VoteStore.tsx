@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Vote {
@@ -54,8 +55,11 @@ interface VoteStoreContextType {
   influencers: Influencer[];
   suggestions: InfluencerSuggestion[];
   castVote: (userId: string, influencerId: string, vote: 'natty' | 'juicy') => void;
+  submitVote: (userId: string, influencerId: string, vote: 'natty' | 'juicy') => void;
   getUserVote: (userId: string, influencerId: string) => Vote | null;
   getVotePercentages: (influencerId: string) => { natty: number; juicy: number; total: number };
+  getInfluencerVotes: (influencerId: string) => { natty: number; juicy: number };
+  getUserHistory: (userId: string) => { votes: Vote[]; reviews: Review[] };
   submitReview: (userId: string, username: string, influencerId: string, vote: 'natty' | 'juicy', content: string) => void;
   getInfluencerReviews: (influencerId: string) => Review[];
   getUserReviews: (userId: string) => Review[];
@@ -125,6 +129,9 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // submitVote is an alias for castVote to match the expected interface
+  const submitVote = castVote;
+
   const getUserVote = (userId: string, influencerId: string): Vote | null => {
     return votes.find(v => v.userId === userId && v.influencerId === influencerId) || null;
   };
@@ -139,6 +146,27 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
       natty: total > 0 ? Math.round((nattyCount / total) * 100) : 0,
       juicy: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
       total
+    };
+  };
+
+  const getInfluencerVotes = (influencerId: string) => {
+    const influencerVotes = votes.filter(v => v.influencerId === influencerId);
+    const nattyCount = influencerVotes.filter(v => v.vote === 'natty').length;
+    const juicyCount = influencerVotes.filter(v => v.vote === 'juicy').length;
+
+    return {
+      natty: nattyCount,
+      juicy: juicyCount
+    };
+  };
+
+  const getUserHistory = (userId: string) => {
+    const userVotes = votes.filter(v => v.userId === userId);
+    const userReviews = reviews.filter(r => r.userId === userId);
+
+    return {
+      votes: userVotes,
+      reviews: userReviews
     };
   };
 
@@ -216,8 +244,11 @@ export const VoteStoreProvider = ({ children }: { children: ReactNode }) => {
       influencers,
       suggestions,
       castVote,
+      submitVote,
       getUserVote,
       getVotePercentages,
+      getInfluencerVotes,
+      getUserHistory,
       submitReview,
       getInfluencerReviews,
       getUserReviews,
