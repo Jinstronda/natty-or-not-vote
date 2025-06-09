@@ -51,7 +51,6 @@ const Login = () => {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        // Don't manually navigate here - let the useEffect handle it when user state updates
       } else {
         console.log('Login failed');
         toast({
@@ -78,15 +77,10 @@ const Login = () => {
     try {
       console.log('Initiating Google login...');
       
-      // Use the production domain for redirects
-      const redirectTo = window.location.hostname === 'localhost' 
-        ? "http://localhost:3000/"
-        : "https://nattyorjuicy.com/";
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectTo
+          redirectTo: `${window.location.origin}/`
         }
       });
 
