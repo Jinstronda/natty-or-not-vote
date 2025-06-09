@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Header from "@/components/Header";
 import InfluencerCard from "@/components/InfluencerCard";
@@ -5,6 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import SuggestInfluencerForm from "@/components/SuggestInfluencerForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVoteStore } from "@/stores/VoteStore";
+
 const Index = () => {
   const {
     influencers,
@@ -12,6 +14,7 @@ const Index = () => {
   } = useVoteStore();
   const [searchTerm, setSearchTerm] = useState("");
   const filteredInfluencers = influencers.filter(influencer => influencer.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
   return <div className="min-h-screen bg-background">
       <Header />
       
@@ -34,7 +37,7 @@ const Index = () => {
           <Tabs defaultValue="trending" className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
               <TabsTrigger value="trending">Trending</TabsTrigger>
-              
+              <TabsTrigger value="suggest">Suggest An Influencer</TabsTrigger>
             </TabsList>
             
             <TabsContent value="trending" className="space-y-8">
@@ -64,4 +67,5 @@ const Index = () => {
       </section>
     </div>;
 };
+
 export default Index;
