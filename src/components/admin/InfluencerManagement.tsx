@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useVoteStore, Influencer } from "@/stores/VoteStore";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, Edit, Plus, Users } from "lucide-react";
+import SecureImageUpload from "@/components/SecureImageUpload";
 
 const InfluencerManagement = () => {
   const { influencers, addInfluencer, updateInfluencer, deleteInfluencer } = useVoteStore();
@@ -22,6 +23,8 @@ const InfluencerManagement = () => {
     description: '',
     socialLinks: {}
   });
+
+  const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
 
   const handleCreateInfluencer = () => {
     if (!newInfluencer.name.trim()) {
@@ -61,6 +64,18 @@ const InfluencerManagement = () => {
     }
   };
 
+  const handleUpdateInfluencer = () => {
+    if (!editingInfluencer) return;
+    
+    updateInfluencer(editingInfluencer.id, editingInfluencer);
+    setEditingInfluencer(null);
+    
+    toast({
+      title: "Success",
+      description: "Influencer updated successfully.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -71,6 +86,12 @@ const InfluencerManagement = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <SecureImageUpload
+            onImageUploaded={(url) => setNewInfluencer({...newInfluencer, image: url})}
+            currentImage={newInfluencer.image === '/placeholder.svg' ? undefined : newInfluencer.image}
+            onImageRemoved={() => setNewInfluencer({...newInfluencer, image: '/placeholder.svg'})}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               placeholder="Name"
@@ -118,43 +139,76 @@ const InfluencerManagement = () => {
           <div className="space-y-4">
             {influencers.map((influencer) => (
               <div key={influencer.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-semibold">{influencer.name}</h3>
-                  <p className="text-sm text-muted-foreground">{influencer.description}</p>
+                <div className="flex items-center gap-4">
+                  <img 
+                    src={influencer.image || '/placeholder.svg'} 
+                    alt={influencer.name}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div>
+                    <h3 className="font-semibold">{influencer.name}</h3>
+                    <p className="text-sm text-muted-foreground">{influencer.description}</p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setEditingInfluencer({...influencer})}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
                       <SheetHeader>
                         <SheetTitle>Edit {influencer.name}</SheetTitle>
                       </SheetHeader>
-                      <div className="space-y-4 mt-6">
-                        <Input
-                          placeholder="Name"
-                          defaultValue={influencer.name}
-                          onChange={(e) => updateInfluencer(influencer.id, {name: e.target.value})}
-                        />
-                        <Input
-                          placeholder="Height"
-                          defaultValue={influencer.height}
-                          onChange={(e) => updateInfluencer(influencer.id, {height: e.target.value})}
-                        />
-                        <Input
-                          placeholder="Weight"
-                          defaultValue={influencer.weight}
-                          onChange={(e) => updateInfluencer(influencer.id, {weight: e.target.value})}
-                        />
-                        <Textarea
-                          placeholder="Description"
-                          defaultValue={influencer.description}
-                          onChange={(e) => updateInfluencer(influencer.id, {description: e.target.value})}
-                        />
-                      </div>
+                      {editingInfluencer && (
+                        <div className="space-y-4 mt-6">
+                          <SecureImageUpload
+                            onImageUploaded={(url) => setEditingInfluencer({...editingInfluencer, image: url})}
+                            currentImage={editingInfluencer.image === '/placeholder.svg' ? undefined : editingInfluencer.image}
+                            onImageRemoved={() => setEditingInfluencer({...editingInfluencer, image: '/placeholder.svg'})}
+                          />
+                          
+                          <Input
+                            placeholder="Name"
+                            value={editingInfluencer.name}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
+                          />
+                          <Input
+                            placeholder="Height"
+                            value={editingInfluencer.height}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
+                          />
+                          <Input
+                            placeholder="Weight"
+                            value={editingInfluencer.weight}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
+                          />
+                          <Input
+                            placeholder="Years Training"
+                            value={editingInfluencer.yearsTraining}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, yearsTraining: e.target.value})}
+                          />
+                          <Input
+                            placeholder="Claimed Status"
+                            value={editingInfluencer.claimedStatus}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, claimedStatus: e.target.value})}
+                          />
+                          <Textarea
+                            placeholder="Description"
+                            value={editingInfluencer.description}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
+                          />
+                          
+                          <Button onClick={handleUpdateInfluencer} className="w-full">
+                            Save Changes
+                          </Button>
+                        </div>
+                      )}
                     </SheetContent>
                   </Sheet>
                   <Button 
