@@ -29,33 +29,33 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-12 max-w-7xl">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 bg-gradient-to-r from-natty to-juicy bg-clip-text text-transparent">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-7xl font-heading font-bold mb-8 bg-gradient-to-r from-natty to-juicy bg-clip-text text-transparent leading-tight">
             Natty or Not?
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
             The community verdict on whether your favorite influencer is natty or juicy.
           </p>
         </div>
 
         {/* Search */}
-        <div className="mb-8">
+        <div className="mb-16 max-w-2xl mx-auto">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
         
         {/* Trending Influencers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-8">
           {filteredInfluencers.map((influencer) => (
             <InfluencerCard key={influencer.id} influencer={influencer} />
           ))}
         </div>
         
         {filteredInfluencers.length === 0 && searchTerm && (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-heading font-semibold mb-4">No influencers found</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-20">
+            <h2 className="text-3xl font-heading font-semibold mb-6">No influencers found</h2>
+            <p className="text-muted-foreground mb-8 text-lg max-w-md mx-auto">
               Can't find "{searchTerm}"? Help us grow the community by suggesting them!
             </p>
             <SuggestInfluencer />
