@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X } from "lucide-react";
+import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 
 interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
@@ -37,18 +38,31 @@ const ImageUpload = ({ onImageUploaded, currentImage, onImageRemoved }: ImageUpl
       };
       reader.readAsDataURL(file);
 
-      const { data, error } = await supabase.storage
-        .from('influencer-images')
-        .upload(filePath, file);
+      console.log('[ImageUpload] Uploading to storage:', filePath);
 
-      if (error) {
-        throw error;
+      // Upload with timeout protection
+      const uploadResult = await withDatabaseTimeout(
+        () => supabase.storage
+          .from('influencer-images')
+          .upload(filePath, file),
+        { 
+          timeout: 45000, // 45 seconds for image upload
+          retries: 1,
+          operation: 'uploadImage'
+        }
+      );
+
+      if (uploadResult.error) {
+        console.error('[ImageUpload] Upload error:', uploadResult.error);
+        throw uploadResult.error;
       }
+
+      console.log('[ImageUpload] Upload successful:', uploadResult.data.path);
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('influencer-images')
-        .getPublicUrl(data.path);
+        .getPublicUrl(uploadResult.data.path);
 
       onImageUploaded(publicUrl);
       
@@ -57,9 +71,16 @@ const ImageUpload = ({ onImageUploaded, currentImage, onImageRemoved }: ImageUpl
         description: "Image uploaded successfully.",
       });
     } catch (error) {
+      console.error('[ImageUpload] Upload failed:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Error uploading image';
+      const isTimeout = errorMessage.includes('timed out');
+      
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Error uploading image",
+        title: isTimeout ? "Upload Timeout" : "Upload Error",
+        description: isTimeout 
+          ? "Upload is taking too long. Please try with a smaller image or check your connection."
+          : errorMessage,
         variant: "destructive",
       });
     } finally {

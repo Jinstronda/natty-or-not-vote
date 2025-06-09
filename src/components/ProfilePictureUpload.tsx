@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X } from "lucide-react";
+import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 
 const ProfilePictureUpload = () => {
   const { user } = useAuth();
@@ -39,41 +40,63 @@ const ProfilePictureUpload = () => {
     setUploading(true);
 
     try {
+      console.log('[ProfilePictureUpload] Starting upload process...');
+      
       // Create preview
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
-      // Upload to Supabase storage with user ID as filename
+      // Upload to Supabase storage with timeout protection
       const fileName = user.id; // Just use user ID as filename
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('profile-pictures')
-        .upload(fileName, file, {
-          upsert: true
-        });
+      console.log('[ProfilePictureUpload] Uploading file to storage...');
+      const uploadResult = await withDatabaseTimeout(
+        () => supabase.storage
+          .from('profile-pictures')
+          .upload(fileName, file, {
+            upsert: true
+          }),
+        { 
+          timeout: 30000, // 30 seconds for file upload
+          retries: 1,
+          operation: 'uploadProfilePicture'
+        }
+      );
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+      if (uploadResult.error) {
+        console.error('[ProfilePictureUpload] Upload error:', uploadResult.error);
+        throw uploadResult.error;
       }
+
+      console.log('[ProfilePictureUpload] Upload successful, getting public URL...');
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      console.log('Upload successful, public URL:', publicUrl);
+      console.log('[ProfilePictureUpload] Public URL obtained:', publicUrl);
 
-      // Update profile in database
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ profile_picture_url: publicUrl })
-        .eq('id', user.id);
+      // Update profile in database with timeout protection
+      console.log('[ProfilePictureUpload] Updating profile in database...');
+      const updateResult = await withDatabaseTimeout(
+        () => supabase
+          .from('profiles')
+          .update({ profile_picture_url: publicUrl })
+          .eq('id', user.id),
+        { 
+          timeout: 10000, // 10 seconds for database update
+          retries: 2,
+          operation: 'updateProfilePicture'
+        }
+      );
 
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        throw updateError;
+      if (updateResult.error) {
+        console.error('[ProfilePictureUpload] Database update error:', updateResult.error);
+        throw updateResult.error;
       }
+
+      console.log('[ProfilePictureUpload] Profile updated successfully');
 
       toast({
         title: "Profile picture updated",
@@ -84,11 +107,17 @@ const ProfilePictureUpload = () => {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error: any) {
-      console.error('Error uploading profile picture:', error);
+    } catch (error) {
+      console.error('[ProfilePictureUpload] Error uploading profile picture:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload profile picture';
+      const isTimeout = errorMessage.includes('timed out');
+      
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload profile picture.",
+        title: isTimeout ? "Upload Timeout" : "Upload Failed",
+        description: isTimeout 
+          ? "Upload is taking too long. Please try with a smaller image or check your connection."
+          : errorMessage,
         variant: "destructive",
       });
       setPreviewUrl(null);
@@ -101,13 +130,27 @@ const ProfilePictureUpload = () => {
     if (!user) return;
 
     try {
-      // Update profile in database
-      const { error } = await supabase
-        .from('profiles')
-        .update({ profile_picture_url: null })
-        .eq('id', user.id);
+      console.log('[ProfilePictureUpload] Removing profile picture...');
+      
+      // Update profile in database with timeout protection
+      const result = await withDatabaseTimeout(
+        () => supabase
+          .from('profiles')
+          .update({ profile_picture_url: null })
+          .eq('id', user.id),
+        { 
+          timeout: 10000, // 10 seconds for database update
+          retries: 2,
+          operation: 'removeProfilePicture'
+        }
+      );
 
-      if (error) throw error;
+      if (result.error) {
+        console.error('[ProfilePictureUpload] Remove error:', result.error);
+        throw result.error;
+      }
+
+      console.log('[ProfilePictureUpload] Profile picture removed successfully');
 
       toast({
         title: "Profile picture removed",
@@ -116,10 +159,16 @@ const ProfilePictureUpload = () => {
 
       // Force refresh user data
       window.location.reload();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('[ProfilePictureUpload] Error removing profile picture:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove profile picture';
+      
       toast({
         title: "Error",
-        description: "Failed to remove profile picture.",
+        description: errorMessage.includes('timed out') 
+          ? "Remove operation timed out. Please try again."
+          : "Failed to remove profile picture.",
         variant: "destructive",
       });
     }

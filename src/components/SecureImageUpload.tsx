@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 
 interface SecureImageUploadProps {
   onImageUploaded: (url: string) => void;
@@ -114,22 +115,34 @@ const SecureImageUpload = ({
       };
       reader.readAsDataURL(file);
 
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('influencer-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      console.log('[SecureImageUpload] Uploading to storage:', filePath);
 
-      if (error) {
-        throw error;
+      // Upload to Supabase Storage with timeout protection
+      const uploadResult = await withDatabaseTimeout(
+        () => supabase.storage
+          .from('influencer-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          }),
+        { 
+          timeout: 45000, // 45 seconds for image upload (larger files need more time)
+          retries: 1,
+          operation: 'uploadInfluencerImage'
+        }
+      );
+
+      if (uploadResult.error) {
+        console.error('[SecureImageUpload] Upload error:', uploadResult.error);
+        throw uploadResult.error;
       }
+
+      console.log('[SecureImageUpload] Upload successful:', uploadResult.data.path);
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('influencer-images')
-        .getPublicUrl(data.path);
+        .getPublicUrl(uploadResult.data.path);
 
       onImageUploaded(publicUrl);
       
@@ -138,10 +151,17 @@ const SecureImageUpload = ({
         description: "Image uploaded successfully.",
       });
     } catch (error) {
+      console.error('[SecureImageUpload] Upload failed:', error);
       setPreview(currentImage || null);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Error uploading image';
+      const isTimeout = errorMessage.includes('timed out');
+      
       toast({
-        title: "Upload Error",
-        description: error instanceof Error ? error.message : "Error uploading image",
+        title: isTimeout ? "Upload Timeout" : "Upload Error",
+        description: isTimeout 
+          ? "Upload is taking too long. Please try with a smaller image or check your connection."
+          : errorMessage,
         variant: "destructive",
       });
     } finally {

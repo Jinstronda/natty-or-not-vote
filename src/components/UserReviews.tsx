@@ -11,6 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Review } from "@/types/vote";
+import { withDatabaseTimeout } from "@/utils/loadingTimeout";
+import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
+import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 
 interface UserReviewsProps {
   influencerId: string;
