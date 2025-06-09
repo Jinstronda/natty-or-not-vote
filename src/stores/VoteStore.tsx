@@ -25,7 +25,7 @@ interface VoteStoreContextType {
   updateInfluencer: (id: string, influencer: Partial<Influencer>) => void;
   deleteInfluencer: (id: string) => void;
   deleteReview: (reviewId: string) => void;
-  submitInfluencerSuggestion: (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any) => void;
+  submitInfluencerSuggestion: (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any, imageUrl?: string) => void;
   updateSuggestionStatus: (suggestionId: string, status: 'approved' | 'rejected') => void;
 }
 

@@ -12,6 +12,7 @@ export type Database = {
       influencer_suggestions: {
         Row: {
           id: string
+          image_url: string | null
           influencer_name: string
           social_links: Json | null
           status: string
@@ -20,6 +21,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          image_url?: string | null
           influencer_name: string
           social_links?: Json | null
           status?: string
@@ -28,6 +30,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          image_url?: string | null
           influencer_name?: string
           social_links?: Json | null
           status?: string

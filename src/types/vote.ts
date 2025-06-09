@@ -38,6 +38,7 @@ export interface InfluencerSuggestion {
   submittedBy: string;
   submitterUsername: string;
   influencerName: string;
+  imageUrl?: string;
   socialLinks: {
     instagram?: string;
     youtube?: string;

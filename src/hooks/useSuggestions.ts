@@ -5,12 +5,13 @@ import { InfluencerSuggestion } from '@/types/vote';
 export const useSuggestions = () => {
   const [suggestions, setSuggestions] = useState<InfluencerSuggestion[]>([]);
 
-  const submitInfluencerSuggestion = (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any) => {
+  const submitInfluencerSuggestion = (submittedBy: string, submitterUsername: string, influencerName: string, socialLinks: any, imageUrl?: string) => {
     const newSuggestion: InfluencerSuggestion = {
       id: Date.now().toString(),
       submittedBy,
       submitterUsername,
       influencerName,
+      imageUrl,
       socialLinks,
       timestamp: new Date().toLocaleDateString(),
       status: 'pending'
