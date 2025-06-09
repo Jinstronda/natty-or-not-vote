@@ -24,10 +24,10 @@ export interface Influencer {
   image: string;
   height: string;
   weight: string;
-  yearsTraining: string;
-  claimedStatus: string;
+  years_training: string;
+  claimed_status: string;
   description: string;
-  socialLinks: {
+  social_links: {
     instagram?: string;
     youtube?: string;
     tiktok?: string;
