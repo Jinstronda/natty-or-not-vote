@@ -48,8 +48,7 @@ const SignUp = () => {
         options: {
           data: {
             username: username,
-          },
-          emailRedirectTo: `${window.location.origin}/`
+          }
         },
       });
 
@@ -63,14 +62,7 @@ const SignUp = () => {
       } else {
         console.log('Signup response:', data);
         
-        if (data.user && !data.session) {
-          // Email confirmation required
-          toast({
-            title: "Check your email!",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
-          });
-        } else if (data.session) {
-          // Auto-confirmed (shouldn't happen in production with email confirmation enabled)
+        if (data.user) {
           toast({
             title: "Account created!",
             description: "Welcome to Natty or Juicy!",
