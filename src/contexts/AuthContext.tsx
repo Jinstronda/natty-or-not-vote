@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [initializing, setInitializing] = React.useState(true);
 
   // Simple logging function that doesn't depend on useAuth
   const logSecurityEvent = (eventType: string, eventDetails: any = {}) => {
@@ -33,55 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  React.useEffect(() => {
-    let isMounted = true;
-
-    // Get initial session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-        } else if (session?.user && isMounted) {
-          await fetchUserProfile(session.user);
-        }
-      } catch (error) {
-        console.error('Failed to get initial session:', error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
-      
-      try {
-        if (session?.user) {
-          await fetchUserProfile(session.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error in auth state change:', error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
+  const fetchUserProfile = React.useCallback(async (supabaseUser: SupabaseUser) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -115,7 +68,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: 'user'
       });
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (session?.user && isMounted) {
+          await fetchUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('Failed to get initial session:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setInitializing(false);
+        }
+      }
+    };
+
+    // Only initialize if we haven't already
+    if (initializing) {
+      initializeAuth();
+    }
+
+    // Listen for auth changes - but avoid infinite loops
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
+      console.log('Auth state change:', event, !!session);
+      
+      try {
+        if (session?.user) {
+          // Only fetch profile if we don't already have this user
+          if (!user || user.id !== session.user.id) {
+            await fetchUserProfile(session.user);
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+        setUser(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserProfile, user, initializing]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -144,17 +155,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (username: string, email: string, password: string): Promise<boolean> => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username: username,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+          },
         },
-      },
-    });
+      });
 
-    return !error;
+      return !error;
+    } catch (error) {
+      console.error('Signup error:', error);
+      return false;
+    }
   };
 
   return (

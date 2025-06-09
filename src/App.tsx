@@ -15,7 +15,15 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { VoteStoreProvider } from "./stores/VoteStore";
 import UserProfile from "./pages/UserProfile";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 60000, // 1 minute
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppContent = () => {
   const { loading } = useAuth();
