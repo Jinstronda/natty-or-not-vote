@@ -23,7 +23,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
 
   // Simple logging function that doesn't depend on useAuth
   const logSecurityEvent = (eventType: string, eventDetails: any = {}) => {
@@ -95,22 +94,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
           }
           setLoading(false);
-          setInitialized(true);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
         if (mounted) {
           setUser(null);
           setLoading(false);
-          setInitialized(true);
         }
       }
     };
 
-    // Only initialize once
-    if (!initialized) {
-      initAuth();
-    }
+    initAuth();
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -129,17 +123,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       
-      // Only set loading to false after we've processed the auth change
-      if (mounted && initialized) {
+      if (mounted) {
         setLoading(false);
       }
     });
 
+    // Add beforeunload event listener to logout when closing browser/tab
+    const handleBeforeUnload = () => {
+      supabase.auth.signOut();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [fetchUserProfile, initialized]);
+  }, [fetchUserProfile]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
