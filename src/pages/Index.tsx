@@ -36,20 +36,16 @@ const Index = () => {
             Natty or Not?
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Welcome to the ultimate fitness community platform where transparency meets accountability. 
-            Vote on your favorite fitness influencers and help determine who's keeping it natural and who might be enhanced.
+            The community verdict on whether your favorite influencer is natty or juicy.
           </p>
         </div>
 
-        {/* Search and Suggest */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1">
-            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-          </div>
-          <SuggestInfluencer />
+        {/* Search */}
+        <div className="mb-8">
+          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
         
-        {/* Influencers Grid */}
+        {/* Trending Influencers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredInfluencers.map((influencer) => (
             <InfluencerCard key={influencer.id} influencer={influencer} />
@@ -65,13 +61,6 @@ const Index = () => {
             <SuggestInfluencer />
           </div>
         )}
-
-        {/* Footer Info */}
-        <div className="mt-16 text-center text-muted-foreground">
-          <p className="text-sm">
-            This platform is for educational and entertainment purposes. All votes and opinions are subjective and should not be taken as medical or factual advice.
-          </p>
-        </div>
       </div>
     </div>
   );
