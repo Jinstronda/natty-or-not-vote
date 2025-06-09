@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReviewPromptDialog from "@/components/ReviewPromptDialog";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
+import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 
 interface VotingSectionProps {
   influencerId: string;
@@ -24,6 +25,21 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
   const { getUserReviews } = useSupabaseReviews();
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
   const [lastVote, setLastVote] = useState<'natty' | 'juicy' | null>(null);
+  
+  // Loading watchdog protection
+  useLoadingWatchdog({
+    component: 'VotingSection',
+    isLoading: authLoading || (user && (statsLoading || voteLoading)),
+    timeout: 20000, // 20 seconds
+    onTimeout: () => {
+      console.error('[VotingSection] Loading timeout - forcing completion');
+      toast({
+        title: "Loading Timeout",
+        description: "Voting section is taking too long to load. Please refresh the page.",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Refetch data when user auth state changes
   useEffect(() => {
@@ -66,7 +82,8 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
     });
   };
 
-  if (authLoading) {
+  // Show loading while auth is loading OR if we have a user but queries are still loading
+  if (authLoading || (user && (statsLoading || voteLoading))) {
     return (
       <div className="bg-card border border-border rounded-lg p-6">
         <Skeleton className="h-8 w-48 mx-auto mb-6" />

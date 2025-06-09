@@ -3,6 +3,8 @@ import React, { createContext, useContext, ReactNode, useState, useEffect } from
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { withDatabaseTimeout, useLoadingTimeout } from '@/utils/loadingTimeout';
 
 interface User {
   id: string;
@@ -25,85 +27,172 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  
+  // Timeout protection for auth operations
+  const authTimeout = useLoadingTimeout({
+    timeout: 15000, // 15 second max for auth operations
+    operation: 'Authentication',
+    onTimeout: () => {
+      console.error('[AuthContext] Authentication timed out - forcing completion');
+      setLoading(false);
+      toast({
+        title: "Connection Timeout",
+        description: "Authentication is taking longer than expected. Please refresh the page.",
+        variant: "destructive",
+      });
+    },
+    enableLogging: true
+  });
 
   useEffect(() => {
-    // Get initial session
+    let mounted = true;
+    
+    // Start auth timeout protection
+    authTimeout.startLoading();
+
+    // Get initial session with timeout protection
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const user = await createUserFromSupabase(session.user);
-        setUser(user);
+      try {
+        console.log('[AuthContext] Initializing session...');
+        
+        const sessionResult = await withDatabaseTimeout(
+          () => supabase.auth.getSession(),
+          { timeout: 8000, operation: 'getInitialSession' }
+        );
+        
+        if (!mounted) return;
+        
+        if (sessionResult.data.session?.user) {
+          console.log('[AuthContext] Found existing session for user:', sessionResult.data.session.user.id);
+          const user = await createUserFromSupabase(sessionResult.data.session.user);
+          setUser(user);
+        } else {
+          console.log('[AuthContext] No existing session found');
+        }
+        
+        authTimeout.completeLoading();
+        setLoading(false);
+      } catch (error) {
+        console.error('[AuthContext] Error getting initial session:', error);
+        if (mounted) {
+          authTimeout.completeLoading(error instanceof Error ? error.message : 'Session initialization failed');
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Listen for auth changes with complete event coverage
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const user = await createUserFromSupabase(session.user);
-          setUser(user);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
+        if (!mounted) return;
+        
+        console.log('[AuthContext] Auth event:', event, 'User ID:', session?.user?.id);
+        
+        try {
+          if (event === 'SIGNED_IN' && session?.user) {
+            const user = await createUserFromSupabase(session.user);
+            setUser(user);
+            // Invalidate auth-dependent queries
+            queryClient.invalidateQueries({ queryKey: ['user-vote'] });
+            queryClient.invalidateQueries({ queryKey: ['vote-stats'] });
+          } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+            // Handle token refresh without expensive DB calls
+            if (!user || user.id !== session.user.id) {
+              console.log('[AuthContext] Token refreshed, updating user data');
+              const refreshedUser = await createUserFromSupabase(session.user);
+              setUser(refreshedUser);
+              queryClient.invalidateQueries({ queryKey: ['user-vote'] });
+            } else {
+              console.log('[AuthContext] Token refreshed, user data unchanged');
+            }
+          } else if (event === 'SIGNED_OUT') {
+            console.log('[AuthContext] User signed out');
+            setUser(null);
+            queryClient.clear();
+          }
+        } catch (error) {
+          console.error('[AuthContext] Error in auth state change:', error);
+          // Don't sign out on token refresh errors
+          if (event === 'SIGNED_OUT') {
+            setUser(null);
+            queryClient.clear();
+          }
         }
-        setLoading(false);
+        
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      authTimeout.cleanup();
+      subscription.unsubscribe();
+    };
+  }, [queryClient, authTimeout]);
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
-      // Try to get profile from database
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
+      // Get profile with timeout protection
+      const profileResult = await withDatabaseTimeout(
+        () => supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', supabaseUser.id)
+          .single(),
+        { timeout: 5000, operation: 'getProfile' }
+      );
 
-      if (profile && !error) {
+      if (profileResult.data && !profileResult.error) {
         return {
-          id: profile.id,
-          email: profile.email,
-          username: profile.username,
-          role: profile.role,
-          profile_picture_url: profile.profile_picture_url || undefined
+          id: profileResult.data.id,
+          email: profileResult.data.email,
+          username: profileResult.data.username,
+          role: profileResult.data.role,
+          profile_picture_url: profileResult.data.profile_picture_url || undefined
         };
       }
 
-      // If profile doesn't exist, create it
-      console.log('Profile not found, creating one...');
-      const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
-      const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
-      
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .insert({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          username: username,
-          role: isAdmin ? 'admin' : 'user'
-        })
-        .select('*')
-        .single();
+      // Only create profile if explicitly missing (not on token refresh)
+      if (profileResult.error?.code === 'PGRST116') {
+        console.log('[AuthContext] Profile not found, creating new profile for:', supabaseUser.id);
+        const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
+        const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
+        
+        const createResult = await withDatabaseTimeout(
+          () => supabase
+            .from('profiles')
+            .insert({
+              id: supabaseUser.id,
+              email: supabaseUser.email || '',
+              username: username,
+              role: isAdmin ? 'admin' : 'user'
+            })
+            .select('*')
+            .single(),
+          { timeout: 5000, operation: 'createProfile' }
+        );
 
-      if (newProfile && !createError) {
-        return {
-          id: newProfile.id,
-          email: newProfile.email,
-          username: newProfile.username,
-          role: newProfile.role,
-          profile_picture_url: newProfile.profile_picture_url || undefined
-        };
+        if (createResult.data && !createResult.error) {
+          return {
+            id: createResult.data.id,
+            email: createResult.data.email,
+            username: createResult.data.username,
+            role: createResult.data.role,
+            profile_picture_url: createResult.data.profile_picture_url || undefined
+          };
+        }
       }
     } catch (error) {
-      console.error('Error creating user profile:', error);
+      console.error('[AuthContext] Error in createUserFromSupabase:', error);
     }
 
-    // Ultimate fallback to user metadata
+    // Fallback to user metadata (crucial for token refresh scenarios)
+    console.log('[AuthContext] Using fallback user data for:', supabaseUser.id);
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',

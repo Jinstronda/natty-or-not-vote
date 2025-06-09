@@ -1,5 +1,5 @@
 
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -68,7 +68,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
     } finally {
       setLoading(false);
     }
-  };
+  }, [influencerId]);
 
   useImperativeHandle(ref, () => ({
     fetchReviews

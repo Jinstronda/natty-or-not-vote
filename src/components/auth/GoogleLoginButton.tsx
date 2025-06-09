@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useLoadingTimeout } from "@/utils/loadingTimeout";
 
 interface GoogleLoginButtonProps {
   disabled?: boolean;
@@ -10,11 +11,44 @@ interface GoogleLoginButtonProps {
 
 const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Timeout protection for Google OAuth
+  const loginTimeout = useLoadingTimeout({
+    timeout: 10000, // 10 seconds max for OAuth initiation
+    operation: 'GoogleOAuth',
+    onTimeout: () => {
+      setIsLoading(false);
+      toast({
+        title: "Login Timeout",
+        description: "Google login is taking too long. Please try again.",
+        variant: "destructive",
+      });
+    },
+    enableLogging: true
+  });
+
+  // Reset loading state if OAuth redirect completes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isLoading) {
+        // Page became visible again - likely returned from OAuth
+        console.log('[GoogleLogin] Page visible, resetting loading state');
+        setIsLoading(false);
+        loginTimeout.completeLoading();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isLoading, loginTimeout]);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    loginTimeout.startLoading();
     
     try {
+      console.log('[GoogleLogin] Initiating Google OAuth...');
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -23,20 +57,27 @@ const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
       });
 
       if (error) {
+        console.error('[GoogleLogin] OAuth error:', error);
         toast({
           title: "Google Login Error",
           description: error.message,
           variant: "destructive",
         });
         setIsLoading(false);
+        loginTimeout.completeLoading(error.message);
+      } else {
+        console.log('[GoogleLogin] OAuth initiated successfully - redirecting...');
+        // Don't reset loading here - let visibility change handler or auth context handle it
       }
     } catch (error) {
+      console.error('[GoogleLogin] Unexpected error:', error);
       toast({
         title: "Google Login Error",
         description: "Failed to initiate Google login. Please try again.",
         variant: "destructive",
       });
       setIsLoading(false);
+      loginTimeout.completeLoading(error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
