@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [initialized, setInitialized] = React.useState(false);
 
   // Simple security logging function that doesn't depend on useAuth
   const logSecurityEvent = async (eventType: string, eventDetails: any = {}) => {
@@ -38,6 +39,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   React.useEffect(() => {
+    let isMounted = true;
+
     // Get initial session
     const getSession = async () => {
       try {
@@ -50,7 +53,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Failed to get initial session:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setInitialized(true);
+          setLoading(false);
+        }
       }
     };
 
@@ -67,11 +73,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Error in auth state change:', error);
       } finally {
-        setLoading(false);
+        if (isMounted && initialized) {
+          setLoading(false);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
