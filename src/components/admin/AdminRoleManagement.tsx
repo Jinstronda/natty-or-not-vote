@@ -68,22 +68,14 @@ const AdminRoleManagement = () => {
 
       if (error) throw error;
 
-      // Log admin action using type assertion until types are updated
-      try {
-        await (supabase as any)
-          .from('security_audit_log')
-          .insert({
-            user_id: user?.id,
-            event_type: 'admin_action',
-            event_details: {
-              action: 'role_change',
-              target_user: userId,
-              new_role: newRole
-            }
-          });
-      } catch (auditError) {
-        console.log('Audit logging not available yet:', auditError);
-      }
+      // Log admin action to console for now
+      console.log('Admin Action:', {
+        action: 'role_change',
+        admin_user: user?.id,
+        target_user: userId,
+        new_role: newRole,
+        timestamp: new Date().toISOString()
+      });
 
       await fetchUsers();
       
