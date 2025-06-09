@@ -1,74 +1,80 @@
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
+import { useVotes } from "@/hooks/useVotes";
+import { useRealTime } from "@/hooks/useRealTime";
 
 interface InfluencerCardProps {
   influencer: {
     id: string;
     name: string;
     image: string;
+    claimed_status: string;
   };
 }
 
 const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
-  const { getVotePercentages } = useOptimizedVotes(influencer.id);
+  const { getVotePercentages } = useVotes(influencer.id);
+  
+  // Enable real-time updates for this influencer
+  useRealTime(influencer.id, 'card');
+  
   const { natty, juicy, total } = getVotePercentages();
 
   return (
     <Link to={`/influencer/${influencer.id}`}>
-      <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-lg group">
-        <div className="aspect-square relative overflow-hidden">
-          <img 
-            src={influencer.image || "/placeholder.svg"} 
+      <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+        <div className="aspect-square overflow-hidden">
+          <img
+            src={influencer.image || '/placeholder.svg'}
             alt={influencer.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
-          
-          {/* Percentage Overlay */}
-          {total > 0 && (
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-2xl font-bold mb-1">
-                  <span className="text-natty">{natty}%</span>
-                  <span className="text-muted-foreground mx-2">vs</span>
-                  <span className="text-juicy">{juicy}%</span>
-                </div>
-                <div className="text-xs opacity-90">{total} votes</div>
-              </div>
-            </div>
-          )}
         </div>
         
-        <div className="p-4">
-          <h3 className="font-heading font-semibold text-sm mb-3 truncate text-center">
+        <CardContent className="p-4">
+          <h3 className="font-semibold text-lg mb-2 text-center group-hover:text-primary transition-colors">
             {influencer.name}
           </h3>
           
+          {influencer.claimed_status && (
+            <div className="flex justify-center mb-3">
+              <Badge variant="outline" className="text-xs">
+                Claims: {influencer.claimed_status}
+              </Badge>
+            </div>
+          )}
+          
           {total > 0 ? (
             <div className="space-y-2">
-              {/* Visual percentage bar */}
-              <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-natty to-natty/80 transition-all duration-500"
-                  style={{ width: `${natty}%` }}
+              <div className="flex justify-between text-sm">
+                <span className="text-natty font-medium">🏆 {natty}%</span>
+                <span className="text-juicy font-medium">💉 {juicy}%</span>
+              </div>
+              
+              <div className="relative">
+                <Progress 
+                  value={natty} 
+                  className="h-2"
                 />
               </div>
               
-              {/* Percentage text */}
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-natty font-bold">{natty}%</span>
-                <span className="text-juicy font-bold">{juicy}%</span>
+              <div className="text-center text-xs text-muted-foreground">
+                {total.toLocaleString()} votes
               </div>
             </div>
           ) : (
-            <div className="text-center">
-              <div className="text-xs text-muted-foreground bg-secondary/50 rounded-full py-2 px-3">
-                No votes yet
-              </div>
+            <div className="text-center py-2">
+              <span className="text-sm text-muted-foreground">No votes yet</span>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 };

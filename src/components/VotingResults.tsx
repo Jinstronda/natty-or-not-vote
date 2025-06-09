@@ -2,20 +2,20 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { useOptimizedVotes } from "@/hooks/useOptimizedVotes";
+import { useVotes } from "@/hooks/useVotes";
 import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
-import { useRealTimeVotes } from "@/hooks/useRealTimeVotes";
+import { useRealTime } from "@/hooks/useRealTime";
 
 interface VotingResultsProps {
   influencerId: string;
 }
 
 const VotingResults = ({ influencerId }: VotingResultsProps) => {
-  const { getVotePercentages, isLoading } = useOptimizedVotes(influencerId);
+  const { getVotePercentages, isLoading } = useVotes(influencerId);
   const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
   
-  // Enable real-time updates with unique channel suffix
-  useRealTimeVotes(influencerId, 'results');
+  // Enable real-time updates
+  useRealTime(influencerId, 'results');
   
   const communityResults = getVotePercentages();
   const expertReviews = getInfluencerExpertReviews(influencerId);

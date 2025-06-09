@@ -10,12 +10,26 @@ import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
 import { useInfluencers } from "@/hooks/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Influencer } from "@/types/vote";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { useInfluencer } = useInfluencers();
-  const { data: influencer, isLoading, error } = useInfluencer(id!);
+  const { data: influencerData, isLoading, error } = useInfluencer(id!);
+  
+  // Transform the data to match the Influencer type
+  const influencer: Influencer | null = influencerData ? {
+    id: influencerData.id,
+    name: influencerData.name,
+    image: influencerData.image || '/placeholder.svg',
+    height: influencerData.height || '',
+    weight: influencerData.weight || '',
+    yearsTraining: influencerData.years_training || '',
+    claimedStatus: influencerData.claimed_status || '',
+    description: influencerData.description || '',
+    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
+  } : null;
   
   if (isLoading) {
     return (
