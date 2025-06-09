@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,14 @@ const Login = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { login, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('User already logged in, redirecting to home');
+      navigate("/", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   // Show loading while auth is initializing
   if (loading) {
@@ -33,15 +41,18 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      console.log('Login form submitted for:', email);
       const success = await login(email, password);
       
       if (success) {
+        console.log('Login successful, showing success toast');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/", { replace: true });
+        // Navigation will happen automatically via the useEffect above
       } else {
+        console.log('Login failed, showing error toast');
         toast({
           title: "Login failed",
           description: "Invalid email or password.",
@@ -49,6 +60,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Login form error:', error);
       toast({
         title: "Login failed",
         description: "An unexpected error occurred.",
@@ -63,7 +75,7 @@ const Login = () => {
     setIsGoogleLoading(true);
     
     try {
-      // Use the current domain for redirect
+      console.log('Initiating Google login...');
       const redirectTo = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signInWithOAuth({
@@ -74,13 +86,17 @@ const Login = () => {
       });
 
       if (error) {
+        console.error('Google login error:', error);
         toast({
           title: "Google Login Error",
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        console.log('Google login initiated successfully');
       }
     } catch (error) {
+      console.error('Google login exception:', error);
       toast({
         title: "Google Login Error",
         description: "Failed to initiate Google login. Please try again.",
@@ -97,11 +113,6 @@ const Login = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-heading">Login</CardTitle>
           <p className="text-muted-foreground">Welcome back to Natty or Juicy</p>
-          {user && (
-            <p className="text-sm text-muted-foreground">
-              Already logged in as {user.username}
-            </p>
-          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,6 +123,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -121,9 +133,10 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
@@ -143,7 +156,7 @@ const Login = () => {
               variant="outline" 
               className="w-full mt-4" 
               onClick={handleGoogleLogin}
-              disabled={isGoogleLoading}
+              disabled={isGoogleLoading || isLoading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
