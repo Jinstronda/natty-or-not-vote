@@ -10,21 +10,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const { fetchUserProfile } = useUserProfile();
 
   // Stable user update function to prevent unnecessary re-renders
   const updateUser = useCallback((newUser: User | null) => {
-    setUser(currentUser => {
-      if (!newUser && !currentUser) return null;
-      if (newUser && currentUser && newUser.id === currentUser.id) {
-        // Only update if there are actual changes
-        if (JSON.stringify(newUser) === JSON.stringify(currentUser)) {
-          return currentUser;
-        }
-      }
-      return newUser;
-    });
+    console.log('AuthContext: Updating user:', newUser?.username || 'null');
+    setUser(newUser);
   }, []);
 
   useEffect(() => {
@@ -34,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log('AuthContext: Initializing auth...');
         
+        // First, get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -61,14 +53,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             updateUser(null);
           }
           setLoading(false);
-          setInitialized(true);
         }
       } catch (error) {
         console.error('AuthContext: Auth initialization error:', error);
         if (mounted) {
           updateUser(null);
           setLoading(false);
-          setInitialized(true);
         }
       }
     };
@@ -99,17 +89,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log('AuthContext: User signed out or no session');
           updateUser(null);
         }
-        // Remove TOKEN_REFRESHED handling to prevent unnecessary updates
         
-        if (mounted && !initialized) {
-          setLoading(false);
-          setInitialized(true);
-        }
+        // Always update loading state after auth events
+        setLoading(false);
       } catch (error) {
         console.error('AuthContext: Error in auth state change:', error);
         if (event === 'SIGNED_OUT' || !session) {
           updateUser(null);
         }
+        setLoading(false);
       }
     });
 
@@ -121,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, updateUser, initialized]);
+  }, [fetchUserProfile, updateUser]);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
@@ -164,10 +152,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     logout,
     signup,
-    loading: loading || !initialized
-  }), [user, login, logout, signup, loading, initialized]);
+    loading
+  }), [user, login, logout, signup, loading]);
 
-  console.log('AuthContext: Render - user exists:', !!user, 'loading:', loading, 'initialized:', initialized);
+  console.log('AuthContext: Render - user exists:', !!user, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={contextValue}>
