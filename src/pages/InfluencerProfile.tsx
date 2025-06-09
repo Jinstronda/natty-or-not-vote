@@ -23,10 +23,10 @@ const InfluencerProfile = () => {
     image: influencerData.image || '/placeholder.svg',
     height: influencerData.height || '',
     weight: influencerData.weight || '',
-    yearsTraining: influencerData.years_training || '',
-    claimedStatus: influencerData.claimed_status || '',
+    years_training: influencerData.years_training || '',
+    claimed_status: influencerData.claimed_status || '',
     description: influencerData.description || '',
-    socialLinks: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
+    social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
   } : null;
   
   if (isLoading) {
