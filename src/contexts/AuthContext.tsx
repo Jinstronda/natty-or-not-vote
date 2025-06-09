@@ -21,8 +21,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = React.useState<User | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   // Simple logging function that doesn't depend on useAuth
   const logSecurityEvent = (eventType: string, eventDetails: any = {}) => {
@@ -42,63 +43,81 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (profile && !error) {
-        setUser({
+        const userData = {
           id: profile.id,
           username: profile.username,
           email: profile.email,
           role: profile.role as 'user' | 'admin'
-        });
+        };
+        setUser(userData);
+        return userData;
       } else {
         // If no profile exists, create a basic user object
-        setUser({
+        const userData = {
           id: supabaseUser.id,
           username: supabaseUser.email?.split('@')[0] || 'user',
           email: supabaseUser.email || '',
-          role: 'user'
-        });
+          role: 'user' as const
+        };
+        setUser(userData);
+        return userData;
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       // Still set a basic user object even if profile fetch fails
-      setUser({
+      const userData = {
         id: supabaseUser.id,
         username: supabaseUser.email?.split('@')[0] || 'user',
         email: supabaseUser.email || '',
-        role: 'user'
-      });
+        role: 'user' as const
+      };
+      setUser(userData);
+      return userData;
     }
   }, []);
 
-  React.useEffect(() => {
-    let isMounted = true;
+  useEffect(() => {
+    let mounted = true;
 
-    // Get initial session first
-    const initializeAuth = async () => {
+    const initAuth = async () => {
       try {
+        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
-          console.error('Error getting session:', error);
-        } else if (session?.user && isMounted) {
-          await fetchUserProfile(session.user);
+          console.error('Session error:', error);
+        }
+
+        if (mounted) {
+          if (session?.user) {
+            await fetchUserProfile(session.user);
+          } else {
+            setUser(null);
+          }
+          setLoading(false);
+          setInitialized(true);
         }
       } catch (error) {
-        console.error('Failed to get initial session:', error);
-      } finally {
-        if (isMounted) {
+        console.error('Auth initialization error:', error);
+        if (mounted) {
+          setUser(null);
           setLoading(false);
+          setInitialized(true);
         }
       }
     };
 
-    // Initialize auth first
-    initializeAuth();
+    // Only initialize once
+    if (!initialized) {
+      initAuth();
+    }
 
-    // Listen for auth changes
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
-      
       console.log('Auth state change:', event, !!session);
       
+      if (!mounted) return;
+
       try {
         if (session?.user) {
           await fetchUserProfile(session.user);
@@ -108,18 +127,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Error in auth state change:', error);
         setUser(null);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      }
+      
+      // Only set loading to false after we've processed the auth change
+      if (mounted && initialized) {
+        setLoading(false);
       }
     });
 
     return () => {
-      isMounted = false;
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile]);
+  }, [fetchUserProfile, initialized]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
