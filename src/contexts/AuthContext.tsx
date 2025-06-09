@@ -5,6 +5,7 @@ interface User {
   id: string;
   username: string;
   email: string;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -16,10 +17,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo
+// Mock users for demo - including an admin user
 const mockUsers: User[] = [
-  { id: '1', username: 'FitnessEnthusiast23', email: 'fitness@example.com' },
-  { id: '2', username: 'SkepticalLifter', email: 'skeptical@example.com' },
+  { id: '1', username: 'FitnessEnthusiast23', email: 'fitness@example.com', role: 'user' },
+  { id: '2', username: 'SkepticalLifter', email: 'skeptical@example.com', role: 'user' },
+  { id: 'admin', username: 'AdminUser', email: 'admin@nattyornot.com', role: 'admin' },
 ];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -44,7 +46,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const newUser: User = {
       id: String(mockUsers.length + 1),
       username,
-      email
+      email,
+      role: 'user'
     };
     mockUsers.push(newUser);
     setUser(newUser);
