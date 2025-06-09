@@ -7,6 +7,12 @@ import { Check, X, UserPlus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface SocialLinks {
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
+}
+
 const SuggestionManagement = () => {
   const queryClient = useQueryClient();
 
@@ -16,7 +22,7 @@ const SuggestionManagement = () => {
       const { data, error } = await supabase
         .from('influencer_suggestions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('timestamp', { ascending: false }); // Fixed: use timestamp
       
       if (error) throw error;
       return data || [];
@@ -106,65 +112,70 @@ const SuggestionManagement = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {suggestions.map((suggestion) => (
-            <div key={suggestion.id} className="flex items-start justify-between p-4 border rounded-lg">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium">{suggestion.influencer_name}</span>
-                  <Badge variant={
-                    suggestion.status === 'pending' ? 'default' :
-                    suggestion.status === 'approved' ? 'default' : 'destructive'
-                  }>
-                    {suggestion.status}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Suggested by user on {new Date(suggestion.created_at).toLocaleDateString()}
-                </p>
-                {suggestion.image_url && (
-                  <div className="mb-2">
-                    <img src={suggestion.image_url} alt={suggestion.influencer_name} className="w-16 h-16 object-cover rounded" />
+          {suggestions.map((suggestion) => {
+            // Type assertion for social_links with proper handling
+            const socialLinks = suggestion.social_links as SocialLinks | null;
+            
+            return (
+              <div key={suggestion.id} className="flex items-start justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium">{suggestion.influencer_name}</span>
+                    <Badge variant={
+                      suggestion.status === 'pending' ? 'default' :
+                      suggestion.status === 'approved' ? 'default' : 'destructive'
+                    }>
+                      {suggestion.status}
+                    </Badge>
                   </div>
-                )}
-                {suggestion.social_links && Object.keys(suggestion.social_links).length > 0 && (
-                  <div className="text-sm">
-                    <strong>Social Links:</strong>
-                    <ul className="list-disc list-inside ml-4">
-                      {suggestion.social_links.instagram && (
-                        <li>Instagram: {suggestion.social_links.instagram}</li>
-                      )}
-                      {suggestion.social_links.youtube && (
-                        <li>YouTube: {suggestion.social_links.youtube}</li>
-                      )}
-                      {suggestion.social_links.tiktok && (
-                        <li>TikTok: {suggestion.social_links.tiktok}</li>
-                      )}
-                    </ul>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Suggested by user on {new Date(suggestion.timestamp).toLocaleDateString()} {/* Fixed: use timestamp */}
+                  </p>
+                  {suggestion.image_url && (
+                    <div className="mb-2">
+                      <img src={suggestion.image_url} alt={suggestion.influencer_name} className="w-16 h-16 object-cover rounded" />
+                    </div>
+                  )}
+                  {socialLinks && Object.keys(socialLinks).length > 0 && (
+                    <div className="text-sm">
+                      <strong>Social Links:</strong>
+                      <ul className="list-disc list-inside ml-4">
+                        {socialLinks.instagram && (
+                          <li>Instagram: {socialLinks.instagram}</li> {/* Fixed: proper type casting */}
+                        )}
+                        {socialLinks.youtube && (
+                          <li>YouTube: {socialLinks.youtube}</li> {/* Fixed: proper type casting */}
+                        )}
+                        {socialLinks.tiktok && (
+                          <li>TikTok: {socialLinks.tiktok}</li> {/* Fixed: proper type casting */}
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                {suggestion.status === 'pending' && (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => handleSuggestionAction(suggestion.id, 'approved')}
+                      disabled={updateSuggestionMutation.isPending || addInfluencerMutation.isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => handleSuggestionAction(suggestion.id, 'rejected')}
+                      disabled={updateSuggestionMutation.isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
               </div>
-              {suggestion.status === 'pending' && (
-                <div className="flex gap-2">
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={() => handleSuggestionAction(suggestion.id, 'approved')}
-                    disabled={updateSuggestionMutation.isPending || addInfluencerMutation.isPending}
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => handleSuggestionAction(suggestion.id, 'rejected')}
-                    disabled={updateSuggestionMutation.isPending}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
           
           {suggestions.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">

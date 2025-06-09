@@ -50,7 +50,7 @@ const SuggestInfluencer = () => {
         .from('influencer_suggestions')
         .insert({
           influencer_name: formData.name,
-          submitter_id: user.id,
+          submitted_by: user.id, // Fixed: use submitted_by instead of submitter_id
           image_url: formData.imageUrl,
           social_links: socialLinks
         });

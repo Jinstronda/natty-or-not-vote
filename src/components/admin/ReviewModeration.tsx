@@ -16,7 +16,7 @@ const ReviewModeration = () => {
       const { data, error } = await supabase
         .from('reviews')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('timestamp', { ascending: false }); // Fixed: use timestamp instead of created_at
       
       if (error) throw error;
       return data || [];
@@ -74,7 +74,7 @@ const ReviewModeration = () => {
                     {review.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(review.created_at).toLocaleDateString()}
+                    {new Date(review.timestamp).toLocaleDateString()} {/* Fixed: use timestamp */}
                   </span>
                 </div>
                 <p className="text-muted-foreground">{review.content}</p>

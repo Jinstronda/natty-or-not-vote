@@ -108,7 +108,7 @@ const UserProfile = () => {
                         <span className="text-sm text-muted-foreground">on Influencer</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {new Date(review.created_at).toLocaleDateString()}
+                        {new Date(review.timestamp).toLocaleDateString()} {/* Fixed: use timestamp */}
                       </span>
                     </div>
                     <p className="text-muted-foreground mb-3">{review.content}</p>
