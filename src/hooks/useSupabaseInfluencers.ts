@@ -29,7 +29,7 @@ export const useSupabaseInfluencers = () => {
         yearsTraining: inf.years_training || '',
         claimedStatus: inf.claimed_status || '',
         description: inf.description || '',
-        socialLinks: inf.social_links || {}
+        socialLinks: (inf.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
       })) || [];
 
       setInfluencers(formattedInfluencers);

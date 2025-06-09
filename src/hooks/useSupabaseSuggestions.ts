@@ -29,7 +29,7 @@ export const useSupabaseSuggestions = () => {
         submittedBy: suggestion.submitted_by,
         submitterUsername: suggestion.profiles.username,
         influencerName: suggestion.influencer_name,
-        socialLinks: suggestion.social_links || {},
+        socialLinks: (suggestion.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {},
         timestamp: suggestion.timestamp,
         status: suggestion.status as 'pending' | 'approved' | 'rejected'
       })) || [];
