@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useVoteStore } from "@/stores/VoteStore";
 import { ThumbsUp, MessageSquare } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock user data - in real app this would come from API
 const userData = {
@@ -14,10 +15,38 @@ const userData = {
 
 const UserProfile = () => {
   const { id } = useParams();
-  const { getUserHistory, getInfluencerVotes } = useVoteStore();
+  
+  const { data: userVotes = [] } = useQuery({
+    queryKey: ['user-votes', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('user_id', id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id
+  });
+
+  const { data: userReviews = [] } = useQuery({
+    queryKey: ['user-reviews', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('user_id', id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id
+  });
   
   const user = userData[id as keyof typeof userData];
-  const history = getUserHistory(id!);
   
   if (!user) {
     return <div>User not found</div>;
@@ -38,19 +67,19 @@ const UserProfile = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{user.totalVotes}</div>
+                  <div className="text-2xl font-bold">{userVotes.length}</div>
                   <div className="text-sm text-muted-foreground">Total Votes</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{user.totalReviews}</div>
+                  <div className="text-2xl font-bold">{userReviews.length}</div>
                   <div className="text-sm text-muted-foreground">Reviews Written</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-natty">{history.votes.filter(v => v.vote === 'natty').length}</div>
+                  <div className="text-2xl font-bold text-natty">{userVotes.filter(v => v.vote === 'natty').length}</div>
                   <div className="text-sm text-muted-foreground">Natty Votes</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-juicy">{history.votes.filter(v => v.vote === 'juicy').length}</div>
+                  <div className="text-2xl font-bold text-juicy">{userVotes.filter(v => v.vote === 'juicy').length}</div>
                   <div className="text-sm text-muted-foreground">Juicy Votes</div>
                 </div>
               </div>
@@ -66,24 +95,26 @@ const UserProfile = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {history.reviews.length === 0 ? (
+              {userReviews.length === 0 ? (
                 <p className="text-muted-foreground">No reviews yet.</p>
               ) : (
-                history.reviews.map((review) => (
+                userReviews.map((review) => (
                   <div key={review.id} className="border border-border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Badge className={review.vote === 'natty' ? 'bg-natty' : 'bg-juicy'}>
                           {review.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
                         </Badge>
-                        <span className="text-sm text-muted-foreground">on David Laid</span>
+                        <span className="text-sm text-muted-foreground">on Influencer</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">{review.timestamp}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                     <p className="text-muted-foreground mb-3">{review.content}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <ThumbsUp className="h-4 w-4" />
-                      <span>{review.likes}</span>
+                      <span>{review.likes || 0}</span>
                     </div>
                   </div>
                 ))
