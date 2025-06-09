@@ -16,15 +16,17 @@ const Login = () => {
   const { login, user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in (but wait for auth to finish loading)
+  // Handle redirect for already logged in users
   useEffect(() => {
+    // Wait for auth to finish loading before redirecting
     if (!loading && user) {
-      navigate("/");
+      console.log('User is logged in, redirecting to home');
+      navigate("/", { replace: true });
     }
   }, [user, loading, navigate]);
 
-  // Don't render if still loading auth or if user is already logged in
-  if (loading || user) {
+  // Show loading while auth is initializing
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -33,6 +35,11 @@ const Login = () => {
         </div>
       </div>
     );
+  }
+
+  // Don't render login form if user is already logged in
+  if (user) {
+    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +54,7 @@ const Login = () => {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/");
+        // Navigation will be handled by the useEffect above
       } else {
         toast({
           title: "Login failed",
