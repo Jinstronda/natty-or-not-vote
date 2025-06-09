@@ -3,13 +3,13 @@ import { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
-import { useOptimizedInfluencers } from "@/hooks/useOptimizedInfluencers";
+import { useInfluencers } from "@/hooks/useInfluencers";
 
-interface OptimizedInfluencerGridProps {
+interface InfluencerGridProps {
   searchTerm?: string;
 }
 
-const OptimizedInfluencerGrid = ({ searchTerm }: OptimizedInfluencerGridProps) => {
+const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const {
     influencers,
     fetchNextPage,
@@ -17,11 +17,10 @@ const OptimizedInfluencerGrid = ({ searchTerm }: OptimizedInfluencerGridProps) =
     isFetchingNextPage,
     isLoading,
     error
-  } = useOptimizedInfluencers(searchTerm);
+  } = useInfluencers(searchTerm);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -39,7 +38,6 @@ const OptimizedInfluencerGrid = ({ searchTerm }: OptimizedInfluencerGridProps) =
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // Add error handling
   if (error) {
     console.error('Error loading influencers:', error);
     return (
@@ -88,7 +86,6 @@ const OptimizedInfluencerGrid = ({ searchTerm }: OptimizedInfluencerGridProps) =
         ))}
       </div>
 
-      {/* Infinite scroll trigger */}
       <div ref={loadMoreRef} className="flex justify-center">
         {isFetchingNextPage && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
@@ -122,4 +119,4 @@ const OptimizedInfluencerGrid = ({ searchTerm }: OptimizedInfluencerGridProps) =
   );
 };
 
-export default OptimizedInfluencerGrid;
+export default InfluencerGrid;
