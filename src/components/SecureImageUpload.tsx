@@ -60,7 +60,7 @@ const SecureImageUpload = ({
     if (!user) return false;
 
     try {
-      // Simple manual check for now
+      // Simple manual check for now - list recent uploads
       const { data: uploads } = await supabase.storage
         .from('influencer-images')
         .list('uploads', {
