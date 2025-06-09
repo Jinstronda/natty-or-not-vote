@@ -19,7 +19,7 @@ export const useSupabaseReviews = () => {
         .from('reviews')
         .select(`
           *,
-          profiles!inner(username)
+          profiles!inner(username, profile_picture_url)
         `);
 
       if (error) throw error;
@@ -28,6 +28,7 @@ export const useSupabaseReviews = () => {
         id: review.id,
         userId: review.user_id,
         username: review.profiles.username,
+        profilePicture: review.profiles.profile_picture_url,
         influencerId: review.influencer_id,
         vote: review.vote as 'natty' | 'juicy',
         content: review.content,

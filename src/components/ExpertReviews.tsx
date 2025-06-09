@@ -1,10 +1,15 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, ExternalLink, ThumbsUp } from "lucide-react";
+import { Star, ExternalLink, ThumbsUp, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ExpertReviewForm from "@/components/ExpertReviewForm";
+import EditExpertReviewDialog from "@/components/EditExpertReviewDialog";
 import { useSupabaseExpertReviews } from '@/hooks/useSupabaseExpertReviews';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ExpertReview } from "@/types/vote";
 
 interface ExpertReviewsProps {
   influencerId: string;
@@ -12,8 +17,35 @@ interface ExpertReviewsProps {
 
 const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
   const { user } = useAuth();
-  const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
+  const { getInfluencerExpertReviews, refetch } = useSupabaseExpertReviews();
   const expertReviews = getInfluencerExpertReviews(influencerId);
+  const [editingReview, setEditingReview] = useState<ExpertReview | null>(null);
+
+  const handleDeleteExpertReview = async (reviewId: string) => {
+    if (user?.role !== 'admin') return;
+
+    try {
+      const { error } = await supabase
+        .from('expert_reviews')
+        .delete()
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Expert review deleted",
+        description: "The expert review has been successfully deleted.",
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to delete expert review. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card>
@@ -56,14 +88,36 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                 <ThumbsUp className="h-4 w-4" />
                 <span>{review.likes}</span>
               </div>
-              {review.link_url && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    Read Full Review
-                  </a>
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {review.link_url && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      Read Full Review
+                    </a>
+                  </Button>
+                )}
+                {user?.role === 'admin' && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingReview(review)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteExpertReview(review.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -72,6 +126,15 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
           <p className="text-center text-muted-foreground py-4">
             No expert reviews yet.
           </p>
+        )}
+
+        {editingReview && (
+          <EditExpertReviewDialog
+            isOpen={!!editingReview}
+            onClose={() => setEditingReview(null)}
+            review={editingReview}
+            onSuccess={refetch}
+          />
         )}
       </CardContent>
     </Card>

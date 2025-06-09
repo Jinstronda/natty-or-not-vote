@@ -7,7 +7,9 @@ import { useUserVote } from "@/hooks/api/useUserVote";
 import { useVoting } from "@/hooks/api/useVoting";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import ReviewPromptDialog from "@/components/ReviewPromptDialog";
+import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 
 interface VotingSectionProps {
   influencerId: string;
@@ -18,6 +20,9 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
   const { data: voteStats, isLoading: statsLoading, refetch: refetchStats } = useVoteStats(influencerId);
   const { data: userVote, isLoading: voteLoading, refetch: refetchUserVote } = useUserVote(influencerId);
   const { mutate: castVote, isPending: isVoting } = useVoting(influencerId);
+  const { getUserReviews } = useSupabaseReviews();
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false);
+  const [lastVote, setLastVote] = useState<'natty' | 'juicy' | null>(null);
 
   // Refetch data when user auth state changes
   useEffect(() => {
@@ -37,8 +42,27 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
       return;
     }
 
+    // Check if user already has a review for this influencer
+    const userReviews = getUserReviews(user.id);
+    const hasReviewForInfluencer = userReviews.some(review => review.influencerId === influencerId);
+
     console.log('Casting vote:', vote, 'for influencer:', influencerId);
-    castVote(vote);
+    
+    // Set the last vote for the review prompt
+    setLastVote(vote);
+    
+    // Cast the vote with success callback
+    castVote(vote, {
+      onSuccess: () => {
+        // Only show review prompt if user doesn't already have a review for this influencer
+        if (!hasReviewForInfluencer) {
+          // Small delay to let the vote register
+          setTimeout(() => {
+            setShowReviewPrompt(true);
+          }, 500);
+        }
+      }
+    });
   };
 
   if (authLoading) {
@@ -160,6 +184,13 @@ const VotingSection = ({ influencerId }: VotingSectionProps) => {
           Be the first to vote!
         </div>
       )}
+
+      <ReviewPromptDialog
+        isOpen={showReviewPrompt}
+        onClose={() => setShowReviewPrompt(false)}
+        influencerId={influencerId}
+        vote={lastVote || 'natty'}
+      />
     </div>
   );
 };
