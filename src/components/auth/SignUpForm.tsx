@@ -16,31 +16,31 @@ const SignUpForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!username || !email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      console.log('Signup form submitted for:', email);
+      await signup(username, email, password);
       
-      const success = await signup(username, email, password);
-
-      if (success) {
-        toast({
-          title: "Account created!",
-          description: "Welcome to Natty or Juicy!",
-        });
-        navigate("/");
-      } else {
-        toast({
-          title: "Signup failed",
-          description: "Unable to create account. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Signup exception:', error);
+      toast({
+        title: "Account created!",
+        description: "Welcome to Natty or Juicy!",
+      });
+      
+      navigate("/");
+    } catch (error: any) {
       toast({
         title: "Signup failed",
-        description: "An unexpected error occurred.",
+        description: error?.message || "Unable to create account. Please try again.",
         variant: "destructive",
       });
     } finally {

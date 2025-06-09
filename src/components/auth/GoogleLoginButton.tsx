@@ -9,39 +9,34 @@ interface GoogleLoginButtonProps {
 }
 
 const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
+    setIsLoading(true);
     
     try {
-      console.log('🔄 GoogleLogin: Initiating Google OAuth...');
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/`
         }
       });
 
       if (error) {
-        console.error('❌ GoogleLogin: OAuth error:', error);
         toast({
           title: "Google Login Error",
           description: error.message,
           variant: "destructive",
         });
-        setIsGoogleLoading(false);
+        setIsLoading(false);
       }
-      // Don't set loading to false here if successful - the redirect will handle it
     } catch (error) {
-      console.error('❌ GoogleLogin: Exception:', error);
       toast({
         title: "Google Login Error",
         description: "Failed to initiate Google login. Please try again.",
         variant: "destructive",
       });
-      setIsGoogleLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -61,7 +56,7 @@ const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
         variant="outline" 
         className="w-full mt-4" 
         onClick={handleGoogleLogin}
-        disabled={isGoogleLoading || disabled}
+        disabled={isLoading || disabled}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
           <path
@@ -81,7 +76,7 @@ const GoogleLoginButton = ({ disabled = false }: GoogleLoginButtonProps) => {
             fill="#EA4335"
           />
         </svg>
-        {isGoogleLoading ? "Connecting..." : "Continue with Google"}
+        {isLoading ? "Connecting..." : "Continue with Google"}
       </Button>
     </>
   );
