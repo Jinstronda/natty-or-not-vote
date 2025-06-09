@@ -11,7 +11,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
-  const [initialized, setInitialized] = useState(false);
   const { fetchUserProfile } = useUserProfile();
 
   const updateUser = useCallback(async (newSession: Session | null) => {
@@ -49,7 +48,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener first
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthContext: Starting initialization...');
+        
+        // Get initial session first
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('AuthContext: Session fetch error:', error);
+        }
+
+        if (mounted) {
+          if (initialSession) {
+            console.log('AuthContext: Found existing session');
+            await updateUser(initialSession);
+          } else {
+            console.log('AuthContext: No existing session');
+            setUser(null);
+            setSession(null);
+          }
+          
+          console.log('AuthContext: Initialization complete, setting loading to false');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('AuthContext: Initialization error:', error);
+        if (mounted) {
+          setUser(null);
+          setSession(null);
+          setLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state changed:', event, 'Has session:', !!session);
       
@@ -68,58 +101,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           await updateUser(session);
         }
         
-        // Mark as initialized and stop loading after any auth state change
-        if (!initialized) {
-          setInitialized(true);
-          setLoading(false);
-          console.log('AuthContext: Initialization complete via auth state change');
-        }
+        // Ensure loading is false after any auth state change
+        setLoading(false);
       } catch (error) {
         console.error('AuthContext: Auth state change error:', error);
-        if (!initialized) {
-          setInitialized(true);
-          setLoading(false);
-        }
+        setLoading(false);
       }
     });
 
-    // Then get initial session
-    const initializeAuth = async () => {
-      if (initialized) return;
-      
-      try {
-        console.log('AuthContext: Initializing authentication...');
-        
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('AuthContext: Session fetch error:', error);
-        }
-
-        if (mounted && !initialized) {
-          if (initialSession) {
-            console.log('AuthContext: Found existing session');
-            await updateUser(initialSession);
-          } else {
-            console.log('AuthContext: No existing session');
-            setUser(null);
-            setSession(null);
-          }
-          console.log('AuthContext: Initialization complete, setting loading to false');
-          setInitialized(true);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('AuthContext: Initialization error:', error);
-        if (mounted && !initialized) {
-          setUser(null);
-          setSession(null);
-          setInitialized(true);
-          setLoading(false);
-        }
-      }
-    };
-
+    // Initialize after setting up the listener
     initializeAuth();
 
     return () => {
@@ -127,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [updateUser, initialized]);
+  }, [updateUser]);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
@@ -206,7 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading
   }), [user, login, logout, signup, loading]);
 
-  console.log('AuthContext: Rendering - user:', !!user, 'loading:', loading, 'initialized:', initialized);
+  console.log('AuthContext: Rendering - user:', !!user, 'loading:', loading);
 
   return (
     <AuthContext.Provider value={contextValue}>
