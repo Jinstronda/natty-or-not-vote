@@ -15,8 +15,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    const initAuth = async () => {
+    const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
+        
         // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -24,11 +26,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error('Session error:', error);
         }
 
+        console.log('Current session:', !!session);
+
         if (mounted) {
           if (session?.user) {
-            const userData = await fetchUserProfile(session.user);
-            setUser(userData);
+            console.log('User found in session, fetching profile...');
+            try {
+              const userData = await fetchUserProfile(session.user);
+              console.log('User profile fetched:', userData);
+              setUser(userData);
+            } catch (profileError) {
+              console.error('Profile fetch error:', profileError);
+              // Still set basic user data even if profile fetch fails
+              setUser({
+                id: session.user.id,
+                username: session.user.email?.split('@')[0] || 'user',
+                email: session.user.email || '',
+                role: 'user'
+              });
+            }
           } else {
+            console.log('No user session found');
             setUser(null);
           }
           setLoading(false);
@@ -42,24 +60,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    initAuth();
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, !!session);
+      console.log('Auth state change:', event, !!session?.user);
       
       if (!mounted) return;
 
       try {
-        if (session?.user) {
-          const userData = await fetchUserProfile(session.user);
-          setUser(userData);
-        } else {
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, fetching profile...');
+          try {
+            const userData = await fetchUserProfile(session.user);
+            console.log('Profile fetched after sign in:', userData);
+            setUser(userData);
+          } catch (profileError) {
+            console.error('Profile fetch error after sign in:', profileError);
+            // Still set basic user data even if profile fetch fails
+            setUser({
+              id: session.user.id,
+              username: session.user.email?.split('@')[0] || 'user',
+              email: session.user.email || '',
+              role: 'user'
+            });
+          }
+        } else if (event === 'SIGNED_OUT' || !session) {
+          console.log('User signed out or no session');
           setUser(null);
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          console.log('Token refreshed, updating user data');
+          // Don't refetch profile on token refresh, just ensure user is still set
+          if (!user && session.user) {
+            try {
+              const userData = await fetchUserProfile(session.user);
+              setUser(userData);
+            } catch (profileError) {
+              console.error('Profile fetch error on token refresh:', profileError);
+            }
+          }
         }
       } catch (error) {
         console.error('Error in auth state change:', error);
-        setUser(null);
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null);
+        }
       }
       
       if (mounted) {
@@ -67,36 +110,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Add beforeunload event listener to logout when closing browser/tab
-    const handleBeforeUnload = () => {
-      supabase.auth.signOut();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Initialize auth
+    initializeAuth();
 
     return () => {
+      console.log('Cleaning up auth context');
       mounted = false;
       subscription.unsubscribe();
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [fetchUserProfile]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const success = await loginWithEmail(email, password);
-    return success;
+    try {
+      console.log('Attempting login for:', email);
+      const success = await loginWithEmail(email, password);
+      console.log('Login result:', success);
+      return success;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
 
   const logout = async () => {
-    await signOut();
-    setUser(null);
+    try {
+      console.log('Logging out...');
+      await signOut();
+      setUser(null);
+      console.log('Logout complete');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const signup = async (username: string, email: string, password: string): Promise<boolean> => {
-    return await signupWithEmail(username, email, password);
+    try {
+      console.log('Attempting signup for:', email);
+      const success = await signupWithEmail(username, email, password);
+      console.log('Signup result:', success);
+      return success;
+    } catch (error) {
+      console.error('Signup error:', error);
+      return false;
+    }
   };
 
+  const contextValue = {
+    user,
+    login,
+    logout,
+    signup,
+    loading
+  };
+
+  console.log('AuthContext render - user:', !!user, 'loading:', loading);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, loading }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
