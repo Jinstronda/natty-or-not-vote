@@ -3,13 +3,17 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useMemo } from 'react';
 
 export const useVotes = (influencerId?: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Stable user ID to prevent query key changes
+  const userId = useMemo(() => user?.id, [user?.id]);
+
   // Get vote statistics
-  const { data: voteStats, isLoading: statsLoading } = useQuery({
+  const { data: voteStats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ['vote-stats', influencerId],
     queryFn: async () => {
       if (!influencerId) return null;
@@ -56,19 +60,19 @@ export const useVotes = (influencerId?: string) => {
     retry: 1,
   });
 
-  // Get user's vote
+  // Get user's vote - use stable userId
   const { data: userVote, isLoading: userVoteLoading } = useQuery({
-    queryKey: ['user-vote', influencerId, user?.id],
+    queryKey: ['user-vote', influencerId, userId],
     queryFn: async () => {
-      if (!user || !influencerId) return null;
+      if (!userId || !influencerId) return null;
       
-      console.log('Fetching user vote for:', user.id, 'on influencer:', influencerId);
+      console.log('Fetching user vote for:', userId, 'on influencer:', influencerId);
       
       try {
         const { data, error } = await supabase
           .from('votes')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .eq('influencer_id', influencerId)
           .maybeSingle();
 
@@ -83,22 +87,22 @@ export const useVotes = (influencerId?: string) => {
         return null;
       }
     },
-    enabled: !!user && !!influencerId,
+    enabled: !!userId && !!influencerId,
     staleTime: 300000,
     retry: 1,
   });
 
-  // Get user's review (if any)
+  // Get user's review - use stable userId
   const { data: userReview } = useQuery({
-    queryKey: ['user-review', influencerId, user?.id],
+    queryKey: ['user-review', influencerId, userId],
     queryFn: async () => {
-      if (!user || !influencerId) return null;
+      if (!userId || !influencerId) return null;
       
       try {
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .eq('influencer_id', influencerId)
           .maybeSingle();
 
@@ -113,21 +117,21 @@ export const useVotes = (influencerId?: string) => {
         return null;
       }
     },
-    enabled: !!user && !!influencerId,
+    enabled: !!userId && !!influencerId,
     retry: 1,
   });
 
   // Vote mutation
   const voteMutation = useMutation({
     mutationFn: async ({ vote }: { vote: 'natty' | 'juicy' }) => {
-      if (!user || !influencerId) throw new Error('Authentication required');
+      if (!userId || !influencerId) throw new Error('Authentication required');
 
-      console.log('Submitting vote:', vote, 'for user:', user.id, 'on influencer:', influencerId);
+      console.log('Submitting vote:', vote, 'for user:', userId, 'on influencer:', influencerId);
 
       const { data, error } = await supabase
         .from('votes')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           influencer_id: influencerId,
           vote: vote
         })
@@ -144,7 +148,7 @@ export const useVotes = (influencerId?: string) => {
     onSuccess: () => {
       console.log('Vote successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['vote-stats', influencerId] });
-      queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-vote', influencerId, userId] });
       toast({
         title: "Vote recorded!",
         description: "Your vote has been successfully recorded.",
@@ -163,14 +167,14 @@ export const useVotes = (influencerId?: string) => {
   // Review submission mutation
   const reviewMutation = useMutation({
     mutationFn: async ({ content }: { content: string }) => {
-      if (!user || !influencerId || !userVote) {
+      if (!userId || !influencerId || !userVote) {
         throw new Error('Vote required before review');
       }
 
       const { data, error } = await supabase
         .from('reviews')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           influencer_id: influencerId,
           vote: userVote.vote,
           content: content
@@ -186,7 +190,7 @@ export const useVotes = (influencerId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-review', influencerId, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['user-review', influencerId, userId] });
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       toast({
         title: "Review submitted!",
@@ -203,17 +207,19 @@ export const useVotes = (influencerId?: string) => {
     },
   });
 
-  const getVotePercentages = () => {
-    if (!voteStats || !voteStats.total_votes) {
-      return { natty: 0, juicy: 0, total: 0 };
-    }
+  const getVotePercentages = useMemo(() => {
+    return () => {
+      if (!voteStats || !voteStats.total_votes) {
+        return { natty: 0, juicy: 0, total: 0 };
+      }
 
-    return {
-      natty: voteStats.natty_percentage || 0,
-      juicy: voteStats.juicy_percentage || 0,
-      total: voteStats.total_votes || 0
+      return {
+        natty: voteStats.natty_percentage || 0,
+        juicy: voteStats.juicy_percentage || 0,
+        total: voteStats.total_votes || 0
+      };
     };
-  };
+  }, [voteStats]);
 
   return {
     voteStats,
@@ -224,6 +230,7 @@ export const useVotes = (influencerId?: string) => {
     submitReview: reviewMutation.mutate,
     isCasting: voteMutation.isPending,
     isSubmittingReview: reviewMutation.isPending,
-    getVotePercentages
+    getVotePercentages,
+    error: statsError
   };
 };

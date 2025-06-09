@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { loginWithEmail, signOut, signupWithEmail } from '@/services/authService';
@@ -10,7 +10,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { fetchUserProfile } = useUserProfile();
+
+  // Stable user update function to prevent unnecessary re-renders
+  const updateUser = useCallback((newUser: User | null) => {
+    setUser(currentUser => {
+      if (!newUser && !currentUser) return null;
+      if (newUser && currentUser && newUser.id === currentUser.id) {
+        // Only update if there are actual changes
+        if (JSON.stringify(newUser) === JSON.stringify(currentUser)) {
+          return currentUser;
+        }
+      }
+      return newUser;
+    });
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -19,14 +34,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log('AuthContext: Initializing auth...');
         
-        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthContext: Session error:', error);
         }
-
-        console.log('AuthContext: Current session exists:', !!session);
 
         if (mounted) {
           if (session?.user) {
@@ -34,11 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
               const userData = await fetchUserProfile(session.user);
               console.log('AuthContext: User profile fetched successfully:', userData.username);
-              setUser(userData);
+              updateUser(userData);
             } catch (profileError) {
               console.error('AuthContext: Profile fetch error, using fallback:', profileError);
-              // Still set basic user data even if profile fetch fails
-              setUser({
+              updateUser({
                 id: session.user.id,
                 username: session.user.email?.split('@')[0] || 'user',
                 email: session.user.email || '',
@@ -47,15 +58,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           } else {
             console.log('AuthContext: No user session found');
-            setUser(null);
+            updateUser(null);
           }
           setLoading(false);
+          setInitialized(true);
         }
       } catch (error) {
         console.error('AuthContext: Auth initialization error:', error);
         if (mounted) {
-          setUser(null);
+          updateUser(null);
           setLoading(false);
+          setInitialized(true);
         }
       }
     };
@@ -72,11 +85,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           try {
             const userData = await fetchUserProfile(session.user);
             console.log('AuthContext: Profile fetched after sign in:', userData.username);
-            setUser(userData);
+            updateUser(userData);
           } catch (profileError) {
-            console.error('AuthContext: Profile fetch error after sign in, using fallback:', profileError);
-            // Still set basic user data even if profile fetch fails
-            setUser({
+            console.error('AuthContext: Profile fetch error after sign in:', profileError);
+            updateUser({
               id: session.user.id,
               username: session.user.email?.split('@')[0] || 'user',
               email: session.user.email || '',
@@ -85,28 +97,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else if (event === 'SIGNED_OUT' || !session) {
           console.log('AuthContext: User signed out or no session');
-          setUser(null);
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          console.log('AuthContext: Token refreshed');
-          // Only refetch if we don't have user data
-          if (!user && session.user) {
-            try {
-              const userData = await fetchUserProfile(session.user);
-              setUser(userData);
-            } catch (profileError) {
-              console.error('AuthContext: Profile fetch error on token refresh:', profileError);
-            }
-          }
+          updateUser(null);
+        }
+        // Remove TOKEN_REFRESHED handling to prevent unnecessary updates
+        
+        if (mounted && !initialized) {
+          setLoading(false);
+          setInitialized(true);
         }
       } catch (error) {
         console.error('AuthContext: Error in auth state change:', error);
         if (event === 'SIGNED_OUT' || !session) {
-          setUser(null);
+          updateUser(null);
         }
-      }
-      
-      if (mounted && event !== 'TOKEN_REFRESHED') {
-        setLoading(false);
       }
     });
 
@@ -118,9 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile]);
+  }, [fetchUserProfile, updateUser, initialized]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('AuthContext: Attempting login for:', email);
       const success = await loginWithEmail(email, password);
@@ -130,20 +133,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('AuthContext: Login error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       console.log('AuthContext: Logging out...');
       await signOut();
-      setUser(null);
+      updateUser(null);
       console.log('AuthContext: Logout complete');
     } catch (error) {
       console.error('AuthContext: Logout error:', error);
     }
-  };
+  }, [updateUser]);
 
-  const signup = async (username: string, email: string, password: string): Promise<boolean> => {
+  const signup = useCallback(async (username: string, email: string, password: string): Promise<boolean> => {
     try {
       console.log('AuthContext: Attempting signup for:', email);
       const success = await signupWithEmail(username, email, password);
@@ -153,17 +156,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('AuthContext: Signup error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const contextValue = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = React.useMemo(() => ({
     user,
     login,
     logout,
     signup,
-    loading
-  };
+    loading: loading || !initialized
+  }), [user, login, logout, signup, loading, initialized]);
 
-  console.log('AuthContext: Render - user exists:', !!user, 'loading:', loading, 'user role:', user?.role);
+  console.log('AuthContext: Render - user exists:', !!user, 'loading:', loading, 'initialized:', initialized);
 
   return (
     <AuthContext.Provider value={contextValue}>
