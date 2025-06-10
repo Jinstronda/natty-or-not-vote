@@ -25,8 +25,18 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // More accurate loading state detection
+  // More accurate loading state detection with debugging
   const actuallyLoading = isPending && !data?.pages?.length;
+  
+  // Debug logging to identify the issue
+  console.log('[InfluencerGrid] Debug State:', {
+    isPending,
+    isLoading,
+    dataPages: data?.pages?.length,
+    actuallyLoading,
+    hasData: !!data,
+    firstPageData: data?.pages?.[0]?.data?.length
+  });
 
   // Loading watchdog protection for influencer grid
   useLoadingWatchdog({
@@ -94,7 +104,10 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  if (actuallyLoading) {
+  // Add a failsafe - if we have data but still think we're loading, show the data
+  const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
+  
+  if (actuallyLoading && !hasValidData) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
