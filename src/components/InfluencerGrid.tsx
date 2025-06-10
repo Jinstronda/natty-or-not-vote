@@ -41,17 +41,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     rawDataKeys: data ? Object.keys(data) : 'no data'
   });
   
-  // EMERGENCY: Force stop loading after 10 seconds regardless of state
-  const [forceShowData, setForceShowData] = useState(false);
-  useEffect(() => {
-    if (actuallyLoading) {
-      const timeout = setTimeout(() => {
-        console.error('[InfluencerGrid] FORCE STOPPING INFINITE LOAD - showing emergency state');
-        setForceShowData(true);
-      }, 10000);
-      return () => clearTimeout(timeout);
-    }
-  }, [actuallyLoading]);
+  // Remove emergency timeout since data is loading successfully
 
   // Loading watchdog protection for influencer grid
   useLoadingWatchdog({
@@ -130,7 +120,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   // Add a failsafe - if we have data but still think we're loading, show the data
   const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
   
-  if (actuallyLoading && !hasValidData && !forceShowData) {
+  if (actuallyLoading && !hasValidData) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -146,29 +136,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // EMERGENCY OVERRIDE: Show error message if force triggered
-  if (forceShowData) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500 text-lg font-semibold mb-4">
-          ⚠️ Loading Error Detected
-        </p>
-        <p className="text-muted-foreground mb-4">
-          The influencer data failed to load properly. This indicates a technical issue.
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Debug info: isPending={String(isPending)}, isLoading={String(isLoading)}, hasData={String(hasAnyData)}
-        </p>
-        <Button 
-          variant="outline" 
-          onClick={() => window.location.reload()}
-          className="mt-4"
-        >
-          Refresh Page
-        </Button>
-      </div>
-    );
-  }
+  // Emergency override removed - data is loading successfully
 
   if (allInfluencers.length === 0) {
     // Emergency: If we're stuck loading but have data in the first page, try to render it
