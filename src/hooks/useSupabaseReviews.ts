@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/types/vote';
 import { useAuth } from '@/contexts/AuthContext';
-import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 export const useSupabaseReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -19,23 +18,20 @@ export const useSupabaseReviews = () => {
       
       console.log('[useSupabaseReviews] Fetching reviews...');
       
-      const result = await withDatabaseTimeout(
-        () => supabase
-          .from('reviews')
-          .select(`
-            *,
-            profiles(username, profile_picture_url)
-          `)
-          .order('timestamp', { ascending: false }),
-        { timeout: 8000, operation: 'fetchReviews' }
-      );
+      const { data, error: fetchError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          profiles(username, profile_picture_url)
+        `)
+        .order('timestamp', { ascending: false });
 
-      if (result.error) {
-        console.error('[useSupabaseReviews] Supabase error:', result.error);
-        throw result.error;
+      if (fetchError) {
+        console.error('[useSupabaseReviews] Supabase error:', fetchError);
+        throw fetchError;
       }
 
-      const formattedReviews: Review[] = result.data?.map(review => ({
+      const formattedReviews: Review[] = data?.map(review => ({
         id: review.id,
         userId: review.user_id,
         username: review.profiles?.username || 'Unknown User',
