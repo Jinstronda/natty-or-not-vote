@@ -27,7 +27,8 @@
       "Bash(ls:*)",
       "mcp__supabase__get_project_url",
       "mcp__supabase__get_logs",
-      "WebFetch(domain:nattyorjuicy.com)"
+      "WebFetch(domain:nattyorjuicy.com)",
+      "mcp__supabase__get_project"
     ],
     "deny": []
   },
