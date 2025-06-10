@@ -220,72 +220,135 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     let mounted = true;
     let authTimeoutId: NodeJS.Timeout | null = null;
+    let initializationComplete = false;
 
     // Set a timeout for auth initialization
     authTimeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        authDebugger.error('🚨 Authentication timeout reached', { 
+      if (mounted && loading && !initializationComplete) {
+        authDebugger.error('🚨 Authentication timeout reached - forcing fallback', { 
           mounted, 
           loading, 
-          timeoutDuration: 8000 
+          timeoutDuration: 5000,
+          initializationComplete
         });
+        
+        // Force completion with fallback state
         setLoading(false);
-        toast({
-          title: "Connection Timeout",
-          description: "Authentication is taking longer than expected. Please refresh the page.",
-          variant: "destructive",
-        });
+        setUser(null);
+        initializationComplete = true;
+        
+        authDebugger.info('✅ Auth fallback completed', { user: null, loading: false });
       }
-    }, 8000);
+    }, 5000); // Reduced to 5 seconds for faster recovery
 
     authDebugger.verbose('⏰ Auth timeout timer set', { timeoutId: authTimeoutId });
 
-    // Initialize auth state
+    // Initialize auth state with timeout protection
     const initAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        authDebugger.startTimer('getSession_call');
+        
+        // Race condition: getSession vs timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('getSession timeout')), 4000)
+        );
+        
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]);
+        
+        authDebugger.endTimer('getSession_call');
         
         if (error) throw error;
         
-        if (mounted) {
+        if (mounted && !initializationComplete) {
           if (session?.user) {
+            authDebugger.info('🔐 Session found, creating user');
             const user = await createUserFromSupabase(session.user);
             setUser(user);
           } else {
+            authDebugger.info('🔓 No session found');
             setUser(null);
           }
           setLoading(false);
-          authDebugger.info('✅ Auth state initialized', { 
+          initializationComplete = true;
+          
+          if (authTimeoutId) {
+            clearTimeout(authTimeoutId);
+            authTimeoutId = null;
+          }
+          
+          authDebugger.info('✅ Auth state initialized successfully', { 
             hasUser: !!session?.user,
             loading: false 
           });
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        if (mounted) {
+        authDebugger.endTimer('getSession_call');
+        authDebugger.error('❌ Auth initialization failed', { error });
+        
+        if (mounted && !initializationComplete) {
+          // Fallback: Continue without auth
           setLoading(false);
-          authDebugger.error('❌ Auth initialization failed', { error });
+          setUser(null);
+          initializationComplete = true;
+          
+          if (authTimeoutId) {
+            clearTimeout(authTimeoutId);
+            authTimeoutId = null;
+          }
+          
+          authDebugger.info('⚠️ Auth fallback completed after error', { error: error.message });
         }
       }
     };
 
     initAuth();
 
-    // Listen for auth changes
+    // Listen for auth changes with better error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       authDebugger.info('🔔 Auth state changed', { event, hasSession: !!session });
       
       if (mounted) {
-        if (session?.user) {
-          const user = await createUserFromSupabase(session.user);
-          setUser(user);
-        } else {
-          setUser(null);
+        try {
+          if (session?.user) {
+            const user = await createUserFromSupabase(session.user);
+            setUser(user);
+          } else {
+            setUser(null);
+          }
+          
+          // Only set loading false if not already completed
+          if (!initializationComplete) {
+            setLoading(false);
+            initializationComplete = true;
+            
+            if (authTimeoutId) {
+              clearTimeout(authTimeoutId);
+              authTimeoutId = null;
+            }
+          }
+          
+          // Invalidate queries when auth state changes
+          queryClient.invalidateQueries();
+          
+        } catch (error) {
+          authDebugger.error('❌ Error in auth state change handler', { error });
+          
+          // Fallback on error
+          if (!initializationComplete) {
+            setLoading(false);
+            setUser(null);
+            initializationComplete = true;
+            
+            if (authTimeoutId) {
+              clearTimeout(authTimeoutId);
+              authTimeoutId = null;
+            }
+          }
         }
-        setLoading(false);
-        
-        // Invalidate queries when auth state changes
-        queryClient.invalidateQueries();
       }
     });
 
