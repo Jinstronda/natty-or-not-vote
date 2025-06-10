@@ -14,38 +14,26 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This listener is the key. It fires immediately with a session if one is cached
-    // in localStorage, and then again later if the auth state changes (e.g., sign-in, sign-out, token refresh).
+    // onAuthStateChange is the single source of truth.
+    // It fires on initial load with the cached session, and any time auth state changes.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      // As soon as we have a session (or know we don't), we are no longer loading.
-      // This is the most critical change.
-      setLoading(false); 
-    });
-
-    // We still call getSession() to actively fetch the session on initial load.
-    // This is a backup for scenarios where onAuthStateChange might not fire immediately.
-    // But we no longer wait for it to set loading to false.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setUser(session.user);
-      }
-      // Ensure loading is false even if onAuthStateChange hasn't fired yet.
-      setLoading(false);
+      setLoading(false); // We are no longer loading once we have a session state (user or null)
     });
 
     return () => {
+      // Cleanup the subscription on component unmount
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string, username?: string) => {
-    setLoading(true);
+    // No need to set loading here, onAuthStateChange will handle it.
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -56,21 +44,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
     });
     if (error) throw error;
-    setLoading(false);
   };
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
+    // No need to set loading here, onAuthStateChange will handle it.
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    setLoading(false);
   };
 
   const signOut = async () => {
-    setLoading(true);
+    // No need to set loading here, onAuthStateChange will handle it.
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setLoading(false);
   };
 
   return (
