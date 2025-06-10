@@ -31,15 +31,30 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   } = useInfluencers(searchTerm, !authLoading); // Only run query when auth is ready
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  
+  // Emergency loading override - prevent infinite loading
+  const [emergencyOverride, setEmergencyOverride] = useState(false);
+  
+  useEffect(() => {
+    // If auth is no longer loading but query is still pending for too long, force override
+    if (!authLoading && (isPending || isLoading)) {
+      const timeoutId = setTimeout(() => {
+        console.error('[InfluencerGrid] EMERGENCY: Forcing query completion after 10 seconds');
+        setEmergencyOverride(true);
+      }, 10000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [authLoading, isPending, isLoading]);
 
   // More robust loading state detection - prevent infinite loading
   const hasAnyData = data?.pages?.length > 0 || (data && Object.keys(data).length > 0);
-  const isInitialLoading = (isPending || isLoading) && !hasAnyData;
+  const isInitialLoading = (isPending || isLoading) && !hasAnyData && !emergencyOverride;
   const isRefreshing = isFetching && hasAnyData;
-  const actuallyLoading = isInitialLoading && !isRefreshing;
+  const actuallyLoading = isInitialLoading && !isRefreshing && !authLoading;
   
   // Force show data if we have it, regardless of loading state
-  const forceShowData = hasAnyData || (data?.pages?.[0]?.data?.length > 0);
+  const forceShowData = hasAnyData || (data?.pages?.[0]?.data?.length > 0) || emergencyOverride;
   
   // 🔧 COMPREHENSIVE STATE DEBUGGING
   console.log('[InfluencerGrid] 🚨 CRITICAL DEBUG - React Query State Analysis:', {
