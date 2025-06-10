@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
@@ -25,8 +25,9 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // More accurate loading state detection with debugging
-  const actuallyLoading = isPending && !data?.pages?.length;
+  // More robust loading state detection - prevent infinite loading
+  const hasAnyData = data?.pages?.length > 0 || (data && Object.keys(data).length > 0);
+  const actuallyLoading = (isPending || isLoading) && !hasAnyData;
   
   // Debug logging to identify the issue
   console.log('[InfluencerGrid] Debug State:', {
@@ -35,8 +36,22 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     dataPages: data?.pages?.length,
     actuallyLoading,
     hasData: !!data,
-    firstPageData: data?.pages?.[0]?.data?.length
+    hasAnyData,
+    firstPageData: data?.pages?.[0]?.data?.length,
+    rawDataKeys: data ? Object.keys(data) : 'no data'
   });
+  
+  // EMERGENCY: Force stop loading after 10 seconds regardless of state
+  const [forceShowData, setForceShowData] = useState(false);
+  useEffect(() => {
+    if (actuallyLoading) {
+      const timeout = setTimeout(() => {
+        console.error('[InfluencerGrid] FORCE STOPPING INFINITE LOAD - showing emergency state');
+        setForceShowData(true);
+      }, 10000);
+      return () => clearTimeout(timeout);
+    }
+  }, [actuallyLoading]);
 
   // Loading watchdog protection for influencer grid
   useLoadingWatchdog({
@@ -115,7 +130,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   // Add a failsafe - if we have data but still think we're loading, show the data
   const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
   
-  if (actuallyLoading && !hasValidData) {
+  if (actuallyLoading && !hasValidData && !forceShowData) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -127,6 +142,30 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
             </div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  // EMERGENCY OVERRIDE: Show error message if force triggered
+  if (forceShowData) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg font-semibold mb-4">
+          ⚠️ Loading Error Detected
+        </p>
+        <p className="text-muted-foreground mb-4">
+          The influencer data failed to load properly. This indicates a technical issue.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Debug info: isPending={isPending.toString()}, isLoading={isLoading.toString()}, hasData={hasAnyData.toString()}
+        </p>
+        <Button 
+          variant="outline" 
+          onClick={() => window.location.reload()}
+          className="mt-4"
+        >
+          Refresh Page
+        </Button>
       </div>
     );
   }
