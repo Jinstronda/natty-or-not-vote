@@ -3,7 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ITEMS_PER_PAGE = 20;
 
-const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?: number, searchTerm?: string }) => {
+interface Influencer {
+  id: string;
+  name: string;
+  image: string;
+  claimed_status: string;
+}
+
+interface InfluencerPage {
+  data: Influencer[];
+  nextPage?: number;
+}
+
+const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?: number, searchTerm?: string }): Promise<InfluencerPage> => {
   let query = supabase
     .from('influencers')
     .select('id, name, image, claimed_status')
@@ -29,13 +41,13 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
 export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => {
   const stableSearchTerm = searchTerm || '';
 
-  return useInfiniteQuery({
+  return useInfiniteQuery<InfluencerPage, Error, InfluencerPage, ['influencers', 'infinite', string], number>({
     queryKey: ['influencers', 'infinite', stableSearchTerm],
     queryFn: ({ pageParam }) => fetchInfluencers({ pageParam, searchTerm: stableSearchTerm }),
-    enabled: enabled, // Use the enabled prop passed from the component
+    enabled: enabled,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    refetchOnWindowFocus: false, // Optional: to prevent too many refetches
+    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
