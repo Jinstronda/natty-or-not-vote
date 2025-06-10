@@ -82,7 +82,15 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const allInfluencers = data?.pages.flatMap(page => page.data) || [];
+  const allInfluencers = data?.pages?.flatMap(page => page.data) || [];
+  
+  // Additional debug logging for data structure
+  console.log('[InfluencerGrid] Data structure debug:', {
+    allInfluencersCount: allInfluencers.length,
+    rawData: data,
+    pages: data?.pages,
+    firstPage: data?.pages?.[0]
+  });
 
   if (error) {
     return (
