@@ -1,48 +1,65 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
-import LoadingSpinner from "@/components/auth/LoadingSpinner";
-import LoginForm from "@/components/auth/LoginForm";
-import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
-import AuthNavigationLinks from "@/components/auth/AuthNavigationLinks";
+import { FormEvent, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 
 const Login = () => {
-  const [isFormLoading, setIsFormLoading] = useState(false);
-  const { user, loading } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  // Redirect if already logged in - but wait for loading to complete
   useEffect(() => {
     if (!loading && user) {
-      console.log('User already logged in, redirecting to home');
-      navigate("/", { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
 
-  // Show loading while auth is initializing
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      await signIn(email, password);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-heading">Login</CardTitle>
-          <p className="text-muted-foreground">Welcome back to Natty or Juicy</p>
-        </CardHeader>
-        <CardContent>
-          <LoginForm onLoadingChange={setIsFormLoading} />
-          <div className="mt-4">
-            <GoogleLoginButton disabled={isFormLoading} />
-          </div>
-          <AuthNavigationLinks />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+        <h1 className="text-2xl font-semibold text-center">Login</h1>
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <button
+          type="submit"
+          className="w-full bg-primary text-white py-2 rounded hover:opacity-90"
+        >
+          Sign In
+        </button>
+      </form>
+      <div className="w-full max-w-sm mt-4">
+        <GoogleLoginButton />
+      </div>
     </div>
   );
 };
 
-export default Login;
+export default Login; 
