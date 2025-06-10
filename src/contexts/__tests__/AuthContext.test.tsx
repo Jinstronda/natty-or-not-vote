@@ -19,29 +19,31 @@ vi.mock('@/integrations/supabase/client', () => ({
       signUp: (...args) => mockSignUp(...args),
       signInWithPassword: (...args) => mockSignInWithPassword(...args),
       signOut: (...args) => mockSignOut(...args),
-      signInWithOAuth: vi.fn(),
     },
   },
 }));
 
-// Helper test component to access context inside tests
 const TestComponent = () => {
-  const { user, signUp, signIn, signOut } = useAuth();
-  // expose functions for tests via window (only used inside tests)
-  // @ts-ignore
-  globalThis.__authFns = { user, signUp, signIn, signOut };
-  return null;
+  const authContext = useAuth();
+  // Store auth functions globally for testing
+  (globalThis as any).__authFns = authContext;
+  return <div>Test Component</div>;
 };
 
 describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Always return a mock subscription object
+    mockOnAuthStateChange.mockReturnValue({ 
+      data: { subscription: { unsubscribe: vi.fn() } } 
+    });
   });
 
   it('initialises with no session', async () => {
-    mockGetSession.mockResolvedValueOnce({ data: { session: null }, error: null });
-    // mock subscription
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    mockGetSession.mockResolvedValueOnce({ 
+      data: { session: null }, 
+      error: null 
+    });
 
     render(
       <AuthProvider>
@@ -49,16 +51,23 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
 
+    // Wait for getSession to be called and processed
     await waitFor(() => {
-      // @ts-ignore
-      expect(globalThis.__authFns.user).toBeNull();
+      expect(mockGetSession).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect((globalThis as any).__authFns.user).toBeNull();
+      expect((globalThis as any).__authFns.loading).toBe(false);
     });
   });
 
   it('initialises with existing session', async () => {
-    const fakeUser = { id: '123', email: 'user@example.com' } as any;
-    mockGetSession.mockResolvedValueOnce({ data: { session: { user: fakeUser } }, error: null });
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    const fakeUser = { id: '123', email: 'user@example.com' };
+    mockGetSession.mockResolvedValueOnce({ 
+      data: { session: { user: fakeUser } }, 
+      error: null 
+    });
 
     render(
       <AuthProvider>
@@ -66,15 +75,22 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
 
+    // Wait for getSession to be called and processed
     await waitFor(() => {
-      // @ts-ignore
-      expect(globalThis.__authFns.user).toEqual(fakeUser);
+      expect(mockGetSession).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect((globalThis as any).__authFns.user).toEqual(fakeUser);
+      expect((globalThis as any).__authFns.loading).toBe(false);
     });
   });
 
   it('calls supabase signInWithPassword', async () => {
-    mockGetSession.mockResolvedValueOnce({ data: { session: null }, error: null });
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    mockGetSession.mockResolvedValueOnce({ 
+      data: { session: null }, 
+      error: null 
+    });
     mockSignInWithPassword.mockResolvedValueOnce({ error: null });
 
     render(
@@ -83,17 +99,25 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
 
-    await act(async () => {
-      // @ts-ignore
-      await globalThis.__authFns.signIn('test@example.com', 'pass');
+    await waitFor(() => {
+      expect((globalThis as any).__authFns.loading).toBe(false);
     });
 
-    expect(mockSignInWithPassword).toHaveBeenCalledWith({ email: 'test@example.com', password: 'pass' });
+    await act(async () => {
+      await (globalThis as any).__authFns.signIn('test@example.com', 'pass');
+    });
+
+    expect(mockSignInWithPassword).toHaveBeenCalledWith({ 
+      email: 'test@example.com', 
+      password: 'pass' 
+    });
   });
 
   it('calls supabase signUp', async () => {
-    mockGetSession.mockResolvedValueOnce({ data: { session: null }, error: null });
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    mockGetSession.mockResolvedValueOnce({ 
+      data: { session: null }, 
+      error: null 
+    });
     mockSignUp.mockResolvedValueOnce({ error: null });
 
     render(
@@ -102,17 +126,30 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
 
-    await act(async () => {
-      // @ts-ignore
-      await globalThis.__authFns.signUp('email@test.com', 'pw', 'user');
+    await waitFor(() => {
+      expect((globalThis as any).__authFns.loading).toBe(false);
     });
 
-    expect(mockSignUp).toHaveBeenCalled();
+    await act(async () => {
+      await (globalThis as any).__authFns.signUp('email@test.com', 'pw', 'user');
+    });
+
+    expect(mockSignUp).toHaveBeenCalledWith({
+      email: 'email@test.com',
+      password: 'pw',
+      options: {
+        data: {
+          username: 'user',
+        },
+      },
+    });
   });
 
   it('calls supabase signOut', async () => {
-    mockGetSession.mockResolvedValueOnce({ data: { session: null }, error: null });
-    mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    mockGetSession.mockResolvedValueOnce({ 
+      data: { session: null }, 
+      error: null 
+    });
     mockSignOut.mockResolvedValueOnce({ error: null });
 
     render(
@@ -121,9 +158,12 @@ describe('AuthContext', () => {
       </AuthProvider>
     );
 
+    await waitFor(() => {
+      expect((globalThis as any).__authFns.loading).toBe(false);
+    });
+
     await act(async () => {
-      // @ts-ignore
-      await globalThis.__authFns.signOut();
+      await (globalThis as any).__authFns.signOut();
     });
 
     expect(mockSignOut).toHaveBeenCalled();

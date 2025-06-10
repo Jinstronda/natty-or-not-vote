@@ -3,14 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ITEMS_PER_PAGE = 20;
 
-interface Influencer {
+export interface Influencer {
   id: string;
   name: string;
   image: string;
   claimed_status: string;
 }
 
-interface InfluencerPage {
+export interface InfluencerPage {
   data: Influencer[];
   nextPage?: number;
 }
@@ -41,12 +41,12 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
 export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => {
   const stableSearchTerm = searchTerm || '';
 
-  return useInfiniteQuery<InfluencerPage, Error, InfluencerPage, ['influencers', 'infinite', string], number>({
+  return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', stableSearchTerm],
-    queryFn: ({ pageParam }) => fetchInfluencers({ pageParam, searchTerm: stableSearchTerm }),
+    queryFn: ({ pageParam }: { pageParam: number }) => fetchInfluencers({ pageParam, searchTerm: stableSearchTerm }),
     enabled: enabled,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getNextPageParam: (lastPage: InfluencerPage) => lastPage.nextPage,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

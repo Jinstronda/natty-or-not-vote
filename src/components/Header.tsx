@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <header className="border-b border-border bg-card">
@@ -21,22 +21,17 @@ const Header = () => {
             <Button asChild variant="ghost">
               <Link to="/how-it-works">How It Works</Link>
             </Button>
-            <SuggestInfluencer />
+            {user && <SuggestInfluencer />}
             
             {user ? (
               <div className="flex items-center gap-4">
-                {user.role === 'admin' && (
-                  <Button asChild variant="outline">
-                    <Link to="/admin">Admin Panel</Link>
-                  </Button>
-                )}
                 <Link 
                   to={`/user/${user.id}`}
                   className="font-medium hover:text-primary transition-colors"
                 >
-                  {user.username}
+                  {user.user_metadata?.username || user.email}
                 </Link>
-                <Button variant="outline" onClick={logout}>
+                <Button variant="outline" onClick={signOut}>
                   Logout
                 </Button>
               </div>

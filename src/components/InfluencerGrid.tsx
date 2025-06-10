@@ -2,27 +2,16 @@ import { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
-import { useInfluencers } from "@/hooks/api/useInfluencers";
+import { useInfluencers, type InfluencerPage } from "@/hooks/api/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface InfluencerGridProps {
   searchTerm?: string;
 }
 
-interface Influencer {
-  id: string;
-  name: string;
-  image: string;
-  claimed_status: string;
-}
-
-interface InfluencerPage {
-  data: Influencer[];
-  nextPage?: number;
-}
-
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   const {
     data,
@@ -37,13 +26,14 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     isError,
     isSuccess,
     isFetching
-  } = useInfluencers(searchTerm, true);
+  } = useInfluencers(searchTerm, !!user); // Only enable query when user is authenticated
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
   
   // Loading state is now purely based on the query state
-  const isInitialLoading = (isPending || isLoading) && (!data || !data.pages?.length);
-  const isRefreshing = isFetching && data?.pages?.length > 0;
+  const hasData = data?.pages && data.pages.length > 0;
+  const isInitialLoading = (isPending || isLoading) && !hasData;
+  const isRefreshing = isFetching && hasData;
   
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -63,9 +53,48 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const allInfluencers = data?.pages?.flatMap(page => page.data) || [];
+  const allInfluencers = hasData ? data.pages.flatMap(page => page.data) : [];
 
-  // Loading state
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="aspect-square w-full rounded-xl" />
+              <Skeleton className="h-4 w-3/4 mx-auto" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt for non-authenticated users
+  if (!user) {
+    return (
+      <div className="text-center py-16">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-3xl font-bold mb-4">Join the Community</h2>
+          <p className="text-muted-foreground mb-8">
+            Sign up or log in to discover fitness influencers and cast your vote on whether they're natty or not!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg">
+              <Link to="/signup">Sign Up</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link to="/login">Login</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state for authenticated users
   if (isInitialLoading) {
     return (
       <div className="space-y-6">
