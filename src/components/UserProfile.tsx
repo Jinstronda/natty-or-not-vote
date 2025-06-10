@@ -1,6 +1,6 @@
+
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown } from "lucide-react";
 
 interface UserProfileProps {
   username: string;
@@ -8,10 +8,9 @@ interface UserProfileProps {
   profilePicture?: string;
   className?: string;
   showAvatar?: boolean;
-  isAdmin?: boolean;
 }
 
-const UserProfile = ({ username, userId, profilePicture, className = "", showAvatar = true, isAdmin = false }: UserProfileProps) => {
+const UserProfile = ({ username, userId, profilePicture, className = "", showAvatar = true }: UserProfileProps) => {
   return (
     <Link 
       to={`/user/${userId}`}
@@ -25,10 +24,7 @@ const UserProfile = ({ username, userId, profilePicture, className = "", showAva
           </AvatarFallback>
         </Avatar>
       )}
-      <span className="flex items-center gap-1">
-        {username}
-        {isAdmin && <Crown className="h-3 w-3 text-yellow-500" />}
-      </span>
+      {username}
     </Link>
   );
 };

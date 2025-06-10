@@ -1,3 +1,4 @@
+
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
             .from('reviews')
             .select(`
               *,
-              profiles(username, profile_picture_url, role)
+              profiles(username, profile_picture_url)
             `)
             .eq('influencer_id', influencerId)
             .order('timestamp', { ascending: false });
@@ -65,7 +66,6 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         userId: review.user_id,
         username: review.profiles?.username || 'Unknown User',
         profilePicture: review.profiles?.profile_picture_url || undefined,
-        isAdmin: review.profiles?.role === 'admin',
         influencerId: review.influencer_id,
         vote: review.vote as 'natty' | 'juicy',
         content: review.content,
@@ -189,7 +189,6 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
                     username={review.username} 
                     userId={review.userId}
                     profilePicture={review.profilePicture}
-                    isAdmin={review.isAdmin}
                   />
                   <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
                     {review.vote === 'natty' ? '🏆' : '💉'}

@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
-import { Crown } from "lucide-react";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -26,17 +25,11 @@ const Header = () => {
             
             {user ? (
               <div className="flex items-center gap-4">
-                {user && user.role === 'admin' && (
-                  <Button asChild variant="ghost">
-                    <Link to="/admin">Admin Panel</Link>
-                  </Button>
-                )}
                 <Link 
                   to={`/user/${user.id}`}
-                  className="font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  className="font-medium hover:text-primary transition-colors"
                 >
                   {user.user_metadata?.username || user.email}
-                  {user.role === 'admin' && <Crown className="h-4 w-4 text-yellow-500" />}
                 </Link>
                 <Button variant="outline" onClick={signOut}>
                   Logout
