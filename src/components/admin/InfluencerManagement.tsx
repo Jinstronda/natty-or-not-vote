@@ -1,15 +1,25 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Edit, Plus, Users } from "lucide-react";
+import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+interface SocialLinks {
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
+  twitter?: string;
+  website?: string;
+}
 
 interface Influencer {
   id: string;
@@ -20,7 +30,21 @@ interface Influencer {
   years_training?: string;
   claimed_status?: string;
   description?: string;
+  social_links?: SocialLinks;
+}
+
+interface DatabaseInfluencer {
+  id: string;
+  name: string;
+  image: string | null;
+  height?: string | null;
+  weight?: string | null;
+  years_training?: string | null;
+  claimed_status?: string | null;
+  description?: string | null;
   social_links?: any;
+  created_at: string;
+  updated_at: string;
 }
 
 const InfluencerManagement = () => {
@@ -28,14 +52,25 @@ const InfluencerManagement = () => {
 
   const { data: influencers = [] } = useQuery({
     queryKey: ['admin-influencers'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Influencer[]> => {
       const { data, error } = await supabase
         .from('influencers')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map((item: DatabaseInfluencer): Influencer => ({
+        id: item.id,
+        name: item.name,
+        image: item.image || '/placeholder.svg',
+        height: item.height || undefined,
+        weight: item.weight || undefined,
+        years_training: item.years_training || undefined,
+        claimed_status: item.claimed_status || undefined,
+        description: item.description || undefined,
+        social_links: (item.social_links as SocialLinks) || {}
+      }));
     }
   });
 
@@ -45,7 +80,7 @@ const InfluencerManagement = () => {
     height: '',
     weight: '',
     years_training: '',
-    claimed_status: '',
+    claimed_status: 'unclaimed',
     description: '',
     social_links: {}
   });
@@ -59,12 +94,12 @@ const InfluencerManagement = () => {
         .insert({
           name: influencer.name,
           image: influencer.image,
-          height: influencer.height,
-          weight: influencer.weight,
-          years_training: influencer.years_training,
-          claimed_status: influencer.claimed_status,
-          description: influencer.description,
-          social_links: influencer.social_links
+          height: influencer.height || null,
+          weight: influencer.weight || null,
+          years_training: influencer.years_training || null,
+          claimed_status: influencer.claimed_status || null,
+          description: influencer.description || null,
+          social_links: influencer.social_links as any
         });
       
       if (error) throw error;
@@ -82,12 +117,12 @@ const InfluencerManagement = () => {
         .update({
           name: influencer.name,
           image: influencer.image,
-          height: influencer.height,
-          weight: influencer.weight,
-          years_training: influencer.years_training,
-          claimed_status: influencer.claimed_status,
-          description: influencer.description,
-          social_links: influencer.social_links
+          height: influencer.height || null,
+          weight: influencer.weight || null,
+          years_training: influencer.years_training || null,
+          claimed_status: influencer.claimed_status || null,
+          description: influencer.description || null,
+          social_links: influencer.social_links as any
         })
         .eq('id', influencer.id);
       
@@ -132,7 +167,7 @@ const InfluencerManagement = () => {
         height: '',
         weight: '',
         years_training: '',
-        claimed_status: '',
+        claimed_status: 'unclaimed',
         description: '',
         social_links: {}
       });
@@ -191,6 +226,93 @@ const InfluencerManagement = () => {
     }
   };
 
+  const updateSocialLink = (platform: keyof SocialLinks, value: string, isEditing = false) => {
+    if (isEditing && editingInfluencer) {
+      setEditingInfluencer({
+        ...editingInfluencer,
+        social_links: {
+          ...editingInfluencer.social_links,
+          [platform]: value
+        }
+      });
+    } else {
+      setNewInfluencer({
+        ...newInfluencer,
+        social_links: {
+          ...newInfluencer.social_links,
+          [platform]: value
+        }
+      });
+    }
+  };
+
+  const SocialLinksForm = ({ 
+    socialLinks, 
+    onUpdate, 
+    isEditing = false 
+  }: { 
+    socialLinks: SocialLinks, 
+    onUpdate: (platform: keyof SocialLinks, value: string) => void,
+    isEditing?: boolean 
+  }) => (
+    <div className="space-y-4">
+      <Label className="text-sm font-medium flex items-center gap-2">
+        <Link className="h-4 w-4" />
+        Social Media Links
+      </Label>
+      <div className="grid grid-cols-1 gap-3">
+        <div className="flex items-center gap-2">
+          <Instagram className="h-4 w-4 text-pink-500" />
+          <Input
+            placeholder="Instagram URL or @username"
+            value={socialLinks.instagram || ''}
+            onChange={(e) => onUpdate('instagram', e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Youtube className="h-4 w-4 text-red-500" />
+          <Input
+            placeholder="YouTube URL or channel name"
+            value={socialLinks.youtube || ''}
+            onChange={(e) => onUpdate('youtube', e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Music className="h-4 w-4 text-black" />
+          <Input
+            placeholder="TikTok URL or @username"
+            value={socialLinks.tiktok || ''}
+            onChange={(e) => onUpdate('tiktok', e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Link className="h-4 w-4 text-blue-500" />
+          <Input
+            placeholder="Twitter/X URL or @username"
+            value={socialLinks.twitter || ''}
+            onChange={(e) => onUpdate('twitter', e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Link className="h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Website URL"
+            value={socialLinks.website || ''}
+            onChange={(e) => onUpdate('website', e.target.value)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const getClaimedStatusColor = (status: string) => {
+    switch (status) {
+      case 'claimed': return 'bg-green-100 text-green-800';
+      case 'verified': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -200,7 +322,7 @@ const InfluencerManagement = () => {
             Add New Influencer
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <SecureImageUpload
             onImageUploaded={(url) => setNewInfluencer({...newInfluencer, image: url})}
             currentImage={newInfluencer.image === '/placeholder.svg' ? undefined : newInfluencer.image}
@@ -208,42 +330,82 @@ const InfluencerManagement = () => {
           />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              placeholder="Name"
-              value={newInfluencer.name}
-              onChange={(e) => setNewInfluencer({...newInfluencer, name: e.target.value})}
-            />
-            <Input
-              placeholder="Height (e.g., 5'10&quot;)"
-              value={newInfluencer.height}
-              onChange={(e) => setNewInfluencer({...newInfluencer, height: e.target.value})}
-            />
-            <Input
-              placeholder="Weight (e.g., 180 lbs)"
-              value={newInfluencer.weight}
-              onChange={(e) => setNewInfluencer({...newInfluencer, weight: e.target.value})}
-            />
-            <Input
-              placeholder="Years Training"
-              value={newInfluencer.years_training}
-              onChange={(e) => setNewInfluencer({...newInfluencer, years_training: e.target.value})}
-            />
-            <Input
-              placeholder="Claimed Status"
-              value={newInfluencer.claimed_status}
-              onChange={(e) => setNewInfluencer({...newInfluencer, claimed_status: e.target.value})}
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                placeholder="Full Name"
+                value={newInfluencer.name}
+                onChange={(e) => setNewInfluencer({...newInfluencer, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="claimed-status">Claimed Status</Label>
+              <Select
+                value={newInfluencer.claimed_status}
+                onValueChange={(value) => setNewInfluencer({...newInfluencer, claimed_status: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unclaimed">Unclaimed</SelectItem>
+                  <SelectItem value="claimed">Claimed</SelectItem>
+                  <SelectItem value="verified">Verified</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="height">Height</Label>
+              <Input
+                id="height"
+                placeholder="e.g., 5'10&quot; or 178cm"
+                value={newInfluencer.height}
+                onChange={(e) => setNewInfluencer({...newInfluencer, height: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight">Weight</Label>
+              <Input
+                id="weight"
+                placeholder="e.g., 180 lbs or 82kg"
+                value={newInfluencer.weight}
+                onChange={(e) => setNewInfluencer({...newInfluencer, weight: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="years">Years Training</Label>
+              <Input
+                id="years"
+                placeholder="e.g., 5 years"
+                value={newInfluencer.years_training}
+                onChange={(e) => setNewInfluencer({...newInfluencer, years_training: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Brief description about the influencer..."
+              value={newInfluencer.description}
+              onChange={(e) => setNewInfluencer({...newInfluencer, description: e.target.value})}
+              rows={3}
             />
           </div>
-          <Textarea
-            placeholder="Description"
-            value={newInfluencer.description}
-            onChange={(e) => setNewInfluencer({...newInfluencer, description: e.target.value})}
+
+          <SocialLinksForm
+            socialLinks={newInfluencer.social_links || {}}
+            onUpdate={(platform, value) => updateSocialLink(platform, value)}
           />
+          
           <Button 
             onClick={handleCreateInfluencer}
             disabled={addInfluencerMutation.isPending}
+            className="w-full"
           >
-            Create Influencer
+            {addInfluencerMutation.isPending ? 'Creating...' : 'Create Influencer'}
           </Button>
         </CardContent>
       </Card>
@@ -258,7 +420,7 @@ const InfluencerManagement = () => {
         <CardContent>
           <div className="space-y-4">
             {influencers.map((influencer) => (
-              <div key={influencer.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={influencer.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <img 
                     src={influencer.image || '/placeholder.svg'} 
@@ -266,8 +428,27 @@ const InfluencerManagement = () => {
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div>
-                    <h3 className="font-semibold">{influencer.name}</h3>
-                    <p className="text-sm text-muted-foreground">{influencer.description}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold">{influencer.name}</h3>
+                      <Badge className={getClaimedStatusColor(influencer.claimed_status || 'unclaimed')}>
+                        {influencer.claimed_status || 'unclaimed'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{influencer.description}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      {influencer.height && <span>H: {influencer.height}</span>}
+                      {influencer.weight && <span>W: {influencer.weight}</span>}
+                      {influencer.years_training && <span>Training: {influencer.years_training}</span>}
+                    </div>
+                    {influencer.social_links && Object.values(influencer.social_links).some(link => link) && (
+                      <div className="flex items-center gap-1 mt-1">
+                        {influencer.social_links.instagram && <Instagram className="h-3 w-3 text-pink-500" />}
+                        {influencer.social_links.youtube && <Youtube className="h-3 w-3 text-red-500" />}
+                        {influencer.social_links.tiktok && <Music className="h-3 w-3 text-black" />}
+                        {influencer.social_links.twitter && <Link className="h-3 w-3 text-blue-500" />}
+                        {influencer.social_links.website && <Link className="h-3 w-3 text-gray-500" />}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -286,42 +467,82 @@ const InfluencerManagement = () => {
                         <SheetTitle>Edit {influencer.name}</SheetTitle>
                       </SheetHeader>
                       {editingInfluencer && (
-                        <div className="space-y-4 mt-6">
+                        <div className="space-y-6 mt-6">
                           <SecureImageUpload
                             onImageUploaded={(url) => setEditingInfluencer({...editingInfluencer, image: url})}
                             currentImage={editingInfluencer.image === '/placeholder.svg' ? undefined : editingInfluencer.image}
                             onImageRemoved={() => setEditingInfluencer({...editingInfluencer, image: '/placeholder.svg'})}
                           />
                           
-                          <Input
-                            placeholder="Name"
-                            value={editingInfluencer.name}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
-                          />
-                          <Input
-                            placeholder="Height"
-                            value={editingInfluencer.height || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
-                          />
-                          <Input
-                            placeholder="Weight"
-                            value={editingInfluencer.weight || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
-                          />
-                          <Input
-                            placeholder="Years Training"
-                            value={editingInfluencer.years_training || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, years_training: e.target.value})}
-                          />
-                          <Input
-                            placeholder="Claimed Status"
-                            value={editingInfluencer.claimed_status || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, claimed_status: e.target.value})}
-                          />
-                          <Textarea
-                            placeholder="Description"
-                            value={editingInfluencer.description || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-name">Name</Label>
+                              <Input
+                                id="edit-name"
+                                placeholder="Name"
+                                value={editingInfluencer.name}
+                                onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-status">Claimed Status</Label>
+                              <Select
+                                value={editingInfluencer.claimed_status || 'unclaimed'}
+                                onValueChange={(value) => setEditingInfluencer({...editingInfluencer, claimed_status: value})}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unclaimed">Unclaimed</SelectItem>
+                                  <SelectItem value="claimed">Claimed</SelectItem>
+                                  <SelectItem value="verified">Verified</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-height">Height</Label>
+                              <Input
+                                id="edit-height"
+                                placeholder="Height"
+                                value={editingInfluencer.height || ''}
+                                onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-weight">Weight</Label>
+                              <Input
+                                id="edit-weight"
+                                placeholder="Weight"
+                                value={editingInfluencer.weight || ''}
+                                onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-years">Years Training</Label>
+                              <Input
+                                id="edit-years"
+                                placeholder="Years Training"
+                                value={editingInfluencer.years_training || ''}
+                                onChange={(e) => setEditingInfluencer({...editingInfluencer, years_training: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-description">Description</Label>
+                              <Textarea
+                                id="edit-description"
+                                placeholder="Description"
+                                value={editingInfluencer.description || ''}
+                                onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
+                                rows={3}
+                              />
+                            </div>
+                          </div>
+
+                          <SocialLinksForm
+                            socialLinks={editingInfluencer.social_links || {}}
+                            onUpdate={(platform, value) => updateSocialLink(platform, value, true)}
+                            isEditing={true}
                           />
                           
                           <Button 
@@ -329,7 +550,7 @@ const InfluencerManagement = () => {
                             className="w-full"
                             disabled={updateInfluencerMutation.isPending}
                           >
-                            Save Changes
+                            {updateInfluencerMutation.isPending ? 'Saving...' : 'Save Changes'}
                           </Button>
                         </div>
                       )}
@@ -346,6 +567,12 @@ const InfluencerManagement = () => {
                 </div>
               </div>
             ))}
+            
+            {influencers.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No influencers yet. Add your first influencer above!
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
