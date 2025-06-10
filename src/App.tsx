@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
 import "./utils/authRecovery"; // Import auth recovery utilities
+import "./utils/emergencyDebug"; // Import emergency debug utilities
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

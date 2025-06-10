@@ -403,7 +403,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const createPromise = supabase.rpc('create_user_profile', {
           user_id: supabaseUser.id,
           user_email: supabaseUser.email || '',
-          user_username: username
+          username: username
         });
 
         const { data: createData, error: createError } = await Promise.race([
@@ -448,7 +448,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       username: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user',
-      role: supabaseUser.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
+      role: (supabaseUser.email === 'jistronda100@gmail.com' || supabaseUser.email === 'joaopanizzutti@gmail.com') ? 'admin' : 'user'
     };
   };
 

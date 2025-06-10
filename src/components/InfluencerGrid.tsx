@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 import { toast } from "@/hooks/use-toast";
 import { quickConnectionTest } from "@/utils/diagnostics";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InfluencerGridProps {
   searchTerm?: string;
@@ -34,6 +35,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   
   // Emergency loading override - prevent infinite loading
   const [emergencyOverride, setEmergencyOverride] = useState(false);
+  const [debugData, setDebugData] = useState<any>(null);
   
   useEffect(() => {
     // If auth is no longer loading but query is still pending for too long, force override
@@ -41,6 +43,26 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
       const timeoutId = setTimeout(() => {
         console.error('[InfluencerGrid] EMERGENCY: Forcing query completion after 10 seconds');
         setEmergencyOverride(true);
+        
+        // Try to fetch data directly as fallback
+        const fetchDirectly = async () => {
+          try {
+            const { data } = await supabase
+              .from('influencers')
+              .select('id, name, image, claimed_status')
+              .order('created_at', { ascending: false })
+              .limit(20);
+            
+            if (data) {
+              console.log('[InfluencerGrid] Emergency fetch successful:', data);
+              setDebugData(data);
+            }
+          } catch (error) {
+            console.error('[InfluencerGrid] Emergency fetch failed:', error);
+          }
+        };
+        
+        fetchDirectly();
       }, 10000);
       
       return () => clearTimeout(timeoutId);
