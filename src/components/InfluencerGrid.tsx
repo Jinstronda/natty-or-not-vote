@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
 import { useInfluencers } from "@/hooks/api/useInfluencers";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 import { toast } from "@/hooks/use-toast";
 import { quickConnectionTest } from "@/utils/diagnostics";
@@ -13,6 +14,8 @@ interface InfluencerGridProps {
 }
 
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
+  const { loading: authLoading } = useAuth();
+  
   const {
     data,
     fetchNextPage,
@@ -26,7 +29,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     isError,
     isSuccess,
     isFetching
-  } = useInfluencers(searchTerm);
+  } = useInfluencers(searchTerm, !authLoading); // Only run query when auth is ready
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 

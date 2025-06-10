@@ -4,16 +4,22 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ITEMS_PER_PAGE = 20;
 
-export const useInfluencers = (searchTerm?: string) => {
-  console.log('[useInfluencers] 🔧 BUILD VERSION: NETWORK_DIAGNOSTICS_v1.0 - 2025-01-10-15:30');
+export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => {
+  console.log('[useInfluencers] 🔧 BUILD VERSION: AUTH_FIX_v1.0 - 2025-01-10-15:35');
+  console.log('[useInfluencers] Query enabled:', enabled);
   
   return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', searchTerm],
-    enabled: true, // This table is publicly readable, no auth required
+    enabled: enabled, // Wait for auth to complete
     networkMode: 'always', // Try to fetch even with poor network
     queryFn: async ({ pageParam = 0 }) => {
       try {
         console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
+        
+        // CRITICAL FIX: Ensure auth session is ready
+        console.log('[useInfluencers] Checking auth session status...');
+        const { data: session } = await supabase.auth.getSession();
+        console.log('[useInfluencers] Auth session ready:', session ? 'Yes' : 'No');
         
         // Simple, direct Supabase query
         let query = supabase
