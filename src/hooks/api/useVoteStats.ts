@@ -1,13 +1,12 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VoteStats {
   total_votes: number;
   natty_count: number;
-  juicy_count: number;
+  not_natty_count: number;
   natty_percentage: number;
-  juicy_percentage: number;
+  not_natty_percentage: number;
 }
 
 export const useVoteStats = (influencerId: string) => {
@@ -23,14 +22,14 @@ export const useVoteStats = (influencerId: string) => {
 
       const total = data?.length || 0;
       const nattyCount = data?.filter(v => v.vote === 'natty').length || 0;
-      const juicyCount = total - nattyCount;
+      const notNattyCount = data?.filter(v => v.vote === 'not_natty').length || 0;
 
       return {
         total_votes: total,
         natty_count: nattyCount,
-        juicy_count: juicyCount,
+        not_natty_count: notNattyCount,
         natty_percentage: total > 0 ? Math.round((nattyCount / total) * 100) : 0,
-        juicy_percentage: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
+        not_natty_percentage: total > 0 ? Math.round((notNattyCount / total) * 100) : 0,
       };
     },
     enabled: !!influencerId,
