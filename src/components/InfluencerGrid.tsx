@@ -148,12 +148,37 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const allInfluencers = data?.pages?.flatMap(page => page.data) || [];
   
-  // Additional debug logging for data structure
-  console.log('[InfluencerGrid] Data structure debug:', {
+  // 🔧 CRITICAL STATE ANALYSIS
+  console.log('[InfluencerGrid] 🚨 CRITICAL STATE ANALYSIS:', {
+    // React Query States
+    reactQueryStatus: status,
+    reactQueryFetchStatus: fetchStatus,
+    isPending,
+    isLoading,
+    isFetching,
+    isSuccess,
+    isError,
+    
+    // Data Analysis
+    dataExists: !!data,
     allInfluencersCount: allInfluencers.length,
-    rawData: data,
+    rawDataStructure: data ? Object.keys(data) : 'NO_DATA',
     pages: data?.pages,
-    firstPage: data?.pages?.[0]
+    firstPageExists: !!data?.pages?.[0],
+    firstPageDataLength: data?.pages?.[0]?.data?.length,
+    
+    // Loading Logic Analysis
+    hasAnyData,
+    actuallyLoading,
+    shouldShowData: allInfluencers.length > 0,
+    shouldShowLoading: actuallyLoading,
+    
+    // State Mismatch Detection
+    STATE_MISMATCH: {
+      hasDataButShowsLoading: allInfluencers.length > 0 && actuallyLoading,
+      reactQuerySaysSuccessButShowsLoading: isSuccess && actuallyLoading,
+      dataExistsButPending: !!data && isPending
+    }
   });
 
   if (error) {
@@ -176,8 +201,58 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // Add a failsafe - if we have data but still think we're loading, show the data
+  // 🔧 ULTIMATE FAILSAFE: Force show data if it exists, regardless of React Query state
   const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
+  const forceShowData = allInfluencers.length > 0;
+  
+  // 🚨 CRITICAL FIX: If we have data, show it immediately regardless of loading state
+  if (forceShowData) {
+    console.log('🚨 [InfluencerGrid] FORCING DATA DISPLAY - bypassing React Query state', {
+      allInfluencersCount: allInfluencers.length,
+      reactQueryState: { status, isPending, isLoading, isSuccess },
+      forcingDisplay: true
+    });
+    
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {allInfluencers.map((influencer) => (
+            <InfluencerCard key={influencer.id} influencer={influencer} />
+          ))}
+        </div>
+
+        <div ref={loadMoreRef} className="flex justify-center">
+          {isFetchingNextPage && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <Skeleton className="h-4 w-3/4 mx-auto" />
+                  <Skeleton className="h-2 w-full" />
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {hasNextPage && !isFetchingNextPage && (
+            <Button 
+              variant="outline" 
+              onClick={() => fetchNextPage()}
+              className="mt-4"
+            >
+              Load More
+            </Button>
+          )}
+          
+          {!hasNextPage && allInfluencers.length > 0 && (
+            <p className="text-muted-foreground text-sm">
+              You've reached the end! 🎉
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
   
   if (actuallyLoading && !hasValidData) {
     return (

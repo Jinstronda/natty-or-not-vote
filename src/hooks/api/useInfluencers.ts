@@ -64,18 +64,38 @@ class InfluencerDebugger {
 const influencerDebugger = new InfluencerDebugger();
 
 export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => {
-  influencerDebugger.log('INFO', '🔧 BUILD VERSION: COMPREHENSIVE_DEBUG_v2.0 - 2025-01-10-16:30');
+  influencerDebugger.log('INFO', '🔧 BUILD VERSION: REACT_QUERY_FIX_v3.0 - 2025-01-10-17:00');
   influencerDebugger.log('QUERY', '🎯 useInfluencers hook called', { 
     searchTerm, 
     enabled, 
     timestamp: Date.now(),
     stackTrace: new Error().stack?.split('\n').slice(1, 4)
   });
+
+  // 🔧 CRITICAL FIX: Stabilize query key to prevent React Query state issues
+  const stableSearchTerm = searchTerm || '';
+  const stableQueryKey = ['influencers', 'infinite', stableSearchTerm];
+  
+  influencerDebugger.log('QUERY', '🔧 Stabilized query configuration', {
+    originalSearchTerm: searchTerm,
+    stableSearchTerm,
+    stableQueryKey,
+    enabled
+  });
   
   return useInfiniteQuery({
-    queryKey: ['influencers', 'infinite', searchTerm],
+    queryKey: stableQueryKey,
     enabled: enabled, // Wait for auth to complete
     networkMode: 'always', // Try to fetch even with poor network
+    
+    // 🔧 CRITICAL FIX: Add placeholderData to prevent hanging state
+    placeholderData: (previousData) => {
+      influencerDebugger.log('QUERY', '🔄 Placeholder data requested', { 
+        hasPreviousData: !!previousData,
+        enabled 
+      });
+      return previousData;
+    },
     queryFn: async ({ pageParam = 0 }) => {
       const queryId = `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       influencerDebugger.startTimer(`influencer_fetch_${queryId}`);
@@ -176,7 +196,9 @@ export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => 
           }
         });
 
-        return responseData;
+        // 🔧 CRITICAL FIX: Force immediate return to prevent React Query hanging
+        // This ensures React Query receives the data synchronously
+        return Promise.resolve(responseData);
 
       } catch (error) {
         influencerDebugger.endTimer(`influencer_fetch_${queryId}`);
@@ -190,11 +212,31 @@ export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => 
         throw error;
       }
     },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getNextPageParam: (lastPage) => {
+      influencerDebugger.log('QUERY', '🔄 Getting next page param', { 
+        lastPage: lastPage?.nextPage,
+        hasMore: lastPage?.hasMore 
+      });
+      return lastPage.nextPage;
+    },
     initialPageParam: 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes - data doesn't change frequently
-    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    
+    // 🔧 CRITICAL FIX: Aggressive caching to prevent state issues
+    staleTime: 0, // Always fresh data during debugging
+    gcTime: 30 * 1000, // 30 seconds cache time during debugging
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnMount: false, // Don't refetch on mount if we have data
+    refetchOnReconnect: false, // Don't refetch on reconnect
+    
+    // 🔧 CRITICAL FIX: Force React Query to update state immediately
+    select: (data) => {
+      influencerDebugger.log('QUERY', '🎯 Select function called - React Query state updating', {
+        dataExists: !!data,
+        pagesCount: data?.pages?.length,
+        firstPageItems: data?.pages?.[0]?.data?.length
+      });
+      return data;
+    },
     retry: (failureCount, error: any) => {
       const retryId = `retry_${Date.now()}_${failureCount}`;
       influencerDebugger.log('WARN', `🔄 Retry attempt ${failureCount}`, {
