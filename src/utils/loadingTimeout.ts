@@ -171,9 +171,10 @@ export const withDatabaseTimeout = async <T>(
     timeout?: number;
     retries?: number;
     operation: string;
+    onRetry?: (attempt: number) => void;
   }
 ): Promise<T> => {
-  const { timeout = 10000, retries = 2, operation: operationName } = config;
+  const { timeout = 10000, retries = 2, operation: operationName, onRetry } = config;
   
   let lastError: Error | null = null;
   
@@ -181,6 +182,7 @@ export const withDatabaseTimeout = async <T>(
     try {
       if (attempt > 0) {
         console.log(`[DatabaseTimeout] Retry ${attempt}/${retries} for: ${operationName}`);
+        onRetry?.(attempt);
         await new Promise(resolve => setTimeout(resolve, Math.min(1000 * attempt, 3000)));
       }
       
@@ -193,12 +195,42 @@ export const withDatabaseTimeout = async <T>(
       if (error instanceof Error && (
         error.message.includes('JWT') ||
         error.message.includes('401') ||
-        error.message.includes('403')
+        error.message.includes('403') ||
+        error.message.includes('network') ||
+        error.message.includes('offline')
       )) {
         break;
       }
     }
   }
   
-  throw lastError || new Error(`All ${retries + 1} attempts failed for ${operationName}`);
+  throw lastError || new Error(`Operation "${operationName}" failed after ${retries} retries`);
+};
+
+/**
+ * React Query specific timeout wrapper
+ */
+export const withQueryTimeout = <T>(
+  queryFn: () => Promise<T>,
+  config: {
+    timeout?: number;
+    retries?: number;
+    operation: string;
+    onRetry?: (attempt: number) => void;
+  }
+) => {
+  return async () => {
+    try {
+      return await withDatabaseTimeout(queryFn, {
+        ...config,
+        onRetry: (attempt) => {
+          console.log(`[QueryTimeout] Retry ${attempt} for ${config.operation}`);
+          config.onRetry?.(attempt);
+        }
+      });
+    } catch (error) {
+      console.error(`[QueryTimeout] Failed for ${config.operation}:`, error);
+      throw error;
+    }
+  };
 };
