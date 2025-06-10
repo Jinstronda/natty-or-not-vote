@@ -39,7 +39,7 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
-      retry: (failureCount, error: any, query) => {
+      retry: (failureCount, error, query) => {
         const queryKey = JSON.stringify(query.queryKey);
         
         // Check circuit breaker
@@ -73,7 +73,7 @@ export const queryClient = new QueryClient({
       }
     },
     mutations: {
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error) => {
         // Don't retry auth errors
         if (error?.status === 401 || error?.message?.includes('JWT')) return false;
         return failureCount < 1;
