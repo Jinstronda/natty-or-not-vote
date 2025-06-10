@@ -25,7 +25,8 @@
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "mcp__supabase__get_project_url"
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__get_logs"
     ],
     "deny": []
   },

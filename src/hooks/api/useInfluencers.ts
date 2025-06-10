@@ -1,7 +1,6 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -13,48 +12,31 @@ export const useInfluencers = (searchTerm?: string) => {
     queryFn: async ({ pageParam = 0 }) => {
       console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
       
-      try {
-        console.log('[useInfluencers] Starting direct query...');
-        
-        // EMERGENCY: Bypass timeout wrapper and try direct query
-        let query = supabase
-          .from('influencers')
-          .select('id, name, image, claimed_status')
-          .order('created_at', { ascending: false })
-          .limit(ITEMS_PER_PAGE);
+      // Simple, direct Supabase query - no timeout wrapper interference
+      let query = supabase
+        .from('influencers')
+        .select('id, name, image, claimed_status')
+        .order('created_at', { ascending: false })
+        .limit(ITEMS_PER_PAGE);
 
-        if (searchTerm?.trim()) {
-          query = query.ilike('name', `%${searchTerm.trim()}%`);
-        }
-
-        const result = await query;
-        
-        if (result.error) {
-          console.error('[useInfluencers] Error fetching influencers:', result.error);
-          throw result.error;
-        }
-
-        const fetchedCount = result.data?.length || 0;
-        console.log('[useInfluencers] Fetched influencers:', fetchedCount);
-
-        const pageResult = {
-          data: result.data || [],
-          nextPage: result.data && result.data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
-          hasMore: result.data && result.data.length === ITEMS_PER_PAGE,
-        };
-        
-        console.log('[useInfluencers] Page result structure:', {
-          dataCount: pageResult.data.length,
-          nextPage: pageResult.nextPage,
-          hasMore: pageResult.hasMore,
-          pageParam
-        });
-        
-        return pageResult;
-      } catch (error) {
-        console.error('[useInfluencers] Error in useInfluencers:', error);
-        throw error;
+      if (searchTerm?.trim()) {
+        query = query.ilike('name', `%${searchTerm.trim()}%`);
       }
+
+      const result = await query;
+      
+      if (result.error) {
+        console.error('[useInfluencers] Error fetching influencers:', result.error);
+        throw result.error;
+      }
+
+      console.log('[useInfluencers] Successfully fetched:', result.data?.length || 0, 'influencers');
+
+      return {
+        data: result.data || [],
+        nextPage: result.data && result.data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+        hasMore: result.data && result.data.length === ITEMS_PER_PAGE,
+      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
