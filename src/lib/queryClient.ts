@@ -39,15 +39,7 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
-      retry: (failureCount, error, query) => {
-        const queryKey = JSON.stringify(query.queryKey);
-        
-        // Check circuit breaker
-        if (circuitBreaker.shouldBlock(queryKey)) {
-          console.warn(`[QueryClient] Circuit breaker blocking query: ${queryKey}`);
-          return false;
-        }
-        
+      retry: (failureCount: number, error: Error) => {
         // Don't retry on specific errors
         if ((error as any)?.code === 'PGRST116') return false; // No data found
         if ((error as any)?.code === 'PGRST301') return false; // JWT expired/invalid
@@ -55,25 +47,13 @@ export const queryClient = new QueryClient({
         if ((error as any)?.status === 401) return false; // Unauthorized
         if (error?.message?.includes('timed out')) return false; // Timeout errors
         
-        // Record failure for circuit breaker
-        circuitBreaker.recordFailure(queryKey);
-        
         return failureCount < 2;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Max 5 second delay
       networkMode: 'online', // Only run queries when online
-      onSuccess: (data, query) => {
-        // Record success for circuit breaker
-        const queryKey = JSON.stringify(query.queryKey);
-        circuitBreaker.recordSuccess(queryKey);
-      },
-      onError: (error, query) => {
-        const queryKey = JSON.stringify(query.queryKey);
-        console.error(`[QueryClient] Query failed: ${queryKey}`, error);
-      }
     },
     mutations: {
-      retry: (failureCount, error) => {
+      retry: (failureCount: number, error: Error) => {
         // Don't retry auth errors
         if ((error as any)?.status === 401 || error?.message?.includes('JWT')) return false;
         return failureCount < 1;
