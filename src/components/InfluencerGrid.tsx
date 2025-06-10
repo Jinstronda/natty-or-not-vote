@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,7 +34,12 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   // More robust loading state detection - prevent infinite loading
   const hasAnyData = data?.pages?.length > 0 || (data && Object.keys(data).length > 0);
-  const actuallyLoading = (isPending || isLoading) && !hasAnyData;
+  const isInitialLoading = (isPending || isLoading) && !hasAnyData;
+  const isRefreshing = isFetching && hasAnyData;
+  const actuallyLoading = isInitialLoading && !isRefreshing;
+  
+  // Force show data if we have it, regardless of loading state
+  const forceShowData = hasAnyData || (data?.pages?.[0]?.data?.length > 0);
   
   // 🔧 COMPREHENSIVE STATE DEBUGGING
   console.log('[InfluencerGrid] 🚨 CRITICAL DEBUG - React Query State Analysis:', {
@@ -106,7 +110,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   useLoadingWatchdog({
     component: 'InfluencerGrid',
     isLoading: actuallyLoading,
-    timeout: 20000, // Increased to 20 seconds for production resilience
+    timeout: 15000, // Reduced to 15 seconds for better UX
     onTimeout: async () => {
       console.error('[InfluencerGrid] Loading timeout - running diagnostics');
       
@@ -203,7 +207,6 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   // 🔧 ULTIMATE FAILSAFE: Force show data if it exists, regardless of React Query state
   const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
-  const forceShowData = allInfluencers.length > 0;
   
   // 🚨 CRITICAL FIX: If we have data, show it immediately regardless of loading state
   if (forceShowData) {

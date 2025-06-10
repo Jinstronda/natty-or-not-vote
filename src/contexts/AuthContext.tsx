@@ -240,83 +240,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     authDebugger.verbose('⏰ Auth timeout timer set', { timeoutId: authTimeoutId });
 
-    const getInitialSession = async () => {
+    // Initialize auth state
+    const initAuth = async () => {
       try {
-        authDebugger.startTimer('getInitialSession');
-        
-        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) {
-          authDebugger.error('🚨 Error getting initial session', error);
-          setLoading(false);
-          return;
-        }
-
-        if (!session) {
-          authDebugger.info('ℹ️ No active session found');
-          setLoading(false);
-          return;
-        }
-
-        // Create user from session
-        const user = await createUserFromSupabase(session.user);
+        if (error) throw error;
+        
         if (mounted) {
-          setUser(user);
+          if (session?.user) {
+            const user = await createUserFromSupabase(session.user);
+            setUser(user);
+          } else {
+            setUser(null);
+          }
           setLoading(false);
-          localStorage.setItem('lastAuthActivity', Date.now().toString());
+          authDebugger.info('✅ Auth state initialized', { 
+            hasUser: !!session?.user,
+            loading: false 
+          });
         }
       } catch (error) {
-        authDebugger.error('🚨 Critical error in getInitialSession', error);
+        console.error('Auth initialization error:', error);
         if (mounted) {
           setLoading(false);
+          authDebugger.error('❌ Auth initialization failed', { error });
         }
-      } finally {
-        authDebugger.endTimer('getInitialSession');
       }
     };
 
-    // Set up auth state change listener
+    initAuth();
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      authDebugger.info('🔄 Auth state changed', { event, userId: session?.user?.id });
-
-      try {
-        if (event === 'SIGNED_IN' && session?.user) {
+      authDebugger.info('🔔 Auth state changed', { event, hasSession: !!session });
+      
+      if (mounted) {
+        if (session?.user) {
           const user = await createUserFromSupabase(session.user);
           setUser(user);
-          localStorage.setItem('lastAuthActivity', Date.now().toString());
-          queryClient.invalidateQueries({ queryKey: ['user-vote'] });
-          queryClient.invalidateQueries({ queryKey: ['vote-stats'] });
-        } else if (event === 'SIGNED_OUT') {
+        } else {
           setUser(null);
-          queryClient.clear();
-          localStorage.removeItem('lastAuthActivity');
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          // Only update if user data has changed
-          if (!user || user.id !== session.user.id) {
-            const refreshedUser = await createUserFromSupabase(session.user);
-            setUser(refreshedUser);
-            localStorage.setItem('lastAuthActivity', Date.now().toString());
-          }
         }
-      } catch (error) {
-        authDebugger.error('🚨 Error handling auth state change', error);
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          queryClient.clear();
-          localStorage.removeItem('lastAuthActivity');
-        }
-      }
-
-      if (mounted) {
         setLoading(false);
+        
+        // Invalidate queries when auth state changes
+        queryClient.invalidateQueries();
       }
     });
-
-    // Get initial session
-    getInitialSession();
 
     return () => {
       mounted = false;
@@ -324,8 +295,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         clearTimeout(authTimeoutId);
       }
       subscription.unsubscribe();
+      authDebugger.info('🧹 AuthContext cleanup complete');
     };
-  }, []);
+  }, [queryClient]);
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
