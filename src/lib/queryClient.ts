@@ -1,5 +1,4 @@
 
-
 import { QueryClient } from '@tanstack/react-query';
 
 // Circuit breaker for failed queries
@@ -86,4 +85,3 @@ export const queryClient = new QueryClient({
 
 // Export circuit breaker for testing
 export { circuitBreaker };
-
