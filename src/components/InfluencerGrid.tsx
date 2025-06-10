@@ -157,7 +157,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
           The influencer data failed to load properly. This indicates a technical issue.
         </p>
         <p className="text-sm text-muted-foreground">
-          Debug info: isPending={isPending.toString()}, isLoading={isLoading.toString()}, hasData={hasAnyData.toString()}
+          Debug info: isPending={String(isPending)}, isLoading={String(isLoading)}, hasData={String(hasAnyData)}
         </p>
         <Button 
           variant="outline" 
