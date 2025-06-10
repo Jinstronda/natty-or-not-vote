@@ -62,10 +62,18 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               </div>
               <Progress 
                 value={voteStats.natty_percentage} 
-                className="h-2"
+                className="h-2 transition-all duration-300"
               />
               <div className="text-center">
-                <Badge variant={voteStats.natty_percentage > 50 ? "default" : "destructive"}>
+                <Badge 
+                  className={`
+                    transition-all duration-300 hover:scale-105
+                    ${voteStats.natty_percentage > 50 
+                      ? 'bg-gradient-to-r from-natty to-natty/90 hover:shadow-lg hover:shadow-natty/30' 
+                      : 'bg-gradient-to-r from-juicy to-juicy/90 hover:shadow-lg hover:shadow-juicy/30'
+                    }
+                  `}
+                >
                   {voteStats.natty_percentage > 50 ? "Natty" : "Juicy"} 
                   ({voteStats.natty_percentage.toFixed(0)}%)
                 </Badge>
@@ -78,7 +86,12 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
           <VoteButton influencerId={influencer.id} voteType="natty" />
           <VoteButton influencerId={influencer.id} voteType="not_natty" />
           {influencer.claimed_status !== 'claimed' && (
-            <Button variant="outline" size="sm" onClick={handleClaim}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleClaim}
+              className="transition-all duration-200 hover:scale-105"
+            >
               Claim
             </Button>
           )}

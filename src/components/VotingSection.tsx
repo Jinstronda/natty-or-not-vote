@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +10,7 @@ import { useEffect, useState } from "react";
 import ReviewPromptDialog from "@/components/ReviewPromptDialog";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
+import { DynamicPercentageButton } from "@/components/DynamicPercentageButton";
 
 interface VotingSectionProps {
   influencerId: string;
@@ -138,31 +138,95 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
         What do you think?
       </h2>
       
+      {/* Dynamic Percentage Button */}
+      {voteStats && voteStats.total_votes > 0 && (
+        <div className="mb-6 flex justify-center">
+          <DynamicPercentageButton
+            nattyPercentage={voteStats.natty_percentage}
+            juicyPercentage={voteStats.not_natty_percentage}
+            totalVotes={voteStats.total_votes}
+            className="px-6 py-3 text-base"
+          />
+        </div>
+      )}
+      
       <div className="grid grid-cols-2 gap-4 mb-6">
         <Button
           size="lg"
           onClick={() => handleVote('natty')}
           disabled={isVoting}
-          className={`h-16 text-lg font-semibold transition-all ${
-            userVote === 'natty' 
-              ? 'bg-natty hover:bg-natty/90 text-white' 
-              : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
-          }`}
+          className={`
+            relative overflow-hidden h-16 text-lg font-semibold
+            transition-all duration-300 ease-out
+            hover:scale-105 active:scale-95
+            hover:-translate-y-1
+            border-2
+            ${userVote === 'natty' 
+              ? `bg-gradient-to-r from-natty via-natty/90 to-natty 
+                 shadow-lg shadow-natty/40
+                 border-natty text-white` 
+              : `bg-gradient-to-r from-natty/10 via-natty/5 to-natty/10
+                 border-natty text-natty 
+                 hover:from-natty hover:to-natty/90 hover:text-white
+                 hover:shadow-lg hover:shadow-natty/30
+                 shadow-md shadow-natty/10`
+            }
+            ${isVoting ? 'animate-pulse cursor-not-allowed' : 'group cursor-pointer'}
+          `}
         >
-          {isVoting ? '...' : '🏆 Natty'}
+          {/* Shimmer effect overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-center">
+            <span className={`text-2xl mr-2 transition-transform duration-200 ${isVoting ? '' : 'group-hover:scale-110'}`}>
+              🏆
+            </span>
+            {isVoting ? (
+              <span className="animate-pulse">Voting...</span>
+            ) : (
+              <span className="transition-all duration-200">Natty</span>
+            )}
+          </div>
         </Button>
         
         <Button
           size="lg"
           onClick={() => handleVote('juicy')}
           disabled={isVoting}
-          className={`h-16 text-lg font-semibold transition-all ${
-            userVote === 'juicy' 
-              ? 'bg-juicy hover:bg-juicy/90 text-white' 
-              : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
-          }`}
+          className={`
+            relative overflow-hidden h-16 text-lg font-semibold
+            transition-all duration-300 ease-out
+            hover:scale-105 active:scale-95
+            hover:-translate-y-1
+            border-2
+            ${userVote === 'juicy' 
+              ? `bg-gradient-to-r from-juicy via-juicy/90 to-juicy 
+                 shadow-lg shadow-juicy/40
+                 border-juicy text-white` 
+              : `bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10
+                 border-juicy text-juicy 
+                 hover:from-juicy hover:to-juicy/90 hover:text-white
+                 hover:shadow-lg hover:shadow-juicy/30
+                 shadow-md shadow-juicy/10`
+            }
+            ${isVoting ? 'animate-pulse cursor-not-allowed' : 'group cursor-pointer'}
+          `}
         >
-          {isVoting ? '...' : '💉 Juicy'}
+          {/* Shimmer effect overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-center">
+            <span className={`text-2xl mr-2 transition-transform duration-200 ${isVoting ? '' : 'group-hover:scale-110'}`}>
+              💉
+            </span>
+            {isVoting ? (
+              <span className="animate-pulse">Voting...</span>
+            ) : (
+              <span className="transition-all duration-200">Juicy</span>
+            )}
+          </div>
         </Button>
       </div>
       
@@ -179,13 +243,13 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-natty font-semibold">Natty: {voteStats.natty_percentage}%</span>
-            <span className="text-juicy font-semibold">Juicy: {voteStats.juicy_percentage}%</span>
+            <span className="text-juicy font-semibold">Juicy: {voteStats.not_natty_percentage}%</span>
           </div>
           
           <div className="relative">
             <div className="w-full bg-secondary rounded-full h-4 overflow-hidden">
               <div 
-                className="h-full bg-natty transition-all duration-500"
+                className="h-full bg-gradient-to-r from-natty to-natty/80 transition-all duration-500"
                 style={{ width: `${voteStats.natty_percentage}%` }}
               />
             </div>
