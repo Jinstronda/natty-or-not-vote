@@ -58,7 +58,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <span>Natty: {voteStats.natty_count}</span>
-                <span>Not Natty: {voteStats.not_natty_count}</span>
+                <span>Juicy: {voteStats.not_natty_count}</span>
               </div>
               <Progress 
                 value={voteStats.natty_percentage} 
@@ -66,7 +66,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               />
               <div className="text-center">
                 <Badge variant={voteStats.natty_percentage > 50 ? "default" : "destructive"}>
-                  {voteStats.natty_percentage > 50 ? "Natty" : "Not Natty"} 
+                  {voteStats.natty_percentage > 50 ? "Natty" : "Juicy"} 
                   ({voteStats.natty_percentage.toFixed(0)}%)
                 </Badge>
               </div>
