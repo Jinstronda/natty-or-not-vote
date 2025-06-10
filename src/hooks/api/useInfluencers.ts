@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -222,11 +221,11 @@ export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => 
     initialPageParam: 0,
     
     // 🔧 CRITICAL FIX: Aggressive caching to prevent state issues
-    staleTime: 0, // Always fresh data during debugging
-    gcTime: 30 * 1000, // 30 seconds cache time during debugging
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
-    refetchOnMount: false, // Don't refetch on mount if we have data
-    refetchOnReconnect: false, // Don't refetch on reconnect
+    staleTime: 1000 * 60, // 1 minute stale time
+    gcTime: 1000 * 60 * 5, // 5 minutes cache time
+    refetchOnWindowFocus: true, // Allow refetch on window focus
+    refetchOnMount: true, // Allow refetch on mount
+    refetchOnReconnect: true, // Allow refetch on reconnect
     
     // 🔧 CRITICAL FIX: Force React Query to update state immediately
     select: (data) => {
@@ -248,29 +247,21 @@ export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => 
         shouldRetryTimeout: error?.message?.includes('timed out'),
         shouldRetryAuth: error?.code === 'PGRST301' || error?.message?.includes('JWT')
       });
-      
-      // Retry timeout errors more aggressively  
-      if (error?.message?.includes('timed out')) {
-        influencerDebugger.log('INFO', '⏰ Retrying timeout error', { retryId, failureCount });
-        return failureCount < 3; // Increased retries for timeouts
-      }
-      if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
-        influencerDebugger.log('WARN', '🚫 Not retrying auth error', { retryId, error: error?.message });
+
+      // Limit retries to 3 attempts
+      if (failureCount >= 3) {
+        influencerDebugger.log('ERROR', '❌ Max retries reached', { failureCount });
         return false;
       }
-      // Retry up to 3 times for all issues
-      const shouldRetry = failureCount < 3;
-      influencerDebugger.log('INFO', shouldRetry ? '🔄 Will retry' : '🛑 Max retries reached', { 
-        retryId, 
-        failureCount, 
-        shouldRetry 
-      });
-      return shouldRetry;
-    },
-    retryDelay: (attemptIndex) => {
-      const delay = Math.min(1000 * 2 ** attemptIndex, 5000);
-      influencerDebugger.log('TIMING', `⏳ Retry delay: ${delay}ms`, { attemptIndex, delay });
-      return delay;
+
+      // Don't retry on auth errors
+      if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
+        influencerDebugger.log('ERROR', '🔒 Auth error - not retrying', { error: error?.message });
+        return false;
+      }
+
+      // Exponential backoff for retries
+      return Math.min(1000 * Math.pow(2, failureCount), 10000);
     }
   });
 };
