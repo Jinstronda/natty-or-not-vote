@@ -34,23 +34,34 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
       setLoading(true);
       setError(null);
       
-      console.log('Fetching reviews for influencer:', influencerId);
+      console.log('[UserReviews] Fetching reviews for influencer:', influencerId);
       
-      const { data, error: fetchError } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          profiles(username, profile_picture_url)
-        `)
-        .eq('influencer_id', influencerId)
-        .order('timestamp', { ascending: false });
+      const result = await withDatabaseTimeout(
+        async () => {
+          const { data, error: fetchError } = await supabase
+            .from('reviews')
+            .select(`
+              *,
+              profiles(username, profile_picture_url)
+            `)
+            .eq('influencer_id', influencerId)
+            .order('timestamp', { ascending: false });
 
-      if (fetchError) {
-        console.error('Error fetching reviews:', fetchError);
-        throw fetchError;
-      }
+          if (fetchError) {
+            console.error('[UserReviews] Database error:', fetchError);
+            throw fetchError;
+          }
 
-      const formattedReviews: Review[] = data?.map(review => ({
+          return data;
+        },
+        { 
+          timeout: 10000, 
+          retries: 2, 
+          operation: `fetchReviews_${influencerId}` 
+        }
+      );
+
+      const formattedReviews: Review[] = result?.map(review => ({
         id: review.id,
         userId: review.user_id,
         username: review.profiles?.username || 'Unknown User',
@@ -62,11 +73,18 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         likes: review.likes || 0
       })) || [];
 
-      console.log('Found reviews:', formattedReviews.length);
+      console.log('[UserReviews] Found reviews:', formattedReviews.length);
       setReviews(formattedReviews);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
-      setError(error instanceof Error ? error.message : 'Unknown error');
+      console.error('[UserReviews] Error fetching reviews:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (errorMessage.includes('timed out')) {
+        setError('Reviews are taking too long to load. Please refresh the page.');
+      } else {
+        setError(errorMessage);
+      }
+      
       setReviews([]);
     } finally {
       setLoading(false);
@@ -77,27 +95,54 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
     fetchReviews
   }), [fetchReviews]);
 
+  usePageVisibility({
+    onReturnAfterDelay: (awayTime) => {
+      console.log(`[UserReviews] User returned after ${Math.round(awayTime / 1000)}s, refreshing reviews`);
+      fetchReviews();
+    },
+    maxAwayTime: 30000,
+    enableLogging: true
+  });
+
+  useVisibilityRecovery(fetchReviews);
+
+  useLoadingWatchdog({
+    component: 'UserReviews',
+    isLoading: loading,
+    timeout: 15000,
+    onTimeout: () => {
+      console.warn('[UserReviews] Loading timeout detected, forcing reset');
+      setLoading(false);
+      setError('Reviews took too long to load. Please refresh the page.');
+    }
+  });
+
   useEffect(() => {
     fetchReviews();
   }, [influencerId, fetchReviews]);
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', reviewId);
+      await withDatabaseTimeout(
+        async () => {
+          const { error } = await supabase
+            .from('reviews')
+            .delete()
+            .eq('id', reviewId);
 
-      if (error) throw error;
+          if (error) throw error;
+        },
+        { timeout: 5000, retries: 1, operation: 'deleteReview' }
+      );
 
       toast({
         title: "Review deleted",
         description: "The review has been successfully deleted.",
       });
 
-      // Refresh reviews
       await fetchReviews();
     } catch (error) {
+      console.error('[UserReviews] Delete error:', error);
       toast({
         title: "Error",
         description: "Failed to delete review. Please try again.",
