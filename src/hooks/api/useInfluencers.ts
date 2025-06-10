@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 const ITEMS_PER_PAGE = 20;
 
 export const useInfluencers = (searchTerm?: string) => {
+  console.log('[useInfluencers] 🔧 BUILD VERSION: NETWORK_DIAGNOSTICS_v1.0 - 2025-01-10-15:30');
+  
   return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', searchTerm],
     enabled: true, // This table is publicly readable, no auth required
@@ -26,13 +28,44 @@ export const useInfluencers = (searchTerm?: string) => {
 
         console.log('[useInfluencers] About to execute query...');
         
-        // Add manual timeout to prevent hanging
+        // Network diagnostics
+        const startTime = Date.now();
+        console.log('[useInfluencers] Network diagnostic - Start time:', startTime);
+        console.log('[useInfluencers] Target URL:', `${supabase.supabaseUrl}/rest/v1/influencers`);
+        console.log('[useInfluencers] User agent:', navigator.userAgent);
+        console.log('[useInfluencers] Connection type:', (navigator as any).connection?.effectiveType || 'unknown');
+        
+        // Test basic connectivity first
+        try {
+          console.log('[useInfluencers] Testing basic connectivity to Supabase...');
+          const pingResponse = await fetch(`${supabase.supabaseUrl}/rest/v1/`, {
+            method: 'HEAD',
+            signal: AbortSignal.timeout(5000)
+          });
+          console.log('[useInfluencers] Basic connectivity test:', {
+            status: pingResponse.status,
+            statusText: pingResponse.statusText,
+            headers: Object.fromEntries(pingResponse.headers.entries())
+          });
+        } catch (pingError) {
+          console.error('[useInfluencers] Basic connectivity failed:', pingError);
+        }
+        
+        // Add manual timeout with detailed timing
         const queryPromise = query;
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000);
+          setTimeout(() => {
+            const duration = Date.now() - startTime;
+            console.error(`[useInfluencers] Query hung for ${duration}ms - timing out`);
+            reject(new Error(`Query timeout after ${duration}ms (10s limit)`));
+          }, 10000);
         });
         
+        console.log('[useInfluencers] Starting race between query and timeout...');
         const result = await Promise.race([queryPromise, timeoutPromise]);
+        
+        const duration = Date.now() - startTime;
+        console.log('[useInfluencers] Query completed in:', duration, 'ms');
         
         console.log('[useInfluencers] Query completed. Result:', {
           data: result.data,
