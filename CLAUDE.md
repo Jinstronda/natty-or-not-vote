@@ -34,3 +34,5 @@ General Debugging Principles:
 - Modularize and document debugging code
 - Test one hypothesis at a time
 - Always confirm before making permanent changes
+
+- Communication Guideline: Always question me for more information if more information is needed, never change anything that doesnt need fixing
