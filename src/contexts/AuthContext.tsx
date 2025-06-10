@@ -50,23 +50,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const lastActivity = localStorage.getItem('lastAuthActivity');
       const now = Date.now();
       
+      console.log('[AuthContext] 🔍 Stale state check - lastActivity:', lastActivity, 'now:', now);
+      
       // If no activity recorded or it's been more than 1 hour, check if we have a valid session
       if (!lastActivity || now - parseInt(lastActivity) > 3600000) {
-        console.log('[AuthContext] Checking for stale auth state...');
+        console.log('[AuthContext] 🔍 Checking for stale auth state...');
         
         // Check if there's a valid current session before clearing
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: sessionData, error } = await supabase.auth.getSession();
+        console.log('[AuthContext] 🔍 Session check result:', { hasSession: !!sessionData.session, error, userId: sessionData.session?.user?.id });
         
         if (!sessionData.session) {
           // Only clear if there's actually no valid session
-          console.log('[AuthContext] No valid session found, clearing stale state');
+          console.log('[AuthContext] 🔍 No valid session found, clearing stale state');
+          console.log('[AuthContext] 🔥 CALLING signOut({ scope: "local" }) - this might cause SIGNED_OUT event');
           localStorage.removeItem('lastAuthActivity');
           supabase.auth.signOut({ scope: 'local' });
         } else {
           // Valid session exists (like fresh Google OAuth), update activity timestamp
-          console.log('[AuthContext] Valid session found, updating activity timestamp');
+          console.log('[AuthContext] 🔍 Valid session found, updating activity timestamp');
           localStorage.setItem('lastAuthActivity', String(now));
         }
+      } else {
+        console.log('[AuthContext] 🔍 Recent activity found, skipping stale check');
       }
     };
 
@@ -129,7 +135,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('[AuthContext] Auth event:', event, 'User ID:', session?.user?.id);
+        console.log('[AuthContext] 🔥 Auth event:', event, 'User ID:', session?.user?.id);
+        console.log('[AuthContext] 🔥 Session details:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user, 
+          accessToken: session?.access_token ? 'present' : 'missing',
+          refreshToken: session?.refresh_token ? 'present' : 'missing'
+        });
         
         try {
           if (event === 'SIGNED_IN' && session?.user) {
@@ -192,7 +204,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               // This is fine - we already have working user data from session metadata
             }
           } else if (event === 'SIGNED_OUT') {
-            console.log('[AuthContext] User signed out');
+            console.log('[AuthContext] 🔥 User signed out - investigating cause...');
+            console.log('[AuthContext] 🔥 Current user state:', user);
+            console.log('[AuthContext] 🔥 Session data:', session);
+            console.trace('[AuthContext] 🔥 SIGNED_OUT stack trace');
             setUser(null);
             queryClient.clear();
             // Clear activity tracking
