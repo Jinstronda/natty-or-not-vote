@@ -5,6 +5,141 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
+// 🔧 COMPREHENSIVE DEBUGGING SYSTEM
+const DEBUG_CONFIG = {
+  ENABLED: true,
+  LOG_LEVEL: 'VERBOSE', // BASIC | DETAILED | VERBOSE
+  TRACK_TIMING: true,
+  TRACK_ERRORS: true,
+  TRACK_STATE_CHANGES: true,
+  LOG_TO_CONSOLE: true,
+  LOG_TO_STORAGE: true,
+  MAX_LOGS: 1000
+};
+
+class AuthDebugger {
+  private logs: any[] = [];
+  private timers: Map<string, number> = new Map();
+  private stateSnapshots: any[] = [];
+
+  private shouldLog(level: string): boolean {
+    if (!DEBUG_CONFIG.ENABLED) return false;
+    const levels = ['BASIC', 'DETAILED', 'VERBOSE'];
+    return levels.indexOf(level) <= levels.indexOf(DEBUG_CONFIG.LOG_LEVEL);
+  }
+
+  startTimer(operation: string): void {
+    if (!DEBUG_CONFIG.TRACK_TIMING) return;
+    this.timers.set(operation, performance.now());
+    this.log('TIMING', `⏱️ START: ${operation}`, { timestamp: Date.now() });
+  }
+
+  endTimer(operation: string): number {
+    if (!DEBUG_CONFIG.TRACK_TIMING) return 0;
+    const startTime = this.timers.get(operation);
+    if (!startTime) return 0;
+    
+    const duration = performance.now() - startTime;
+    this.timers.delete(operation);
+    this.log('TIMING', `⏱️ END: ${operation} (${duration.toFixed(2)}ms)`, { 
+      duration, 
+      timestamp: Date.now(),
+      operation 
+    });
+    return duration;
+  }
+
+  log(level: string, message: string, data?: any): void {
+    if (!this.shouldLog(level)) return;
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      data: data ? JSON.parse(JSON.stringify(data)) : undefined,
+      stack: level === 'ERROR' ? new Error().stack : undefined
+    };
+
+    this.logs.push(logEntry);
+    
+    if (DEBUG_CONFIG.LOG_TO_CONSOLE) {
+      const emoji = {
+        'ERROR': '🚨',
+        'WARN': '⚠️',
+        'INFO': 'ℹ️',
+        'TIMING': '⏱️',
+        'STATE': '📊',
+        'NETWORK': '🌐',
+        'DATABASE': '💾',
+        'VERBOSE': '🔍'
+      }[level] || '📝';
+      
+      console.log(`${emoji} [AuthDebugger] ${message}`, data || '');
+    }
+
+    if (DEBUG_CONFIG.LOG_TO_STORAGE && this.logs.length <= DEBUG_CONFIG.MAX_LOGS) {
+      localStorage.setItem('auth_debug_logs', JSON.stringify(this.logs.slice(-DEBUG_CONFIG.MAX_LOGS)));
+    }
+  }
+
+  captureState(stateName: string, state: any): void {
+    if (!DEBUG_CONFIG.TRACK_STATE_CHANGES) return;
+    
+    const snapshot = {
+      timestamp: Date.now(),
+      stateName,
+      state: JSON.parse(JSON.stringify(state))
+    };
+    
+    this.stateSnapshots.push(snapshot);
+    this.log('STATE', `📊 STATE CAPTURE: ${stateName}`, snapshot);
+  }
+
+  error(message: string, error: any, context?: any): void {
+    this.log('ERROR', message, { error: error?.message || error, context, stack: error?.stack });
+  }
+
+  warn(message: string, data?: any): void {
+    this.log('WARN', message, data);
+  }
+
+  info(message: string, data?: any): void {
+    this.log('INFO', message, data);
+  }
+
+  verbose(message: string, data?: any): void {
+    this.log('VERBOSE', message, data);
+  }
+
+  network(message: string, data?: any): void {
+    this.log('NETWORK', message, data);
+  }
+
+  database(message: string, data?: any): void {
+    this.log('DATABASE', message, data);
+  }
+
+  exportLogs(): string {
+    return JSON.stringify({
+      logs: this.logs,
+      stateSnapshots: this.stateSnapshots,
+      timers: Array.from(this.timers.entries()),
+      config: DEBUG_CONFIG,
+      timestamp: new Date().toISOString()
+    }, null, 2);
+  }
+
+  clearLogs(): void {
+    this.logs = [];
+    this.stateSnapshots = [];
+    this.timers.clear();
+    localStorage.removeItem('auth_debug_logs');
+    this.info('🧹 Debug logs cleared');
+  }
+}
+
+const authDebugger = new AuthDebugger();
+
 interface User {
   id: string;
   email: string;
@@ -54,18 +189,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!lastActivity || now - parseInt(lastActivity) > 3600000) {
         console.log('[AuthContext] Checking for stale auth state...');
         
-        // Check if there's a valid current session before clearing
-        const { data: sessionData } = await supabase.auth.getSession();
-        
-        if (!sessionData.session) {
-          // Only clear if there's actually no valid session
-          console.log('[AuthContext] No valid session found, clearing stale state');
+        // Use a timeout to prevent hanging on getSession()
+        try {
+          const sessionPromise = supabase.auth.getSession();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Session check timeout')), 3000)
+          );
+          
+          const { data: sessionData } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+          
+          if (!sessionData.session) {
+            // Only clear if there's actually no valid session
+            console.log('[AuthContext] No valid session found, clearing stale state');
+            localStorage.removeItem('lastAuthActivity');
+            supabase.auth.signOut({ scope: 'local' });
+          } else {
+            // Valid session exists (like fresh Google OAuth), update activity timestamp
+            console.log('[AuthContext] Valid session found, updating activity timestamp');
+            localStorage.setItem('lastAuthActivity', String(now));
+          }
+        } catch (error) {
+          console.warn('[AuthContext] Session check timed out, clearing stale state as precaution');
           localStorage.removeItem('lastAuthActivity');
           supabase.auth.signOut({ scope: 'local' });
-        } else {
-          // Valid session exists (like fresh Google OAuth), update activity timestamp
-          console.log('[AuthContext] Valid session found, updating activity timestamp');
-          localStorage.setItem('lastAuthActivity', String(now));
         }
       }
     };
@@ -78,7 +224,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Clear stale state first
         await clearStaleState();
         
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        // Add timeout protection to the main getSession call
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Main session check timeout')), 8000)
+        );
+        
+        const { data: sessionData, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]) as any;
         
         if (!mounted) return;
         
@@ -93,8 +245,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Record successful auth activity
           localStorage.setItem('lastAuthActivity', String(Date.now()));
           
-          const user = await createUserFromSupabase(sessionData.session.user);
-          setUser(user);
+          // Use session metadata immediately for fast initialization (no database call)
+          const fastUser: User = {
+            id: sessionData.session.user.id,
+            email: sessionData.session.user.email || '',
+            username: sessionData.session.user.user_metadata?.username || sessionData.session.user.email?.split('@')[0] || 'user',
+            role: sessionData.session.user.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
+          };
+          
+          setUser(fastUser);
+          
+          // Background fetch of complete profile data (non-blocking)
+          createUserFromSupabase(sessionData.session.user).then(completeUser => {
+            if (mounted && (
+              fastUser.username !== completeUser.username ||
+              fastUser.profile_picture_url !== completeUser.profile_picture_url
+            )) {
+              console.log('[AuthContext] Updating user with complete profile data');
+              setUser(completeUser);
+            }
+          }).catch(error => {
+            console.log('[AuthContext] Background profile fetch failed, keeping session metadata:', error);
+            // This is fine - we already have working user data from session metadata
+          });
         } else {
           console.log('[AuthContext] No existing session found');
           // Ensure we're in a clean state
