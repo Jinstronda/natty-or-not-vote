@@ -29,12 +29,12 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   } = useInfluencers(searchTerm, !!user); // Only enable query when user is authenticated
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  
+
   // Loading state is now purely based on the query state
   const hasData = data?.pages && data.pages.length > 0;
   const isInitialLoading = (isPending || isLoading) && !hasData;
   const isRefreshing = isFetching && hasData;
-  
+
   // Intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -54,7 +54,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const allInfluencers = hasData ? data.pages.flatMap(page => page.data) : [];
-
+  
   // Show loading while checking authentication
   if (authLoading) {
     return (

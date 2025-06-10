@@ -32,20 +32,20 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
       <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
         <CardHeader className="p-0">
           <div className="aspect-square relative">
-            <img
+          <img
               src={influencer.image}
-              alt={influencer.name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => {
-                e.currentTarget.src = '/placeholder.svg';
-              }}
-            />
+            alt={influencer.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
+          />
             {influencer.claimed_status === 'claimed' && (
               <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
                 Claimed
               </div>
             )}
-          </div>
+        </div>
         </CardHeader>
         
         <CardContent className="p-4">
@@ -60,10 +60,10 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                 <span>Natty: {voteStats.natty_count}</span>
                 <span>Juicy: {voteStats.not_natty_count}</span>
               </div>
-              <Progress 
-                value={voteStats.natty_percentage} 
+                <Progress 
+                  value={voteStats.natty_percentage} 
                 className="h-2 transition-all duration-300"
-              />
+                />
               <div className="text-center">
                 <Badge 
                   className={`

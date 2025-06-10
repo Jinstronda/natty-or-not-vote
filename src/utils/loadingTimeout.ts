@@ -8,4 +8,4 @@
  */
 export const withDatabaseTimeout = async <T>(operation: () => Promise<T>, _config?: unknown): Promise<T> => {
   return operation();
-}; 
+};
