@@ -455,6 +455,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Fallback to user metadata (crucial for token refresh scenarios and timeouts)
     console.log('[AuthContext] Using fallback user data for:', supabaseUser.id);
+    // Schedule background fetch to update user context if DB is slow
+    setTimeout(async () => {
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', supabaseUser.id)
+          .single();
+        if (profileData && !profileError) {
+          console.log('[AuthContext] Background profile fetch succeeded, updating user context');
+          setUser({
+            id: profileData.id,
+            email: profileData.email,
+            username: profileData.username,
+            role: profileData.role,
+            profile_picture_url: profileData.profile_picture_url || undefined
+          });
+        } else {
+          console.warn('[AuthContext] Background profile fetch failed:', profileError);
+        }
+      } catch (err) {
+        console.error('[AuthContext] Background profile fetch error:', err);
+      }
+    }, 5000); // Try again after 5 seconds
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
