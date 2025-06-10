@@ -62,18 +62,20 @@ export const useInfluencers = (searchTerm?: string) => {
     gcTime: 10 * 60 * 1000, // 10 minutes cache time
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
     retry: (failureCount, error: any) => {
-      // Don't retry on timeout or auth errors
+      console.log(`[useInfluencers] Retry attempt ${failureCount}, error:`, error);
+      
+      // Retry timeout errors more aggressively  
       if (error?.message?.includes('timed out')) {
-        console.log('[useInfluencers] Not retrying timeout error');
-        return false;
+        console.log('[useInfluencers] Retrying timeout error');
+        return failureCount < 3; // Increased retries for timeouts
       }
       if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
         console.log('[useInfluencers] Not retrying auth error');
         return false;
       }
-      // Retry up to 2 times for network issues
-      return failureCount < 2;
+      // Retry up to 3 times for all issues
+      return failureCount < 3;
     },
-    retryDelay: 1000, // Fixed 1 second delay instead of exponential backoff
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff
   });
 };
