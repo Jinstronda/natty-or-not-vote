@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         });
       }
-    }, 15000); // 15 second timeout
+    }, 12000); // 12 second timeout (reduced from 15)
 
     // Check for stale auth state and clear if necessary
     const clearStaleState = () => {
@@ -185,14 +185,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
-      // Get profile
-      const { data: profileData, error: profileError } = await supabase
+      console.log('[AuthContext] Creating user from Supabase data for:', supabaseUser.id);
+      
+      // Add timeout protection for database queries
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timeout')), 8000) // 8 second timeout
+      );
+
+      // Get profile with timeout protection
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
+      const { data: profileData, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
+
       if (profileData && !profileError) {
+        console.log('[AuthContext] Successfully fetched profile from database');
         return {
           id: profileData.id,
           email: profileData.email,
@@ -208,7 +221,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
         const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
         
-        const { data: createData, error: createError } = await supabase
+        // Add timeout protection for profile creation too
+        const createPromise = supabase
           .from('profiles')
           .insert({
             id: supabaseUser.id,
@@ -219,7 +233,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select('*')
           .single();
 
+        const { data: createData, error: createError } = await Promise.race([
+          createPromise,
+          timeoutPromise
+        ]) as any;
+
         if (createData && !createError) {
+          console.log('[AuthContext] Successfully created new profile');
           return {
             id: createData.id,
             email: createData.email,
@@ -228,12 +248,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             profile_picture_url: createData.profile_picture_url || undefined
           };
         }
+        
+        console.warn('[AuthContext] Failed to create profile, using fallback');
       }
     } catch (error) {
       console.error('[AuthContext] Error in createUserFromSupabase:', error);
+      
+      // If it's a timeout error, log it specifically
+      if (error instanceof Error && error.message === 'Database query timeout') {
+        console.warn('[AuthContext] Database query timed out, using fallback user data');
+      }
     }
 
-    // Fallback to user metadata (crucial for token refresh scenarios)
+    // Fallback to user metadata (crucial for token refresh scenarios and timeouts)
     console.log('[AuthContext] Using fallback user data for:', supabaseUser.id);
     return {
       id: supabaseUser.id,
