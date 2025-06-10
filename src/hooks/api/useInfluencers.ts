@@ -29,8 +29,8 @@ export const useInfluencers = (searchTerm?: string) => {
             return query;
           },
           { 
-            timeout: 5000, // Reduced from 8000ms to 5000ms
-            retries: 1, // Reduced from 2 to 1 retry
+            timeout: 15000, // Increased to 15 seconds for better production resilience
+            retries: 2, // Restored 2 retries for network reliability
             operation: `fetchInfluencers_page_${pageParam}` 
           }
         );
@@ -67,8 +67,8 @@ export const useInfluencers = (searchTerm?: string) => {
         console.log('[useInfluencers] Not retrying auth error');
         return false;
       }
-      // Only retry once for network issues
-      return failureCount < 1;
+      // Retry up to 2 times for network issues
+      return failureCount < 2;
     },
     retryDelay: 1000, // Fixed 1 second delay instead of exponential backoff
   });

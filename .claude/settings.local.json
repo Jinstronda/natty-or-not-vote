@@ -13,7 +13,14 @@
       "Bash(npm run lint:*)",
       "Bash(env)",
       "Bash(npm run type-check:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "Bash(sudo apt-get:*)",
+      "Bash(sudo apt-get install:*)",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql"
     ],
     "deny": []
   },
