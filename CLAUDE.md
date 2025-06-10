@@ -36,3 +36,9 @@ General Debugging Principles:
 - Always confirm before making permanent changes
 
 - Communication Guideline: Always question me for more information if more information is needed, never change anything that doesnt need fixing
+
+- Mistake Logging Protocol: Everytime a mistake is made, document it in this file to:
+  - Create awareness of past errors
+  - Prevent repetition of the same mistakes
+  - Maintain a learning and improvement-focused approach
+  - Ensure transparency and accountability in problem-solving
