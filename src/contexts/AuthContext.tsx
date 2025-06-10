@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log('[AuthContext] Found existing session for user:', sessionData.session.user.id);
           
           // Record successful auth activity
-          localStorage.setItem('lastAuthActivity', Date.now().toString());
+          localStorage.setItem('lastAuthActivity', String(Date.now()));
           
           const user = await createUserFromSupabase(sessionData.session.user);
           setUser(user);
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('[AuthContext] User signed in:', session.user.id);
             
             // Record successful auth activity
-            localStorage.setItem('lastAuthActivity', Date.now().toString());
+            localStorage.setItem('lastAuthActivity', String(Date.now()));
             
             const user = await createUserFromSupabase(session.user);
             setUser(user);
@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               console.log('[AuthContext] Token refreshed, updating user data');
               
               // Update activity timestamp
-              localStorage.setItem('lastAuthActivity', Date.now().toString());
+              localStorage.setItem('lastAuthActivity', String(Date.now()));
               
               const refreshedUser = await createUserFromSupabase(session.user);
               setUser(refreshedUser);
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             } else {
               console.log('[AuthContext] Token refreshed, user data unchanged');
               // Still update activity timestamp
-              localStorage.setItem('lastAuthActivity', Date.now().toString());
+              localStorage.setItem('lastAuthActivity', String(Date.now()));
             }
           } else if (event === 'SIGNED_OUT') {
             console.log('[AuthContext] User signed out');

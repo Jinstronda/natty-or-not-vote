@@ -105,7 +105,7 @@ const ExpertReviewForm = ({ influencerId }: ExpertReviewFormProps) => {
         <div>
           <Label htmlFor="rating">Rating</Label>
           <Select
-            value={formData.rating.toString()}
+            value={String(formData.rating)}
             onValueChange={(value) => setFormData(prev => ({ ...prev, rating: parseInt(value) }))}
           >
             <SelectTrigger>
@@ -113,7 +113,7 @@ const ExpertReviewForm = ({ influencerId }: ExpertReviewFormProps) => {
             </SelectTrigger>
             <SelectContent>
               {[1, 2, 3, 4, 5].map((rating) => (
-                <SelectItem key={rating} value={rating.toString()}>
+                <SelectItem key={rating} value={String(rating)}>
                   {rating} Star{rating !== 1 ? 's' : ''}
                 </SelectItem>
               ))}
