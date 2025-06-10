@@ -21,7 +21,10 @@
       "mcp__supabase__list_projects",
       "mcp__supabase__list_tables",
       "mcp__supabase__execute_sql",
-      "Bash(npm run preview:*)"
+      "Bash(npm run preview:*)",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   },
