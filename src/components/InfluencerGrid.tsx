@@ -222,6 +222,31 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     }
   });
 
+  // Render emergency data if available
+  if (debugData && Array.isArray(debugData) && debugData.length > 0) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {debugData.map((influencer: any) => (
+          <InfluencerCard key={influencer.id} influencer={influencer} />
+        ))}
+        <div className="col-span-full text-center text-xs text-muted-foreground mt-4">
+          <span>⚠️ Emergency data loaded due to network or React Query issue.</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback UI for loading
+  if (actuallyLoading) {
+    return (
+      <div className="py-12 text-center">
+        <Skeleton className="h-8 w-8 mx-auto mb-4 animate-spin" />
+        <p className="text-muted-foreground">Loading influencers...</p>
+      </div>
+    );
+  }
+
+  // Fallback UI for error
   if (error) {
     return (
       <div className="text-center py-12">

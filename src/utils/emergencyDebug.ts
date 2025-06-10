@@ -51,7 +51,21 @@ export const emergencyInfluencerTest = async () => {
   }
 };
 
+/**
+ * Print Supabase session and storage state for debugging session persistence
+ */
+export const debugSessionState = () => {
+  const local = { ...localStorage };
+  const session = { ...sessionStorage };
+  console.log('🗝️ LocalStorage:', local);
+  console.log('🗝️ SessionStorage:', session);
+  supabase.auth.getSession().then(({ data, error }) => {
+    console.log('🔑 Supabase Session:', data, error);
+  });
+};
+
 // Add to window for emergency debugging
 if (typeof window !== 'undefined') {
   (window as any).emergencyInfluencerTest = emergencyInfluencerTest;
+  (window as any).debugSessionState = debugSessionState;
 } 
