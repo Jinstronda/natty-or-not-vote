@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -39,7 +38,7 @@
 
     /* Custom colors for voting */
     --natty: 142 76% 36%; /* Electric green */
-    --juicy: 322 83% 61%; /* Hot pink */
+    --juicy: 322 83% 61%; /* Hot pink/purple */
   }
 }
 
@@ -80,5 +79,58 @@
   
   .border-juicy {
     border-color: hsl(var(--juicy));
+  }
+
+  /* Enhanced micro-interaction utilities */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105 active:scale-95;
+  }
+  
+  .shadow-natty {
+    box-shadow: 0 4px 14px 0 hsl(var(--natty) / 0.3);
+  }
+  
+  .shadow-juicy {
+    box-shadow: 0 4px 14px 0 hsl(var(--juicy) / 0.3);
+  }
+  
+  .gradient-natty {
+    background: linear-gradient(135deg, hsl(var(--natty)) 0%, hsl(var(--natty) / 0.9) 100%);
+  }
+  
+  .gradient-juicy {
+    background: linear-gradient(135deg, hsl(var(--juicy)) 0%, hsl(var(--juicy) / 0.9) 100%);
+  }
+
+  /* Shimmer animation */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%) skewX(-12deg);
+    }
+    100% {
+      transform: translateX(100%) skewX(-12deg);
+    }
+  }
+  
+  .shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  /* Pulse glow effect */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+      box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s infinite;
   }
 }
