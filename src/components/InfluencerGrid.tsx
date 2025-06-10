@@ -19,15 +19,19 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isPending,
     error
   } = useInfluencers(searchTerm);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Use isPending for initial loading state to avoid timeout issues
+  const actuallyLoading = isPending || (isLoading && !data);
+
   // Loading watchdog protection for influencer grid
   useLoadingWatchdog({
     component: 'InfluencerGrid',
-    isLoading: isLoading,
+    isLoading: actuallyLoading,
     timeout: 15000, // 15 seconds max for initial load
     onTimeout: async () => {
       console.error('[InfluencerGrid] Loading timeout - running diagnostics');
@@ -85,7 +89,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  if (isLoading) {
+  if (actuallyLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -96,20 +100,6 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
               <Skeleton className="h-2 w-full" />
             </div>
           ))}
-        </div>
-        
-        {/* Emergency refresh button after 10 seconds */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Taking longer than expected? 
-          </p>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => window.location.reload()}
-          >
-            Refresh Page
-          </Button>
         </div>
       </div>
     );
