@@ -79,50 +79,90 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Get initial session with timeout protection and stale state handling
     const getInitialSession = async () => {
       try {
-        console.log('[AuthContext] Initializing session...');
+        console.log('[AuthContext] 🚀 Initializing session...');
         
         // Clear stale state first
+        console.log('[AuthContext] 🚀 Starting stale state check...');
+        const staleStart = Date.now();
         await clearStaleState();
+        console.log('[AuthContext] 🚀 Stale state check completed in:', Date.now() - staleStart, 'ms');
         
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        // Add timeout protection for getSession
+        console.log('[AuthContext] 🚀 Starting getSession() call...');
+        const sessionStart = Date.now();
         
-        if (!mounted) return;
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('getSession timeout')), 8000)
+        );
+        
+        const { data: sessionData, error: sessionError } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
+        
+        console.log('[AuthContext] 🚀 getSession() completed in:', Date.now() - sessionStart, 'ms');
+        console.log('[AuthContext] 🚀 Session result:', { 
+          hasSession: !!sessionData.session, 
+          hasUser: !!sessionData.session?.user,
+          error: sessionError,
+          userId: sessionData.session?.user?.id 
+        });
+        
+        if (!mounted) {
+          console.log('[AuthContext] 🚀 Component unmounted, aborting');
+          return;
+        }
         
         if (sessionError) {
-          console.error('[AuthContext] Session error:', sessionError);
+          console.error('[AuthContext] 🚀 Session error:', sessionError);
           throw sessionError;
         }
         
         if (sessionData.session?.user) {
-          console.log('[AuthContext] Found existing session for user:', sessionData.session.user.id);
+          console.log('[AuthContext] 🚀 Found existing session for user:', sessionData.session.user.id);
           
           // Record successful auth activity
           localStorage.setItem('lastAuthActivity', String(Date.now()));
           
+          console.log('[AuthContext] 🚀 Creating user from Supabase...');
+          const userStart = Date.now();
           const user = await createUserFromSupabase(sessionData.session.user);
+          console.log('[AuthContext] 🚀 User creation completed in:', Date.now() - userStart, 'ms');
           setUser(user);
         } else {
-          console.log('[AuthContext] No existing session found');
+          console.log('[AuthContext] 🚀 No existing session found');
           // Ensure we're in a clean state
           setUser(null);
         }
         
         // Clear the timeout since we completed successfully
         if (authTimeoutId) {
+          console.log('[AuthContext] 🚀 Clearing auth timeout - session init successful');
           clearTimeout(authTimeoutId);
           authTimeoutId = null;
         }
+        console.log('[AuthContext] 🚀 Setting loading to false');
         setLoading(false);
       } catch (error) {
-        console.error('[AuthContext] Error getting initial session:', error);
+        console.error('[AuthContext] 🚀 Error getting initial session:', error);
+        console.log('[AuthContext] 🚀 Error type:', error instanceof Error ? error.message : 'Unknown error');
+        
+        if (error instanceof Error && error.message === 'getSession timeout') {
+          console.error('[AuthContext] 🚀 getSession() timed out after 8 seconds!');
+        }
+        
         if (mounted) {
           // Force clean state on initialization error
+          console.log('[AuthContext] 🚀 Forcing clean state due to error');
           setUser(null);
           // Clear the timeout
           if (authTimeoutId) {
+            console.log('[AuthContext] 🚀 Clearing auth timeout due to error');
             clearTimeout(authTimeoutId);
             authTimeoutId = null;
           }
+          console.log('[AuthContext] 🚀 Setting loading to false due to error');
           setLoading(false);
         }
       }
