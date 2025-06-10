@@ -14,27 +14,28 @@
       "Bash(env)",
       "Bash(npm run type-check:*)",
       "Bash(pkill:*)",
-      "mcp__puppeteer__puppeteer_navigate",
+      "mcp_supabase_*",
+      "mcp_puppeteer_*",
       "Bash(sudo apt-get:*)",
       "Bash(sudo apt-get install:*)",
-      "mcp__puppeteer__puppeteer_screenshot",
-      "mcp__supabase__list_projects",
-      "mcp__supabase__list_tables",
-      "mcp__supabase__execute_sql",
       "Bash(npm run preview:*)",
-      "mcp__puppeteer__puppeteer_evaluate",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "mcp__supabase__get_project_url",
-      "mcp__supabase__get_logs",
       "WebFetch(domain:nattyorjuicy.com)",
-      "mcp__supabase__get_project",
-      "mcp__supabase__apply_migration"
+      "WebFetch(domain:nutgdqowaqjnxtedascw.supabase.co)",
+      "WebFetch(domain:localhost)",
+      "Bash(mkdir:*)",
+      "Bash(cd:*)"
     ],
     "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "supabase"
-  ]
+    "supabase",
+    "puppeteer"
+  ],
+  "workspaceSettings": {
+    "projectRoot": "C:\\Users\\joaop\\Documents\\Faculdade\\Nova IMs\\ai\\Artificial Life Project\\natty-or-not-vote",
+    "dataDirectory": "C:\\Users\\joaop\\Documents\\Faculdade\\Nova IMs\\ai\\Artificial Life Project\\natty-or-not-vote\\.mcp-data"
+  }
 }

@@ -228,7 +228,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         authDebugger.error('🚨 Authentication timeout reached - forcing fallback', { 
           mounted, 
           loading, 
-          timeoutDuration: 5000,
+          timeoutDuration: 8000, // Increased back to 8 seconds
           initializationComplete
         });
         
@@ -239,7 +239,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         authDebugger.info('✅ Auth fallback completed', { user: null, loading: false });
       }
-    }, 5000); // Reduced to 5 seconds for faster recovery
+    }, 8000); // Increased back to 8 seconds for better network handling
 
     authDebugger.verbose('⏰ Auth timeout timer set', { timeoutId: authTimeoutId });
 
@@ -248,10 +248,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         authDebugger.startTimer('getSession_call');
         
-        // Race condition: getSession vs timeout
+        // Race condition: getSession vs timeout - increased timeout for network issues
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('getSession timeout')), 4000)
+          setTimeout(() => reject(new Error('getSession timeout')), 6000) // Increased to 6 seconds
         );
         
         const { data: { session }, error } = await Promise.race([
@@ -266,8 +266,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mounted && !initializationComplete) {
           if (session?.user) {
             authDebugger.info('🔐 Session found, creating user');
-            const user = await createUserFromSupabase(session.user);
-            setUser(user);
+            try {
+              const user = await createUserFromSupabase(session.user);
+              setUser(user);
+            } catch (userError) {
+              // If user creation fails, use basic fallback immediately
+              authDebugger.error('User creation failed, using immediate fallback', userError);
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.email?.split('@')[0] || 'user',
+                role: (session.user.email === 'jistronda100@gmail.com' || session.user.email === 'joaopanizzutti@gmail.com') ? 'admin' : 'user'
+              });
+            }
           } else {
             authDebugger.info('🔓 No session found');
             setUser(null);
@@ -368,7 +379,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Add timeout protection for database queries
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Database query timeout')), 8000) // 8 second timeout
+        setTimeout(() => reject(new Error('Database query timeout')), 12000) // Increased to 12 seconds
       );
 
       // Get profile with timeout protection
