@@ -24,7 +24,8 @@
       "Bash(npm run preview:*)",
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__supabase__get_project_url"
     ],
     "deny": []
   },
