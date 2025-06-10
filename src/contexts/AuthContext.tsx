@@ -46,16 +46,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, 12000); // 12 second timeout (reduced from 15)
 
     // Check for stale auth state and clear if necessary
-    const clearStaleState = () => {
+    const clearStaleState = async () => {
       const lastActivity = localStorage.getItem('lastAuthActivity');
       const now = Date.now();
       
-      // If no activity recorded or it's been more than 1 hour, clear everything
+      // If no activity recorded or it's been more than 1 hour, check if we have a valid session
       if (!lastActivity || now - parseInt(lastActivity) > 3600000) {
-        console.log('[AuthContext] Clearing potentially stale auth state');
-        localStorage.removeItem('lastAuthActivity');
-        // Clear any stale Supabase state
-        supabase.auth.signOut({ scope: 'local' });
+        console.log('[AuthContext] Checking for stale auth state...');
+        
+        // Check if there's a valid current session before clearing
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (!sessionData.session) {
+          // Only clear if there's actually no valid session
+          console.log('[AuthContext] No valid session found, clearing stale state');
+          localStorage.removeItem('lastAuthActivity');
+          supabase.auth.signOut({ scope: 'local' });
+        } else {
+          // Valid session exists (like fresh Google OAuth), update activity timestamp
+          console.log('[AuthContext] Valid session found, updating activity timestamp');
+          localStorage.setItem('lastAuthActivity', String(now));
+        }
       }
     };
 
@@ -65,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('[AuthContext] Initializing session...');
         
         // Clear stale state first
-        clearStaleState();
+        await clearStaleState();
         
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
