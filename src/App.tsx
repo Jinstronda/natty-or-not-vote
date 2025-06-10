@@ -13,7 +13,6 @@ import NotFound from "./pages/NotFound";
 import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
-import "./utils/authRecovery"; // Import auth recovery utilities
 import "./utils/emergencyDebug"; // Import emergency debug utilities
 
 const App = () => (

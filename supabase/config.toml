@@ -1,4 +1,3 @@
-
 [project]
 ref = "nutgdqowaqjnxtedascw"
 
@@ -33,8 +32,8 @@ enable_confirmations = false
 
 [auth.external.google]
 enabled = true
-client_id = "env(GOOGLE_CLIENT_ID)"
-secret = "env(GOOGLE_CLIENT_SECRET)"
+client_id = "994824658798-5ihd6j1bru8sjjertdd7m98bg8s5m165.apps.googleusercontent.com"
+secret = "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"
 redirect_uri = "https://nutgdqowaqjnxtedascw.supabase.co/auth/v1/callback"
 
 [db]
