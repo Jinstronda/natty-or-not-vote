@@ -39,6 +39,7 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
+      refetchOnMount: false, // Don't automatically refetch on mount to reduce load
       retry: (failureCount: number, error: Error) => {
         // Don't retry on specific errors
         if ((error as any)?.code === 'PGRST116') return false; // No data found
@@ -47,9 +48,10 @@ export const queryClient = new QueryClient({
         if ((error as any)?.status === 401) return false; // Unauthorized
         if (error?.message?.includes('timed out')) return false; // Timeout errors
         
-        return failureCount < 2;
+        // Reduce retries to prevent infinite loading loops
+        return failureCount < 1;
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Max 5 second delay
+      retryDelay: 1000, // Fixed 1 second delay
       networkMode: 'online', // Only run queries when online
     },
     mutations: {
