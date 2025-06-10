@@ -25,7 +25,14 @@ export const useInfluencers = (searchTerm?: string) => {
         }
 
         console.log('[useInfluencers] About to execute query...');
-        const result = await query;
+        
+        // Add manual timeout to prevent hanging
+        const queryPromise = query;
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000);
+        });
+        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
         
         console.log('[useInfluencers] Query completed. Result:', {
           data: result.data,
