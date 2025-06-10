@@ -1,20 +1,28 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
 import { useInfluencers } from "@/hooks/api/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
-import { toast } from "@/hooks/use-toast";
-import { quickConnectionTest } from "@/utils/diagnostics";
-import { supabase } from "@/integrations/supabase/client";
 
 interface InfluencerGridProps {
   searchTerm?: string;
 }
 
+interface Influencer {
+  id: string;
+  name: string;
+  image: string;
+  claimed_status: string;
+}
+
+interface InfluencerPage {
+  data: Influencer[];
+  nextPage?: number;
+}
+
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
-  const { loading: authLoading } = useAuth();
+  const { user } = useAuth();
   
   const {
     data,
@@ -29,146 +37,14 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     isError,
     isSuccess,
     isFetching
-  } = useInfluencers(searchTerm, !authLoading); // Only run query when auth is ready
+  } = useInfluencers(searchTerm, true);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
   
-  // Emergency loading override - prevent infinite loading
-  const [emergencyOverride, setEmergencyOverride] = useState(false);
-  const [debugData, setDebugData] = useState<any>(null);
+  // Loading state is now purely based on the query state
+  const isInitialLoading = (isPending || isLoading) && (!data || !data.pages?.length);
+  const isRefreshing = isFetching && data?.pages?.length > 0;
   
-  useEffect(() => {
-    // If auth is no longer loading but query is still pending for too long, force override
-    if (!authLoading && (isPending || isLoading)) {
-      const timeoutId = setTimeout(() => {
-        console.error('[InfluencerGrid] EMERGENCY: Forcing query completion after 10 seconds');
-        setEmergencyOverride(true);
-        
-        // Try to fetch data directly as fallback
-        const fetchDirectly = async () => {
-          try {
-            const { data } = await supabase
-              .from('influencers')
-              .select('id, name, image, claimed_status')
-              .order('created_at', { ascending: false })
-              .limit(20);
-            
-            if (data) {
-              console.log('[InfluencerGrid] Emergency fetch successful:', data);
-              setDebugData(data);
-            }
-          } catch (error) {
-            console.error('[InfluencerGrid] Emergency fetch failed:', error);
-          }
-        };
-        
-        fetchDirectly();
-      }, 10000);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [authLoading, isPending, isLoading]);
-
-  // More robust loading state detection - prevent infinite loading
-  const hasAnyData = data?.pages?.length > 0 || (data && Object.keys(data).length > 0);
-  const isInitialLoading = (isPending || isLoading) && !hasAnyData && !emergencyOverride;
-  const isRefreshing = isFetching && hasAnyData;
-  const actuallyLoading = isInitialLoading && !isRefreshing && !authLoading;
-  
-  // Force show data if we have it, regardless of loading state
-  const forceShowData = hasAnyData || (data?.pages?.[0]?.data?.length > 0) || emergencyOverride;
-  
-  // 🔧 COMPREHENSIVE STATE DEBUGGING
-  console.log('[InfluencerGrid] 🚨 CRITICAL DEBUG - React Query State Analysis:', {
-    // Primary states
-    isPending,
-    isLoading,
-    isFetching,
-    isFetchingNextPage,
-    isError,
-    isSuccess,
-    
-    // Status indicators
-    status, // 'pending' | 'error' | 'success'
-    fetchStatus, // 'fetching' | 'paused' | 'idle'
-    
-    // Data analysis
-    dataExists: !!data,
-    dataStructure: data ? Object.keys(data) : 'NO_DATA',
-    pagesArray: data?.pages,
-    pagesLength: data?.pages?.length,
-    firstPageExists: !!data?.pages?.[0],
-    firstPageData: data?.pages?.[0]?.data,
-    firstPageLength: data?.pages?.[0]?.data?.length,
-    
-    // Loading logic
-    hasAnyData,
-    actuallyLoading,
-    
-    // Auth state
-    authLoading,
-    queryEnabled: !authLoading,
-    
-    // Error info
-    error: error?.message,
-    errorStack: error?.stack,
-    
-    // Timestamp
-    timestamp: new Date().toISOString()
-  });
-  
-  // 🎯 HYPOTHESIS TEST: Check if React Query is stuck in pending state
-  if (status === 'pending' && !authLoading) {
-    console.error('🚨 [InfluencerGrid] HYPOTHESIS: React Query stuck in pending state despite auth ready!', {
-      status,
-      isPending,
-      isLoading,
-      authLoading,
-      queryEnabled: !authLoading,
-      timeSinceLastRender: performance.now()
-    });
-  }
-  
-  // 🎯 HYPOTHESIS TEST: Check if data exists but component thinks it's loading
-  if (data?.pages?.[0]?.data?.length > 0 && actuallyLoading) {
-    console.error('🚨 [InfluencerGrid] HYPOTHESIS: Data exists but component shows loading!', {
-      dataLength: data.pages[0].data.length,
-      actuallyLoading,
-      isPending,
-      isLoading,
-      hasAnyData,
-      data: data.pages[0].data
-    });
-  }
-  
-  // Remove emergency timeout since data is loading successfully
-
-  // Loading watchdog protection for influencer grid
-  useLoadingWatchdog({
-    component: 'InfluencerGrid',
-    isLoading: actuallyLoading,
-    timeout: 15000, // Reduced to 15 seconds for better UX
-    onTimeout: async () => {
-      console.error('[InfluencerGrid] Loading timeout - running diagnostics');
-      
-      // Run quick connection test
-      const connectionOk = await quickConnectionTest();
-      
-      toast({
-        title: "Loading Timeout",
-        description: connectionOk 
-          ? "Database query timed out. The page will refresh automatically."
-          : "Connection issues detected. Please check your internet.",
-        variant: "destructive",
-      });
-      
-      // Auto-refresh after timeout to recover
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
-    }
-  });
-
   // Intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -188,65 +64,25 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const allInfluencers = data?.pages?.flatMap(page => page.data) || [];
-  
-  // 🔧 CRITICAL STATE ANALYSIS
-  console.log('[InfluencerGrid] 🚨 CRITICAL STATE ANALYSIS:', {
-    // React Query States
-    reactQueryStatus: status,
-    reactQueryFetchStatus: fetchStatus,
-    isPending,
-    isLoading,
-    isFetching,
-    isSuccess,
-    isError,
-    
-    // Data Analysis
-    dataExists: !!data,
-    allInfluencersCount: allInfluencers.length,
-    rawDataStructure: data ? Object.keys(data) : 'NO_DATA',
-    pages: data?.pages,
-    firstPageExists: !!data?.pages?.[0],
-    firstPageDataLength: data?.pages?.[0]?.data?.length,
-    
-    // Loading Logic Analysis
-    hasAnyData,
-    actuallyLoading,
-    shouldShowData: allInfluencers.length > 0,
-    shouldShowLoading: actuallyLoading,
-    
-    // State Mismatch Detection
-    STATE_MISMATCH: {
-      hasDataButShowsLoading: allInfluencers.length > 0 && actuallyLoading,
-      reactQuerySaysSuccessButShowsLoading: isSuccess && actuallyLoading,
-      dataExistsButPending: !!data && isPending
-    }
-  });
 
-  // Render emergency data if available
-  if (debugData && Array.isArray(debugData) && debugData.length > 0) {
+  // Loading state
+  if (isInitialLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {debugData.map((influencer: any) => (
-          <InfluencerCard key={influencer.id} influencer={influencer} />
-        ))}
-        <div className="col-span-full text-center text-xs text-muted-foreground mt-4">
-          <span>⚠️ Emergency data loaded due to network or React Query issue.</span>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="aspect-square w-full rounded-xl" />
+              <Skeleton className="h-4 w-3/4 mx-auto" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ))}
         </div>
       </div>
     );
   }
 
-  // Fallback UI for loading
-  if (actuallyLoading) {
-    return (
-      <div className="py-12 text-center">
-        <Skeleton className="h-8 w-8 mx-auto mb-4 animate-spin" />
-        <p className="text-muted-foreground">Loading influencers...</p>
-      </div>
-    );
-  }
-
-  // Fallback UI for error
+  // Error state
   if (error) {
     return (
       <div className="text-center py-12">
@@ -267,92 +103,8 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // 🔧 ULTIMATE FAILSAFE: Force show data if it exists, regardless of React Query state
-  const hasValidData = data?.pages?.length > 0 && data.pages[0]?.data?.length > 0;
-  
-  // 🚨 CRITICAL FIX: If we have data, show it immediately regardless of loading state
-  if (forceShowData) {
-    console.log('🚨 [InfluencerGrid] FORCING DATA DISPLAY - bypassing React Query state', {
-      allInfluencersCount: allInfluencers.length,
-      reactQueryState: { status, isPending, isLoading, isSuccess },
-      forcingDisplay: true
-    });
-    
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {allInfluencers.map((influencer) => (
-            <InfluencerCard key={influencer.id} influencer={influencer} />
-          ))}
-        </div>
-
-        <div ref={loadMoreRef} className="flex justify-center">
-          {isFetchingNextPage && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-square w-full rounded-xl" />
-                  <Skeleton className="h-4 w-3/4 mx-auto" />
-                  <Skeleton className="h-2 w-full" />
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {hasNextPage && !isFetchingNextPage && (
-            <Button 
-              variant="outline" 
-              onClick={() => fetchNextPage()}
-              className="mt-4"
-            >
-              Load More
-            </Button>
-          )}
-          
-          {!hasNextPage && allInfluencers.length > 0 && (
-            <p className="text-muted-foreground text-sm">
-              You've reached the end! 🎉
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
-  if (actuallyLoading && !hasValidData) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="space-y-4">
-              <Skeleton className="aspect-square w-full rounded-xl" />
-              <Skeleton className="h-4 w-3/4 mx-auto" />
-              <Skeleton className="h-2 w-full" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Emergency override removed - data is loading successfully
-
+  // Empty state
   if (allInfluencers.length === 0) {
-    // Emergency: If we're stuck loading but have data in the first page, try to render it
-    const emergencyData = data?.pages?.[0]?.data;
-    if (emergencyData && emergencyData.length > 0) {
-      console.warn('[InfluencerGrid] Emergency fallback: using first page data directly');
-      return (
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {emergencyData.map((influencer) => (
-              <InfluencerCard key={influencer.id} influencer={influencer} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
@@ -362,11 +114,15 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
+  // Success state
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {allInfluencers.map((influencer) => (
-          <InfluencerCard key={influencer.id} influencer={influencer} />
+          <InfluencerCard 
+            key={influencer.id} 
+            influencer={influencer}
+          />
         ))}
       </div>
 
