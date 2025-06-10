@@ -12,6 +12,7 @@ import { Check, X, UserPlus, Edit, Instagram, Youtube, Music, Link } from "lucid
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SecureImageUpload from "@/components/SecureImageUpload";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface SocialLinks {
   instagram?: string;
@@ -45,6 +46,7 @@ const SuggestionManagement = () => {
     description: '',
     social_links: {}
   });
+  const [tab, setTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
 
   const { data: suggestions = [] } = useQuery({
     queryKey: ['admin-suggestions'],
@@ -260,256 +262,193 @@ const SuggestionManagement = () => {
     </div>
   );
 
-  const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
-  const processedSuggestions = suggestions.filter(s => s.status !== 'pending');
+  const filteredSuggestions = suggestions.filter((s: any) => (tab === 'pending' ? s.status === 'pending' : tab === 'approved' ? s.status === 'approved' : s.status === 'rejected'));
+
+  // Add color classes
+  const statusColors = {
+    pending: 'border-gray-300',
+    approved: 'border-green-500',
+    rejected: 'border-fuchsia-500',
+  };
+  const badgeColors = {
+    pending: 'bg-gray-200 text-gray-700',
+    approved: 'bg-green-100 text-green-800',
+    rejected: 'bg-fuchsia-100 text-fuchsia-800',
+  };
+  const buttonColors = {
+    approve: 'bg-green-600 hover:bg-green-700 text-white',
+    reject: 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white',
+    advanced: 'border-fuchsia-500 text-fuchsia-700 hover:bg-fuchsia-50',
+  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            Pending Suggestions ({pendingSuggestions.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {pendingSuggestions.map((suggestion) => {
-              const socialLinks = suggestion.social_links as SocialLinks | null;
-              
-              return (
-                <div key={suggestion.id} className="flex items-start justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-lg">{suggestion.influencer_name}</span>
-                      <Badge variant="secondary">Pending</Badge>
+    <Card>
+      <CardHeader>
+        <CardTitle>Influencer Submissions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={tab} onValueChange={(value) => setTab(value as 'pending' | 'approved' | 'rejected')} className="w-full">
+          <TabsList className="mb-4 flex gap-2">
+            <TabsTrigger value="pending" className={tab === 'pending' ? 'font-bold text-green-700 border-b-2 border-green-500' : ''}>Pending</TabsTrigger>
+            <TabsTrigger value="approved" className={tab === 'approved' ? 'font-bold text-green-700 border-b-2 border-green-500' : ''}>Approved</TabsTrigger>
+            <TabsTrigger value="rejected" className={tab === 'rejected' ? 'font-bold text-fuchsia-700 border-b-2 border-fuchsia-500' : ''}>Rejected</TabsTrigger>
+          </TabsList>
+          <TabsContent value={tab} className="space-y-6">
+            {filteredSuggestions.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">No submissions in this category.</div>
+            ) : (
+              filteredSuggestions.map((suggestion: any) => (
+                <Card key={suggestion.id} className={`flex flex-col md:flex-row items-center md:items-start gap-4 p-6 rounded-2xl shadow-md border-l-8 ${statusColors[suggestion.status]}`}>
+                  <img
+                    src={suggestion.image_url || '/placeholder.svg'}
+                    alt={suggestion.influencer_name}
+                    className="w-24 h-24 object-cover rounded-xl border shadow-sm"
+                  />
+                  <div className="flex-1 w-full">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-xl tracking-tight">{suggestion.influencer_name}</h3>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badgeColors[suggestion.status]}`}>{suggestion.status.charAt(0).toUpperCase() + suggestion.status.slice(1)}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Suggested on {new Date(suggestion.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    
-                    {suggestion.image_url && (
-                      <div className="mb-3">
-                        <img 
-                          src={suggestion.image_url} 
-                          alt={suggestion.influencer_name} 
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
+                    <div className="text-xs text-muted-foreground mb-2">Submitted by: {suggestion.user_email || 'Unknown'} on {new Date(suggestion.timestamp).toLocaleDateString()}</div>
+                    <div className="mb-2 text-base text-gray-700">{suggestion.description || <span className="italic text-muted-foreground">No description</span>}</div>
+                    {suggestion.social_links && (
+                      <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                        {suggestion.social_links.instagram && <span className="flex items-center gap-1 text-pink-500"><Instagram className="h-4 w-4" />{suggestion.social_links.instagram}</span>}
+                        {suggestion.social_links.youtube && <span className="flex items-center gap-1 text-red-500"><Youtube className="h-4 w-4" />{suggestion.social_links.youtube}</span>}
+                        {suggestion.social_links.tiktok && <span className="flex items-center gap-1 text-black"><Music className="h-4 w-4" />{suggestion.social_links.tiktok}</span>}
+                        {suggestion.social_links.twitter && <span className="flex items-center gap-1 text-blue-500"><Link className="h-4 w-4" />{suggestion.social_links.twitter}</span>}
+                        {suggestion.social_links.website && <span className="flex items-center gap-1 text-fuchsia-500"><Link className="h-4 w-4" />{suggestion.social_links.website}</span>}
                       </div>
                     )}
-                    
-                    {socialLinks && Object.keys(socialLinks).length > 0 && (
-                      <div className="mb-3">
-                        <div className="text-sm font-medium mb-2">Social Links:</div>
-                        <div className="flex flex-wrap gap-2">
-                          {socialLinks.instagram && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Instagram className="h-3 w-3 text-pink-500" />
-                              Instagram
-                            </Badge>
-                          )}
-                          {socialLinks.youtube && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Youtube className="h-3 w-3 text-red-500" />
-                              YouTube
-                            </Badge>
-                          )}
-                          {socialLinks.tiktok && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Music className="h-3 w-3 text-black" />
-                              TikTok
-                            </Badge>
-                          )}
-                          {socialLinks.twitter && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Link className="h-3 w-3 text-blue-500" />
-                              Twitter
-                            </Badge>
-                          )}
-                          {socialLinks.website && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Link className="h-3 w-3 text-gray-500" />
-                              Website
-                            </Badge>
-                          )}
-                        </div>
+                    {tab === 'pending' && (
+                      <div className="flex gap-3 mt-4">
+                        <Button size="lg" className={buttonColors.approve} onClick={() => handleQuickApprove(suggestion)} disabled={updateSuggestionMutation.isPending || addInfluencerMutation.isPending}>
+                          Approve
+                        </Button>
+                        <Button size="lg" className={buttonColors.reject} onClick={() => handleQuickReject(suggestion.id)} disabled={updateSuggestionMutation.isPending}>
+                          Reject
+                        </Button>
+                        <Button size="lg" variant="outline" className={buttonColors.advanced} onClick={() => openAdvancedApproval(suggestion)}>
+                          Advanced...
+                        </Button>
                       </div>
                     )}
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
+        {editingSuggestion && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full mt-4"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Approve with Enhanced Details
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Approve with Enhanced Details</SheetTitle>
+              </SheetHeader>
+              <div className="space-y-6 mt-6">
+                <SecureImageUpload
+                  onImageUploaded={(url) => setEnhancedData({...enhancedData, image: url})}
+                  currentImage={enhancedData.image === '/placeholder.svg' ? undefined : enhancedData.image}
+                  onImageRemoved={() => setEnhancedData({...enhancedData, image: '/placeholder.svg'})}
+                />
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-name">Name</Label>
+                    <Input
+                      id="enhanced-name"
+                      value={enhancedData.name}
+                      onChange={(e) => setEnhancedData({...enhancedData, name: e.target.value})}
+                    />
                   </div>
                   
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={() => handleQuickApprove(suggestion)}
-                      disabled={addInfluencerMutation.isPending}
-                      className="flex items-center gap-2"
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-status">Claimed Status</Label>
+                    <Select
+                      value={enhancedData.claimed_status}
+                      onValueChange={(value) => setEnhancedData({...enhancedData, claimed_status: value})}
                     >
-                      <Check className="h-4 w-4" />
-                      Quick Approve
-                    </Button>
-                    
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openAdvancedApproval(suggestion)}
-                          className="flex items-center gap-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          Advanced
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-                        <SheetHeader>
-                          <SheetTitle>Approve with Enhanced Details</SheetTitle>
-                        </SheetHeader>
-                        {editingSuggestion && (
-                          <div className="space-y-6 mt-6">
-                            <SecureImageUpload
-                              onImageUploaded={(url) => setEnhancedData({...enhancedData, image: url})}
-                              currentImage={enhancedData.image === '/placeholder.svg' ? undefined : enhancedData.image}
-                              onImageRemoved={() => setEnhancedData({...enhancedData, image: '/placeholder.svg'})}
-                            />
-                            
-                            <div className="grid grid-cols-1 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-name">Name</Label>
-                                <Input
-                                  id="enhanced-name"
-                                  value={enhancedData.name}
-                                  onChange={(e) => setEnhancedData({...enhancedData, name: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-status">Claimed Status</Label>
-                                <Select
-                                  value={enhancedData.claimed_status}
-                                  onValueChange={(value) => setEnhancedData({...enhancedData, claimed_status: value})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="unclaimed">Unclaimed</SelectItem>
-                                    <SelectItem value="claimed">Claimed</SelectItem>
-                                    <SelectItem value="verified">Verified</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-height">Height</Label>
-                                <Input
-                                  id="enhanced-height"
-                                  placeholder="e.g., 5'10&quot; or 178cm"
-                                  value={enhancedData.height}
-                                  onChange={(e) => setEnhancedData({...enhancedData, height: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-weight">Weight</Label>
-                                <Input
-                                  id="enhanced-weight"
-                                  placeholder="e.g., 180 lbs or 82kg"
-                                  value={enhancedData.weight}
-                                  onChange={(e) => setEnhancedData({...enhancedData, weight: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-training">Years Training</Label>
-                                <Input
-                                  id="enhanced-training"
-                                  placeholder="e.g., 5 years"
-                                  value={enhancedData.years_training}
-                                  onChange={(e) => setEnhancedData({...enhancedData, years_training: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="enhanced-description">Description</Label>
-                                <Textarea
-                                  id="enhanced-description"
-                                  placeholder="Brief description..."
-                                  value={enhancedData.description}
-                                  onChange={(e) => setEnhancedData({...enhancedData, description: e.target.value})}
-                                  rows={3}
-                                />
-                              </div>
-                            </div>
-
-                            <SocialLinksForm
-                              socialLinks={enhancedData.social_links}
-                              onUpdate={updateSocialLink}
-                            />
-                            
-                            <Button 
-                              onClick={handleAdvancedApprove}
-                              disabled={addInfluencerMutation.isPending}
-                              className="w-full"
-                            >
-                              {addInfluencerMutation.isPending ? 'Adding...' : 'Approve & Add'}
-                            </Button>
-                          </div>
-                        )}
-                      </SheetContent>
-                    </Sheet>
-                    
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleQuickReject(suggestion.id)}
-                      disabled={updateSuggestionMutation.isPending}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unclaimed">Unclaimed</SelectItem>
+                        <SelectItem value="claimed">Claimed</SelectItem>
+                        <SelectItem value="verified">Verified</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-height">Height</Label>
+                    <Input
+                      id="enhanced-height"
+                      placeholder="e.g., 5'10&quot; or 178cm"
+                      value={enhancedData.height}
+                      onChange={(e) => setEnhancedData({...enhancedData, height: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-weight">Weight</Label>
+                    <Input
+                      id="enhanced-weight"
+                      placeholder="e.g., 180 lbs or 82kg"
+                      value={enhancedData.weight}
+                      onChange={(e) => setEnhancedData({...enhancedData, weight: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-training">Years Training</Label>
+                    <Input
+                      id="enhanced-training"
+                      placeholder="e.g., 5 years"
+                      value={enhancedData.years_training}
+                      onChange={(e) => setEnhancedData({...enhancedData, years_training: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enhanced-description">Description</Label>
+                    <Textarea
+                      id="enhanced-description"
+                      placeholder="Brief description..."
+                      value={enhancedData.description}
+                      onChange={(e) => setEnhancedData({...enhancedData, description: e.target.value})}
+                      rows={3}
+                    />
                   </div>
                 </div>
-              );
-            })}
-            
-            {pendingSuggestions.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No pending suggestions
+
+                <SocialLinksForm
+                  socialLinks={enhancedData.social_links}
+                  onUpdate={updateSocialLink}
+                />
+                
+                <Button 
+                  onClick={handleAdvancedApprove}
+                  disabled={addInfluencerMutation.isPending}
+                  className="w-full"
+                >
+                  {addInfluencerMutation.isPending ? 'Adding...' : 'Approve & Add'}
+                </Button>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {processedSuggestions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Processed Suggestions ({processedSuggestions.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {processedSuggestions.map((suggestion) => (
-                <div key={suggestion.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
-                  <div>
-                    <span className="font-medium">{suggestion.influencer_name}</span>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {new Date(suggestion.timestamp).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <Badge variant={suggestion.status === 'approved' ? 'default' : 'destructive'}>
-                    {suggestion.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+            </SheetContent>
+          </Sheet>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
