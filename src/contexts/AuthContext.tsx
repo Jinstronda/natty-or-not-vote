@@ -4,7 +4,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { withDatabaseTimeout, useLoadingTimeout } from '@/utils/loadingTimeout';
+import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 interface User {
   id: string;
@@ -28,28 +28,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
-  
-  // Timeout protection for auth operations
-  const authTimeout = useLoadingTimeout({
-    timeout: 15000, // 15 second max for auth operations
-    operation: 'Authentication',
-    onTimeout: () => {
-      console.error('[AuthContext] Authentication timed out - forcing completion');
-      setLoading(false);
-      toast({
-        title: "Connection Timeout",
-        description: "Authentication is taking longer than expected. Please refresh the page.",
-        variant: "destructive",
-      });
-    },
-    enableLogging: true
-  });
 
   useEffect(() => {
     let mounted = true;
-    
-    // Start auth timeout protection
-    authTimeout.startLoading();
+    let authTimeoutId: NodeJS.Timeout | null = null;
+
+    // Set a timeout for auth initialization
+    authTimeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.error('[AuthContext] Authentication timed out - forcing completion');
+        setLoading(false);
+        toast({
+          title: "Connection Timeout",
+          description: "Authentication is taking longer than expected. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
+    }, 15000); // 15 second timeout
 
     // Check for stale auth state and clear if necessary
     const clearStaleState = () => {
@@ -94,14 +89,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
         }
         
-        authTimeout.completeLoading();
+        // Clear the timeout since we completed successfully
+        if (authTimeoutId) {
+          clearTimeout(authTimeoutId);
+          authTimeoutId = null;
+        }
         setLoading(false);
       } catch (error) {
         console.error('[AuthContext] Error getting initial session:', error);
         if (mounted) {
           // Force clean state on initialization error
           setUser(null);
-          authTimeout.completeLoading(error instanceof Error ? error.message : 'Session initialization failed');
+          // Clear the timeout
+          if (authTimeoutId) {
+            clearTimeout(authTimeoutId);
+            authTimeoutId = null;
+          }
           setLoading(false);
         }
       }
@@ -171,10 +174,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       mounted = false;
-      authTimeout.cleanup();
+      // Clean up timeout if it exists
+      if (authTimeoutId) {
+        clearTimeout(authTimeoutId);
+      }
       subscription.unsubscribe();
     };
-  }, [queryClient, authTimeout]);
+  }, [queryClient]);
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
