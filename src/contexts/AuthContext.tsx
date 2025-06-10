@@ -122,13 +122,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         try {
           if (event === 'SIGNED_IN' && session?.user) {
-            console.log('[AuthContext] User signed in:', session.user.id);
+            console.log('[AuthContext] User signed in, using session metadata for fast login:', session.user.id);
             
             // Record successful auth activity
             localStorage.setItem('lastAuthActivity', String(Date.now()));
             
-            const user = await createUserFromSupabase(session.user);
-            setUser(user);
+            // Use session metadata directly for fast login (no database call)
+            const fastUser: User = {
+              id: session.user.id,
+              email: session.user.email || '',
+              username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'user',
+              role: session.user.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
+            };
+            
+            setUser(fastUser);
             // Invalidate auth-dependent queries
             queryClient.invalidateQueries({ queryKey: ['user-vote'] });
             queryClient.invalidateQueries({ queryKey: ['vote-stats'] });
@@ -154,6 +161,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               console.log('[AuthContext] Token refreshed, user data unchanged');
               // Still update activity timestamp
               localStorage.setItem('lastAuthActivity', String(Date.now()));
+            }
+          } else if (event === 'INITIAL_SESSION' && session?.user) {
+            // Background fetch of complete profile data (non-blocking)
+            console.log('[AuthContext] Initial session detected, fetching complete profile in background');
+            
+            try {
+              const completeUser = await createUserFromSupabase(session.user);
+              // Only update if user data has changed (e.g., profile_picture_url)
+              if (user && (
+                user.username !== completeUser.username ||
+                user.profile_picture_url !== completeUser.profile_picture_url
+              )) {
+                console.log('[AuthContext] Updating user with complete profile data');
+                setUser(completeUser);
+              }
+            } catch (error) {
+              console.log('[AuthContext] Background profile fetch failed, keeping session metadata');
+              // This is fine - we already have working user data from session metadata
             }
           } else if (event === 'SIGNED_OUT') {
             console.log('[AuthContext] User signed out');
