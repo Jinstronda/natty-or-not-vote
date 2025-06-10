@@ -2,47 +2,34 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 export const useUserVote = (influencerId: string) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   
   return useQuery({
     queryKey: ['user-vote', influencerId, user?.id],
     queryFn: async () => {
-      if (!user?.id) {
-        console.log('[useUserVote] No user ID available');
-        return null;
-      }
+      if (!user?.id || !influencerId) return null;
       
-      console.log('[useUserVote] Fetching vote for user:', user.id, 'influencer:', influencerId);
+      console.log('[useUserVote] Checking vote for user:', user.id, 'influencer:', influencerId);
       
-      const result = await withDatabaseTimeout(
-        () => supabase
-          .from('votes')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('influencer_id', influencerId)
-          .maybeSingle(),
-        { timeout: 5000, operation: 'getUserVote' }
-      );
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('influencer_id', influencerId)
+        .maybeSingle();
 
-      if (result.error) {
-        console.error('[useUserVote] Error:', result.error);
-        throw result.error;
+      if (error) {
+        console.error('[useUserVote] Error fetching user vote:', error);
+        throw error;
       }
+
+      const vote = data ? data.vote as 'natty' | 'juicy' : null;
+      console.log('[useUserVote] User vote found:', vote);
       
-      console.log('[useUserVote] Result:', result.data);
-      return result.data;
+      return vote;
     },
-    enabled: !authLoading && !!user?.id && !!influencerId, // Wait for auth to complete
-    staleTime: 60 * 1000, // 1 minute for user votes
-    retry: (failureCount, error: any) => {
-      // Don't retry auth-related errors
-      if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
-        return false;
-      }
-      return failureCount < 2;
-    },
+    enabled: !!user?.id && !!influencerId,
   });
 };

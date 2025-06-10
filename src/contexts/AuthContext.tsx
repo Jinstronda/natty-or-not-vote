@@ -4,7 +4,6 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { withDatabaseTimeout } from '@/utils/loadingTimeout';
 
 interface User {
   id: string;
@@ -68,20 +67,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Clear stale state first
         clearStaleState();
         
-        const sessionResult = await withDatabaseTimeout(
-          () => supabase.auth.getSession(),
-          { timeout: 8000, operation: 'getInitialSession' }
-        );
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (!mounted) return;
         
-        if (sessionResult.data.session?.user) {
-          console.log('[AuthContext] Found existing session for user:', sessionResult.data.session.user.id);
+        if (sessionError) {
+          console.error('[AuthContext] Session error:', sessionError);
+          throw sessionError;
+        }
+        
+        if (sessionData.session?.user) {
+          console.log('[AuthContext] Found existing session for user:', sessionData.session.user.id);
           
           // Record successful auth activity
           localStorage.setItem('lastAuthActivity', Date.now().toString());
           
-          const user = await createUserFromSupabase(sessionResult.data.session.user);
+          const user = await createUserFromSupabase(sessionData.session.user);
           setUser(user);
         } else {
           console.log('[AuthContext] No existing session found');
@@ -184,53 +185,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
-      // Get profile with timeout protection
-      const profileResult = await withDatabaseTimeout(
-        () => supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', supabaseUser.id)
-          .single(),
-        { timeout: 5000, operation: 'getProfile' }
-      );
+      // Get profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
 
-      if (profileResult.data && !profileResult.error) {
+      if (profileData && !profileError) {
         return {
-          id: profileResult.data.id,
-          email: profileResult.data.email,
-          username: profileResult.data.username,
-          role: profileResult.data.role,
-          profile_picture_url: profileResult.data.profile_picture_url || undefined
+          id: profileData.id,
+          email: profileData.email,
+          username: profileData.username,
+          role: profileData.role,
+          profile_picture_url: profileData.profile_picture_url || undefined
         };
       }
 
       // Only create profile if explicitly missing (not on token refresh)
-      if (profileResult.error?.code === 'PGRST116') {
+      if (profileError?.code === 'PGRST116') {
         console.log('[AuthContext] Profile not found, creating new profile for:', supabaseUser.id);
         const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
         const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
         
-        const createResult = await withDatabaseTimeout(
-          () => supabase
-            .from('profiles')
-            .insert({
-              id: supabaseUser.id,
-              email: supabaseUser.email || '',
-              username: username,
-              role: isAdmin ? 'admin' : 'user'
-            })
-            .select('*')
-            .single(),
-          { timeout: 5000, operation: 'createProfile' }
-        );
+        const { data: createData, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            username: username,
+            role: isAdmin ? 'admin' : 'user'
+          })
+          .select('*')
+          .single();
 
-        if (createResult.data && !createResult.error) {
+        if (createData && !createError) {
           return {
-            id: createResult.data.id,
-            email: createResult.data.email,
-            username: createResult.data.username,
-            role: createResult.data.role,
-            profile_picture_url: createResult.data.profile_picture_url || undefined
+            id: createData.id,
+            email: createData.email,
+            username: createData.username,
+            role: createData.role,
+            profile_picture_url: createData.profile_picture_url || undefined
           };
         }
       }

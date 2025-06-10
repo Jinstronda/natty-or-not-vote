@@ -11,7 +11,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Review } from "@/types/vote";
-import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 
@@ -36,32 +35,21 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
       
       console.log('[UserReviews] Fetching reviews for influencer:', influencerId);
       
-      const result = await withDatabaseTimeout(
-        async () => {
-          const { data, error: fetchError } = await supabase
-            .from('reviews')
-            .select(`
-              *,
-              profiles(username, profile_picture_url)
-            `)
-            .eq('influencer_id', influencerId)
-            .order('timestamp', { ascending: false });
+      const { data, error: fetchError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          profiles(username, profile_picture_url)
+        `)
+        .eq('influencer_id', influencerId)
+        .order('timestamp', { ascending: false });
 
-          if (fetchError) {
-            console.error('[UserReviews] Database error:', fetchError);
-            throw fetchError;
-          }
+      if (fetchError) {
+        console.error('[UserReviews] Database error:', fetchError);
+        throw fetchError;
+      }
 
-          return data;
-        },
-        { 
-          timeout: 10000, 
-          retries: 2, 
-          operation: `fetchReviews_${influencerId}` 
-        }
-      );
-
-      const formattedReviews: Review[] = result?.map(review => ({
+      const formattedReviews: Review[] = data?.map(review => ({
         id: review.id,
         userId: review.user_id,
         username: review.profiles?.username || 'Unknown User',
@@ -78,13 +66,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
     } catch (error) {
       console.error('[UserReviews] Error fetching reviews:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      if (errorMessage.includes('timed out')) {
-        setError('Reviews are taking too long to load. Please refresh the page.');
-      } else {
-        setError(errorMessage);
-      }
-      
+      setError(errorMessage);
       setReviews([]);
     } finally {
       setLoading(false);
@@ -123,17 +105,12 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
-      await withDatabaseTimeout(
-        async () => {
-          const { error } = await supabase
-            .from('reviews')
-            .delete()
-            .eq('id', reviewId);
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
 
-          if (error) throw error;
-        },
-        { timeout: 5000, retries: 1, operation: 'deleteReview' }
-      );
+      if (error) throw error;
 
       toast({
         title: "Review deleted",
