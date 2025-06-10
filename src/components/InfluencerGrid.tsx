@@ -20,7 +20,12 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     isFetchingNextPage,
     isLoading,
     isPending,
-    error
+    error,
+    status,
+    fetchStatus,
+    isError,
+    isSuccess,
+    isFetching
   } = useInfluencers(searchTerm);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -33,12 +38,19 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   console.log('[InfluencerGrid] Debug State:', {
     isPending,
     isLoading,
+    isFetching,
+    isFetchingNextPage,
+    status,
+    fetchStatus,
+    isError,
+    isSuccess,
     dataPages: data?.pages?.length,
     actuallyLoading,
     hasData: !!data,
     hasAnyData,
     firstPageData: data?.pages?.[0]?.data?.length,
-    rawDataKeys: data ? Object.keys(data) : 'no data'
+    rawDataKeys: data ? Object.keys(data) : 'no data',
+    error: error?.message
   });
   
   // Remove emergency timeout since data is loading successfully
