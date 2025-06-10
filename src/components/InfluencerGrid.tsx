@@ -37,24 +37,68 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const hasAnyData = data?.pages?.length > 0 || (data && Object.keys(data).length > 0);
   const actuallyLoading = (isPending || isLoading) && !hasAnyData;
   
-  // Debug logging to identify the issue
-  console.log('[InfluencerGrid] Debug State:', {
+  // 🔧 COMPREHENSIVE STATE DEBUGGING
+  console.log('[InfluencerGrid] 🚨 CRITICAL DEBUG - React Query State Analysis:', {
+    // Primary states
     isPending,
     isLoading,
     isFetching,
     isFetchingNextPage,
-    status,
-    fetchStatus,
     isError,
     isSuccess,
-    dataPages: data?.pages?.length,
-    actuallyLoading,
-    hasData: !!data,
+    
+    // Status indicators
+    status, // 'pending' | 'error' | 'success'
+    fetchStatus, // 'fetching' | 'paused' | 'idle'
+    
+    // Data analysis
+    dataExists: !!data,
+    dataStructure: data ? Object.keys(data) : 'NO_DATA',
+    pagesArray: data?.pages,
+    pagesLength: data?.pages?.length,
+    firstPageExists: !!data?.pages?.[0],
+    firstPageData: data?.pages?.[0]?.data,
+    firstPageLength: data?.pages?.[0]?.data?.length,
+    
+    // Loading logic
     hasAnyData,
-    firstPageData: data?.pages?.[0]?.data?.length,
-    rawDataKeys: data ? Object.keys(data) : 'no data',
-    error: error?.message
+    actuallyLoading,
+    
+    // Auth state
+    authLoading,
+    queryEnabled: !authLoading,
+    
+    // Error info
+    error: error?.message,
+    errorStack: error?.stack,
+    
+    // Timestamp
+    timestamp: new Date().toISOString()
   });
+  
+  // 🎯 HYPOTHESIS TEST: Check if React Query is stuck in pending state
+  if (status === 'pending' && !authLoading) {
+    console.error('🚨 [InfluencerGrid] HYPOTHESIS: React Query stuck in pending state despite auth ready!', {
+      status,
+      isPending,
+      isLoading,
+      authLoading,
+      queryEnabled: !authLoading,
+      timeSinceLastRender: performance.now()
+    });
+  }
+  
+  // 🎯 HYPOTHESIS TEST: Check if data exists but component thinks it's loading
+  if (data?.pages?.[0]?.data?.length > 0 && actuallyLoading) {
+    console.error('🚨 [InfluencerGrid] HYPOTHESIS: Data exists but component shows loading!', {
+      dataLength: data.pages[0].data.length,
+      actuallyLoading,
+      isPending,
+      isLoading,
+      hasAnyData,
+      data: data.pages[0].data
+    });
+  }
   
   // Remove emergency timeout since data is loading successfully
 
