@@ -9,31 +9,25 @@ export const useInfluencers = (searchTerm?: string) => {
   return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', searchTerm],
     enabled: true, // This table is publicly readable, no auth required
+    networkMode: 'always', // Try to fetch even with poor network
     queryFn: async ({ pageParam = 0 }) => {
       console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
       
       try {
-        const result = await withDatabaseTimeout(
-          async () => {
-            let query = supabase
-              .from('influencers')
-              .select('id, name, image, claimed_status')
-              .order('created_at', { ascending: false })
-              .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1)
-              .limit(ITEMS_PER_PAGE); // Add explicit limit for better performance
+        console.log('[useInfluencers] Starting direct query...');
+        
+        // EMERGENCY: Bypass timeout wrapper and try direct query
+        let query = supabase
+          .from('influencers')
+          .select('id, name, image, claimed_status')
+          .order('created_at', { ascending: false })
+          .limit(ITEMS_PER_PAGE);
 
-            if (searchTerm?.trim()) {
-              query = query.ilike('name', `%${searchTerm.trim()}%`);
-            }
+        if (searchTerm?.trim()) {
+          query = query.ilike('name', `%${searchTerm.trim()}%`);
+        }
 
-            return query;
-          },
-          { 
-            timeout: 15000, // Increased to 15 seconds for better production resilience
-            retries: 2, // Restored 2 retries for network reliability
-            operation: `fetchInfluencers_page_${pageParam}` 
-          }
-        );
+        const result = await query;
         
         if (result.error) {
           console.error('[useInfluencers] Error fetching influencers:', result.error);
