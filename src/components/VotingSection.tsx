@@ -144,7 +144,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
           onClick={() => handleVote('natty')}
           disabled={isVoting}
           className={`h-16 text-lg font-semibold transition-all ${
-            userVote?.vote === 'natty' 
+            userVote === 'natty' 
               ? 'bg-natty hover:bg-natty/90 text-white' 
               : 'bg-natty/10 border border-natty text-natty hover:bg-natty hover:text-white'
           }`}
@@ -157,7 +157,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
           onClick={() => handleVote('juicy')}
           disabled={isVoting}
           className={`h-16 text-lg font-semibold transition-all ${
-            userVote?.vote === 'juicy' 
+            userVote === 'juicy' 
               ? 'bg-juicy hover:bg-juicy/90 text-white' 
               : 'bg-juicy/10 border border-juicy text-juicy hover:bg-juicy hover:text-white'
           }`}
@@ -168,8 +168,8 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
       
       {userVote && (
         <div className="mb-4 text-center text-sm text-muted-foreground">
-          You voted: <span className={`font-semibold ${userVote.vote === 'natty' ? 'text-natty' : 'text-juicy'}`}>
-            {userVote.vote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
+          You voted: <span className={`font-semibold ${userVote === 'natty' ? 'text-natty' : 'text-juicy'}`}>
+            {userVote === 'natty' ? '🏆 Natty' : '💉 Juicy'}
           </span>
           <span className="text-xs block">You can change your vote anytime</span>
         </div>

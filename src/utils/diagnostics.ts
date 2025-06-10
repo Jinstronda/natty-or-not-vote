@@ -1,9 +1,9 @@
+
 /**
  * Diagnostic utilities for troubleshooting loading issues
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { withDatabaseTimeout } from './loadingTimeout';
 
 interface DiagnosticResult {
   test: string;
@@ -21,18 +21,24 @@ export const runDiagnostics = async (): Promise<DiagnosticResult[]> => {
   // Test 1: Basic Supabase connection
   try {
     const start = Date.now();
-    await withDatabaseTimeout(
-      () => supabase.from('influencers').select('count').limit(1).single(),
-      { timeout: 5000, operation: 'connectionTest' }
-    );
+    const { data, error } = await supabase.from('influencers').select('count').limit(1).single();
     const duration = Date.now() - start;
     
-    results.push({
-      test: 'Supabase Connection',
-      status: duration > 3000 ? 'warning' : 'pass',
-      message: duration > 3000 ? `Connection slow: ${duration}ms` : `Connection good: ${duration}ms`,
-      duration
-    });
+    if (error) {
+      results.push({
+        test: 'Supabase Connection',
+        status: 'fail',
+        message: `Connection failed: ${error.message}`,
+        duration
+      });
+    } else {
+      results.push({
+        test: 'Supabase Connection',
+        status: duration > 3000 ? 'warning' : 'pass',
+        message: duration > 3000 ? `Connection slow: ${duration}ms` : `Connection good: ${duration}ms`,
+        duration
+      });
+    }
   } catch (error) {
     results.push({
       test: 'Supabase Connection',
@@ -64,27 +70,24 @@ export const runDiagnostics = async (): Promise<DiagnosticResult[]> => {
   // Test 3: Influencers table access
   try {
     const start = Date.now();
-    const result = await withDatabaseTimeout(
-      () => supabase
-        .from('influencers')
-        .select('id, name')
-        .limit(1),
-      { timeout: 8000, operation: 'influencersTest' }
-    );
+    const { data, error } = await supabase
+      .from('influencers')
+      .select('id, name')
+      .limit(1);
     const duration = Date.now() - start;
     
-    if (result.error) {
+    if (error) {
       results.push({
         test: 'Influencers Table',
         status: 'fail',
-        message: `Table access failed: ${result.error.message}`,
+        message: `Table access failed: ${error.message}`,
         duration
       });
     } else {
       results.push({
         test: 'Influencers Table',
         status: duration > 5000 ? 'warning' : 'pass',
-        message: `Table accessible: ${result.data?.length || 0} rows found`,
+        message: `Table accessible: ${data?.length || 0} rows found`,
         duration
       });
     }
@@ -124,11 +127,8 @@ export const runDiagnostics = async (): Promise<DiagnosticResult[]> => {
  */
 export const quickConnectionTest = async (): Promise<boolean> => {
   try {
-    await withDatabaseTimeout(
-      () => supabase.from('influencers').select('count').limit(1),
-      { timeout: 3000, operation: 'quickTest' }
-    );
-    return true;
+    const { error } = await supabase.from('influencers').select('count').limit(1);
+    return !error;
   } catch (error) {
     console.error('[Diagnostics] Quick connection test failed:', error);
     return false;
