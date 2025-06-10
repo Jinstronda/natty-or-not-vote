@@ -16,26 +16,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Initial session check
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-      if (error) {
-        console.error('[Auth] getSession error', error);
-      }
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
-    getSession();
-
+    // This listener is the key. It fires immediately with a session if one is cached
+    // in localStorage, and then again later if the auth state changes (e.g., sign-in, sign-out, token refresh).
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      // As soon as we have a session (or know we don't), we are no longer loading.
+      // This is the most critical change.
+      setLoading(false); 
     });
+
+    // We still call getSession() to actively fetch the session on initial load.
+    // This is a backup for scenarios where onAuthStateChange might not fire immediately.
+    // But we no longer wait for it to set loading to false.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser(session.user);
+      }
+      // Ensure loading is false even if onAuthStateChange hasn't fired yet.
+      setLoading(false);
+    });
+
     return () => {
       subscription.unsubscribe();
     };
