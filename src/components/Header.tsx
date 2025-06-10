@@ -24,20 +24,19 @@ const Header = () => {
             </Button>
             {user && <SuggestInfluencer />}
             
-            {user && user.profile?.role === 'admin' && (
-              <Button asChild variant="ghost">
-                <Link to="/admin">Admin Panel</Link>
-              </Button>
-            )}
-            
             {user ? (
               <div className="flex items-center gap-4">
+                {user && user.role === 'admin' && (
+                  <Button asChild variant="ghost">
+                    <Link to="/admin">Admin Panel</Link>
+                  </Button>
+                )}
                 <Link 
                   to={`/user/${user.id}`}
                   className="font-medium hover:text-primary transition-colors flex items-center gap-1"
                 >
                   {user.user_metadata?.username || user.email}
-                  {user.profile?.role === 'admin' && <Crown className="h-4 w-4 text-yellow-500" />}
+                  {user.role === 'admin' && <Crown className="h-4 w-4 text-yellow-500" />}
                 </Link>
                 <Button variant="outline" onClick={signOut}>
                   Logout

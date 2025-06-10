@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
@@ -7,7 +8,7 @@ const AdminPanel = () => {
   const { user } = useAuth();
 
   // Redirect if not admin
-  if (!user || user.profile?.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
