@@ -1,11 +1,16 @@
-
-import { useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { User } from '@/types/auth';
 
-export const useUserProfile = () => {
-  const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser): Promise<User> => {
+interface UserProfile {
+  id: string;
+  username: string;
+  profilePictureUrl: string | null;
+  role: 'user' | 'admin';
+}
+
+export const useUserProfile = (userId: string) => {
+  const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser): Promise<UserProfile> => {
     console.log('👤 UserProfile: Fetching profile for:', supabaseUser.id);
     
     try {
@@ -25,7 +30,7 @@ export const useUserProfile = () => {
         return {
           id: profile.id,
           username: profile.username,
-          email: profile.email,
+          profilePictureUrl: profile.profile_picture_url,
           role: profile.role as 'user' | 'admin'
         };
       } else {
@@ -38,7 +43,7 @@ export const useUserProfile = () => {
                    supabaseUser.user_metadata?.full_name ||
                    supabaseUser.email?.split('@')[0] || 
                    'user',
-          email: supabaseUser.email || '',
+          profilePictureUrl: null,
           role: 'user' as const
         };
 
@@ -65,5 +70,46 @@ export const useUserProfile = () => {
     }
   }, []);
 
-  return { fetchUserProfile };
+  const [profileData, setProfileData] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (profile) {
+          setProfileData({
+            id: profile.id,
+            username: profile.username,
+            profilePictureUrl: profile.profile_picture_url,
+            role: profile.role as 'user' | 'admin',
+          });
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchProfile();
+    } else {
+      setProfileData(null);
+      setLoading(false);
+    }
+  }, [userId]);
+
+  return { profileData, loading, error };
 };

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +22,7 @@ const AdminRoleManagement = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user?.profile?.role === 'admin') {
       fetchUsers();
     }
   }, [user]);
@@ -72,7 +71,7 @@ const AdminRoleManagement = () => {
       console.log('Admin Action:', {
         action: 'role_change',
         admin_user: user?.id,
-        admin_username: user?.username,
+        admin_username: user?.profile?.username,
         target_user: userId,
         target_username: username,
         new_role: newRole,
@@ -119,7 +118,7 @@ const AdminRoleManagement = () => {
     }
   };
 
-  if (user?.role !== 'admin') {
+  if (user?.profile?.role !== 'admin') {
     return (
       <Card>
         <CardContent className="p-6">
