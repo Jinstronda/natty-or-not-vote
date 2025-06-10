@@ -2,14 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-interface Profile {
-  username?: string;
-  role?: string;
-  // Add other profile fields as needed
-}
-
 interface AuthContextValue {
-  user: (User & { profile: Profile | null }) | null;
+  user: User | null;
   loading: boolean;
   signUp: (email: string, password: string, username?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -19,33 +13,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<(User & { profile: Profile | null }) | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserProfile = async (user: User) => {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-      return profile;
-    };
-
-    const setSessionWithProfile = async (sessionUser: User | null) => {
-      if (sessionUser) {
-        const profile = await fetchUserProfile(sessionUser);
-        setUser({ ...sessionUser, profile });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    };
-
     // Check for existing session on mount
     const checkSession = async () => {
       try {
@@ -53,10 +24,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
-        await setSessionWithProfile(session?.user ?? null);
+        setUser(session?.user ?? null);
       } catch (error) {
         console.error('Exception getting session:', error);
         setUser(null);
+      } finally {
         setLoading(false);
       }
     };
@@ -68,7 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      await setSessionWithProfile(session?.user ?? null);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => {

@@ -207,15 +207,16 @@ const EnhancedProfilePictureUpload = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-24 w-24 bg-muted rounded-full animate-pulse"></div>
+        <div className="h-8 w-32 bg-muted rounded animate-pulse"></div>
+      </div>
+    );
   }
-  
-  if (!user || !profileData) {
-    return <div>User not found.</div>;
-  }
-  
-  const displayName = profileData.username || user.email || "User";
-  const currentProfilePicture = previewUrl || profileData.profile_picture_url;
+
+  const currentProfilePicture = previewUrl || profileData?.profile_picture_url;
+  const displayName = profileData?.username || user?.user_metadata?.username || user?.email || 'User';
 
   return (
     <div className="flex flex-col items-center gap-4">

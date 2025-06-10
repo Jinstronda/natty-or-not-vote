@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, ExternalLink, ThumbsUp, Trash2, Edit } from "lucide-react";
@@ -21,7 +22,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
   const [editingReview, setEditingReview] = useState<ExpertReview | null>(null);
 
   const handleDeleteExpertReview = async (reviewId: string) => {
-    if (user?.profile?.role !== 'admin') return;
+    if (user?.role !== 'admin') return;
 
     try {
       const { error } = await supabase
@@ -57,7 +58,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {user?.profile?.role === 'admin' && (
+        {user?.role === 'admin' && (
           <ExpertReviewForm influencerId={influencerId} />
         )}
         
@@ -96,7 +97,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                     </a>
                   </Button>
                 )}
-                {user?.profile?.role === 'admin' && (
+                {user?.role === 'admin' && (
                   <>
                     <Button
                       variant="outline"
