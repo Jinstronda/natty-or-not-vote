@@ -358,7 +358,15 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      create_user_profile: {
+        Args: { user_id: string; user_email: string; username?: string }
+        Returns: string
+      }
       is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_admin_safe: {
         Args: { user_id: string }
         Returns: boolean
       }
