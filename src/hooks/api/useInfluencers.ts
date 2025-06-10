@@ -40,13 +40,23 @@ export const useInfluencers = (searchTerm?: string) => {
           throw result.error;
         }
 
-        console.log('[useInfluencers] Fetched influencers:', result.data?.length);
+        const fetchedCount = result.data?.length || 0;
+        console.log('[useInfluencers] Fetched influencers:', fetchedCount);
 
-        return {
+        const pageResult = {
           data: result.data || [],
           nextPage: result.data && result.data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
           hasMore: result.data && result.data.length === ITEMS_PER_PAGE,
         };
+        
+        console.log('[useInfluencers] Page result structure:', {
+          dataCount: pageResult.data.length,
+          nextPage: pageResult.nextPage,
+          hasMore: pageResult.hasMore,
+          pageParam
+        });
+        
+        return pageResult;
       } catch (error) {
         console.error('[useInfluencers] Error in useInfluencers:', error);
         throw error;
