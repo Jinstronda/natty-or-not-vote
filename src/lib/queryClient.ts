@@ -1,4 +1,5 @@
 
+
 import { QueryClient } from '@tanstack/react-query';
 
 // Circuit breaker for failed queries
@@ -49,10 +50,10 @@ export const queryClient = new QueryClient({
         }
         
         // Don't retry on specific errors
-        if (error?.code === 'PGRST116') return false; // No data found
-        if (error?.code === 'PGRST301') return false; // JWT expired/invalid
+        if ((error as any)?.code === 'PGRST116') return false; // No data found
+        if ((error as any)?.code === 'PGRST301') return false; // JWT expired/invalid
         if (error?.message?.includes('JWT')) return false; // JWT-related errors
-        if (error?.status === 401) return false; // Unauthorized
+        if ((error as any)?.status === 401) return false; // Unauthorized
         if (error?.message?.includes('timed out')) return false; // Timeout errors
         
         // Record failure for circuit breaker
@@ -75,7 +76,7 @@ export const queryClient = new QueryClient({
     mutations: {
       retry: (failureCount, error) => {
         // Don't retry auth errors
-        if (error?.status === 401 || error?.message?.includes('JWT')) return false;
+        if ((error as any)?.status === 401 || error?.message?.includes('JWT')) return false;
         return failureCount < 1;
       },
       networkMode: 'online',
@@ -85,3 +86,4 @@ export const queryClient = new QueryClient({
 
 // Export circuit breaker for testing
 export { circuitBreaker };
+
