@@ -260,39 +260,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Only create profile if explicitly missing (not on token refresh)
       if (profileError?.code === 'PGRST116') {
-        console.log('[AuthContext] Profile not found, creating new profile for:', supabaseUser.id);
+        console.log('[AuthContext] Profile not found, calling create_user_profile function for:', supabaseUser.id);
         const username = supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || 'user';
-        const isAdmin = supabaseUser.email === 'jistronda100@gmail.com';
         
-        // Add timeout protection for profile creation too
-        const createPromise = supabase
-          .from('profiles')
-          .insert({
-            id: supabaseUser.id,
-            email: supabaseUser.email || '',
-            username: username,
-            role: isAdmin ? 'admin' : 'user'
-          })
-          .select('*')
-          .single();
+        // Use the create_user_profile function instead of direct insert
+        const createPromise = supabase.rpc('create_user_profile', {
+          user_id: supabaseUser.id,
+          user_email: supabaseUser.email || '',
+          user_username: username
+        });
 
         const { data: createData, error: createError } = await Promise.race([
           createPromise,
           timeoutPromise
         ]) as any;
 
-        if (createData && !createError) {
-          console.log('[AuthContext] Successfully created new profile');
-          return {
-            id: createData.id,
-            email: createData.email,
-            username: createData.username,
-            role: createData.role,
-            profile_picture_url: createData.profile_picture_url || undefined
-          };
+        if (!createError) {
+          console.log('[AuthContext] Successfully created new profile via function');
+          // Fetch the newly created profile
+          const { data: newProfileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', supabaseUser.id)
+            .single();
+            
+          if (newProfileData) {
+            return {
+              id: newProfileData.id,
+              email: newProfileData.email,
+              username: newProfileData.username,
+              role: newProfileData.role,
+              profile_picture_url: newProfileData.profile_picture_url || undefined
+            };
+          }
         }
         
-        console.warn('[AuthContext] Failed to create profile, using fallback');
+        console.warn('[AuthContext] Failed to create profile via function, using fallback');
       }
     } catch (error) {
       console.error('[AuthContext] Error in createUserFromSupabase:', error);
