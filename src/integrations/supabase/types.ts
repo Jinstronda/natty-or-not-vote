@@ -138,7 +138,6 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          profile_picture_url: string | null
           role: string
           updated_at: string
           username: string
@@ -147,7 +146,6 @@ export type Database = {
           created_at?: string
           email: string
           id: string
-          profile_picture_url?: string | null
           role?: string
           updated_at?: string
           username: string
@@ -156,7 +154,6 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-          profile_picture_url?: string | null
           role?: string
           updated_at?: string
           username?: string
@@ -191,6 +188,13 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
