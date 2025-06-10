@@ -332,12 +332,12 @@ const InfluencerManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
-              <Input
+            <Input
                 id="name"
                 placeholder="Full Name"
-                value={newInfluencer.name}
-                onChange={(e) => setNewInfluencer({...newInfluencer, name: e.target.value})}
-              />
+              value={newInfluencer.name}
+              onChange={(e) => setNewInfluencer({...newInfluencer, name: e.target.value})}
+            />
             </div>
             <div className="space-y-2">
               <Label htmlFor="claimed-status">Claimed Status</Label>
@@ -357,30 +357,30 @@ const InfluencerManagement = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="height">Height</Label>
-              <Input
+            <Input
                 id="height"
                 placeholder="e.g., 5'10&quot; or 178cm"
-                value={newInfluencer.height}
-                onChange={(e) => setNewInfluencer({...newInfluencer, height: e.target.value})}
-              />
+              value={newInfluencer.height}
+              onChange={(e) => setNewInfluencer({...newInfluencer, height: e.target.value})}
+            />
             </div>
             <div className="space-y-2">
               <Label htmlFor="weight">Weight</Label>
-              <Input
+            <Input
                 id="weight"
                 placeholder="e.g., 180 lbs or 82kg"
-                value={newInfluencer.weight}
-                onChange={(e) => setNewInfluencer({...newInfluencer, weight: e.target.value})}
-              />
+              value={newInfluencer.weight}
+              onChange={(e) => setNewInfluencer({...newInfluencer, weight: e.target.value})}
+            />
             </div>
             <div className="space-y-2">
               <Label htmlFor="years">Years Training</Label>
-              <Input
+            <Input
                 id="years"
                 placeholder="e.g., 5 years"
-                value={newInfluencer.years_training}
-                onChange={(e) => setNewInfluencer({...newInfluencer, years_training: e.target.value})}
-              />
+              value={newInfluencer.years_training}
+              onChange={(e) => setNewInfluencer({...newInfluencer, years_training: e.target.value})}
+            />
             </div>
           </div>
 
@@ -429,7 +429,7 @@ const InfluencerManagement = () => {
                   />
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{influencer.name}</h3>
+                    <h3 className="font-semibold">{influencer.name}</h3>
                       <Badge className={getClaimedStatusColor(influencer.claimed_status || 'unclaimed')}>
                         {influencer.claimed_status || 'unclaimed'}
                       </Badge>
@@ -477,12 +477,12 @@ const InfluencerManagement = () => {
                           <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="edit-name">Name</Label>
-                              <Input
+                          <Input
                                 id="edit-name"
-                                placeholder="Name"
-                                value={editingInfluencer.name}
-                                onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
-                              />
+                            placeholder="Name"
+                            value={editingInfluencer.name}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
+                          />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-status">Claimed Status</Label>
@@ -502,38 +502,38 @@ const InfluencerManagement = () => {
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-height">Height</Label>
-                              <Input
+                          <Input
                                 id="edit-height"
-                                placeholder="Height"
-                                value={editingInfluencer.height || ''}
-                                onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
-                              />
+                            placeholder="Height"
+                            value={editingInfluencer.height || ''}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
+                          />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-weight">Weight</Label>
-                              <Input
+                          <Input
                                 id="edit-weight"
-                                placeholder="Weight"
-                                value={editingInfluencer.weight || ''}
-                                onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
-                              />
+                            placeholder="Weight"
+                            value={editingInfluencer.weight || ''}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
+                          />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-years">Years Training</Label>
-                              <Input
+                          <Input
                                 id="edit-years"
-                                placeholder="Years Training"
-                                value={editingInfluencer.years_training || ''}
-                                onChange={(e) => setEditingInfluencer({...editingInfluencer, years_training: e.target.value})}
-                              />
+                            placeholder="Years Training"
+                            value={editingInfluencer.years_training || ''}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, years_training: e.target.value})}
+                          />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-description">Description</Label>
-                              <Textarea
+                          <Textarea
                                 id="edit-description"
-                                placeholder="Description"
-                                value={editingInfluencer.description || ''}
-                                onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
+                            placeholder="Description"
+                            value={editingInfluencer.description || ''}
+                            onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
                                 rows={3}
                               />
                             </div>
