@@ -1,6 +1,6 @@
 
 import { useParams, Link } from "react-router-dom";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,8 +70,7 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -177,7 +176,7 @@ const UserProfile = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

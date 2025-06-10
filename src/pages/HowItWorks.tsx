@@ -1,10 +1,9 @@
 
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 
 const HowItWorks = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
       
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
@@ -70,7 +69,7 @@ const HowItWorks = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import SearchBar from "@/components/SearchBar";
 import InfluencerGrid from "@/components/InfluencerGrid";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
@@ -9,8 +9,7 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
       
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         <div className="text-center mb-16">
@@ -45,7 +44,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
