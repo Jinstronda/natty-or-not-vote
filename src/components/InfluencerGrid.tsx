@@ -132,6 +132,21 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   }
 
   if (allInfluencers.length === 0) {
+    // Emergency: If we're stuck loading but have data in the first page, try to render it
+    const emergencyData = data?.pages?.[0]?.data;
+    if (emergencyData && emergencyData.length > 0) {
+      console.warn('[InfluencerGrid] Emergency fallback: using first page data directly');
+      return (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {emergencyData.map((influencer) => (
+              <InfluencerCard key={influencer.id} influencer={influencer} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
