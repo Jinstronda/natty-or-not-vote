@@ -164,13 +164,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    authDebugger.info('🚀 AuthContext useEffect initializing');
+    authDebugger.startTimer('AuthContext_initialization');
+    authDebugger.captureState('initial_state', { user, loading });
+
     let mounted = true;
     let authTimeoutId: NodeJS.Timeout | null = null;
 
     // Set a timeout for auth initialization
     authTimeoutId = setTimeout(() => {
       if (mounted && loading) {
-        console.error('[AuthContext] Authentication timed out - forcing completion');
+        authDebugger.error('🚨 Authentication timeout reached', { 
+          mounted, 
+          loading, 
+          timeoutDuration: 12000 
+        });
         setLoading(false);
         toast({
           title: "Connection Timeout",
@@ -180,49 +188,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, 12000); // 12 second timeout (reduced from 15)
 
+    authDebugger.verbose('⏰ Auth timeout timer set', { timeoutId: authTimeoutId });
+
     // Check for stale auth state and clear if necessary
     const clearStaleState = async () => {
+      authDebugger.startTimer('clearStaleState');
+      authDebugger.info('🧹 Starting stale state check');
+
       const lastActivity = localStorage.getItem('lastAuthActivity');
       const now = Date.now();
+      const activityAge = lastActivity ? now - parseInt(lastActivity) : 'never';
+      
+      authDebugger.verbose('📊 Activity analysis', { 
+        lastActivity, 
+        now, 
+        activityAge: typeof activityAge === 'number' ? `${(activityAge / 60000).toFixed(1)} minutes` : activityAge,
+        threshold: '60 minutes'
+      });
       
       // If no activity recorded or it's been more than 1 hour, check if we have a valid session
       if (!lastActivity || now - parseInt(lastActivity) > 3600000) {
-        console.log('[AuthContext] Checking for stale auth state...');
+        authDebugger.warn('⚠️ Stale auth state detected, checking session validity');
+        authDebugger.startTimer('stale_session_check');
         
         // Use a timeout to prevent hanging on getSession()
         try {
+          authDebugger.network('🌐 Starting session check with timeout protection');
           const sessionPromise = supabase.auth.getSession();
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Session check timeout')), 3000)
           );
           
           const { data: sessionData } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+          const sessionCheckDuration = authDebugger.endTimer('stale_session_check');
+          
+          authDebugger.database('💾 Session check completed', { 
+            duration: sessionCheckDuration,
+            hasSession: !!sessionData.session,
+            userId: sessionData.session?.user?.id
+          });
           
           if (!sessionData.session) {
-            // Only clear if there's actually no valid session
-            console.log('[AuthContext] No valid session found, clearing stale state');
+            authDebugger.warn('🗑️ No valid session found, clearing stale state');
             localStorage.removeItem('lastAuthActivity');
             supabase.auth.signOut({ scope: 'local' });
           } else {
-            // Valid session exists (like fresh Google OAuth), update activity timestamp
-            console.log('[AuthContext] Valid session found, updating activity timestamp');
+            authDebugger.info('✅ Valid session found, updating activity timestamp');
             localStorage.setItem('lastAuthActivity', String(now));
           }
         } catch (error) {
-          console.warn('[AuthContext] Session check timed out, clearing stale state as precaution');
+          authDebugger.error('🚨 Session check failed', error, { timeout: 3000 });
           localStorage.removeItem('lastAuthActivity');
           supabase.auth.signOut({ scope: 'local' });
         }
+      } else {
+        authDebugger.verbose('✅ Auth state is fresh, no action needed');
       }
+
+      authDebugger.endTimer('clearStaleState');
     };
 
     // Get initial session with timeout protection and stale state handling
     const getInitialSession = async () => {
+      authDebugger.startTimer('getInitialSession');
+      authDebugger.info('🎯 Starting initial session retrieval');
+      
       try {
-        console.log('[AuthContext] Initializing session...');
+        authDebugger.captureState('before_stale_check', { user, loading, mounted });
         
         // Clear stale state first
+        authDebugger.info('🧹 Clearing stale state before session check');
         await clearStaleState();
+        
+        authDebugger.info('🌐 Starting main session check with timeout protection');
+        authDebugger.startTimer('main_getSession');
         
         // Add timeout protection to the main getSession call
         const sessionPromise = supabase.auth.getSession();
@@ -231,19 +270,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
         
         const { data: sessionData, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const mainSessionDuration = authDebugger.endTimer('main_getSession');
         
-        if (!mounted) return;
+        authDebugger.database('💾 Main session check result', {
+          duration: mainSessionDuration,
+          hasSession: !!sessionData?.session,
+          hasError: !!sessionError,
+          userId: sessionData?.session?.user?.id,
+          userEmail: sessionData?.session?.user?.email,
+          errorMessage: sessionError?.message
+        });
+        
+        if (!mounted) {
+          authDebugger.warn('⚠️ Component unmounted during session check, aborting');
+          return;
+        }
         
         if (sessionError) {
-          console.error('[AuthContext] Session error:', sessionError);
+          authDebugger.error('🚨 Session error detected', sessionError);
           throw sessionError;
         }
         
         if (sessionData.session?.user) {
-          console.log('[AuthContext] Found existing session for user:', sessionData.session.user.id);
+          authDebugger.info('✅ Found existing session', { 
+            userId: sessionData.session.user.id,
+            email: sessionData.session.user.email,
+            metadata: sessionData.session.user.user_metadata
+          });
           
           // Record successful auth activity
           localStorage.setItem('lastAuthActivity', String(Date.now()));
+          authDebugger.verbose('📝 Updated lastAuthActivity timestamp');
           
           // Use session metadata immediately for fast initialization (no database call)
           const fastUser: User = {
@@ -253,24 +310,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: sessionData.session.user.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
           };
           
+          authDebugger.info('⚡ Created fast user from session metadata', fastUser);
+          authDebugger.captureState('fast_user_created', { fastUser, sessionData });
           setUser(fastUser);
           
           // Background fetch of complete profile data (non-blocking)
+          authDebugger.info('🔄 Starting background profile fetch');
+          authDebugger.startTimer('background_profile_fetch');
+          
           createUserFromSupabase(sessionData.session.user).then(completeUser => {
+            const profileFetchDuration = authDebugger.endTimer('background_profile_fetch');
+            authDebugger.database('💾 Background profile fetch completed', {
+              duration: profileFetchDuration,
+              completeUser,
+              needsUpdate: mounted && (
+                fastUser.username !== completeUser.username ||
+                fastUser.profile_picture_url !== completeUser.profile_picture_url
+              )
+            });
+            
             if (mounted && (
               fastUser.username !== completeUser.username ||
               fastUser.profile_picture_url !== completeUser.profile_picture_url
             )) {
-              console.log('[AuthContext] Updating user with complete profile data');
+              authDebugger.info('🔄 Updating user with complete profile data');
               setUser(completeUser);
+              authDebugger.captureState('user_updated_with_profile', { completeUser });
             }
           }).catch(error => {
-            console.log('[AuthContext] Background profile fetch failed, keeping session metadata:', error);
+            authDebugger.endTimer('background_profile_fetch');
+            authDebugger.warn('⚠️ Background profile fetch failed, keeping session metadata', error);
             // This is fine - we already have working user data from session metadata
           });
         } else {
-          console.log('[AuthContext] No existing session found');
-          // Ensure we're in a clean state
+          authDebugger.info('ℹ️ No existing session found, setting user to null');
+          authDebugger.captureState('no_session_found', { sessionData });
           setUser(null);
         }
         
@@ -278,17 +352,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (authTimeoutId) {
           clearTimeout(authTimeoutId);
           authTimeoutId = null;
+          authDebugger.verbose('🗑️ Cleared auth timeout timer (success)');
         }
+        
         setLoading(false);
+        authDebugger.info('✅ Initial session setup completed successfully');
+        authDebugger.captureState('initial_session_complete', { user, loading: false });
+        authDebugger.endTimer('getInitialSession');
+        
       } catch (error) {
-        console.error('[AuthContext] Error getting initial session:', error);
+        authDebugger.endTimer('getInitialSession');
+        authDebugger.error('🚨 Error during initial session setup', error, { mounted });
+        
         if (mounted) {
           // Force clean state on initialization error
           setUser(null);
+          authDebugger.info('🧹 Forced clean state due to error');
+          authDebugger.captureState('error_clean_state', { error: error?.message });
+          
           // Clear the timeout
           if (authTimeoutId) {
             clearTimeout(authTimeoutId);
             authTimeoutId = null;
+            authDebugger.verbose('🗑️ Cleared auth timeout timer (error)');
           }
           setLoading(false);
         }
