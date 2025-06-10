@@ -10,33 +10,53 @@ export const useInfluencers = (searchTerm?: string) => {
     enabled: true, // This table is publicly readable, no auth required
     networkMode: 'always', // Try to fetch even with poor network
     queryFn: async ({ pageParam = 0 }) => {
-      console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
-      
-      // Simple, direct Supabase query - no timeout wrapper interference
-      let query = supabase
-        .from('influencers')
-        .select('id, name, image, claimed_status')
-        .order('created_at', { ascending: false })
-        .limit(ITEMS_PER_PAGE);
+      try {
+        console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
+        
+        // Simple, direct Supabase query
+        let query = supabase
+          .from('influencers')
+          .select('id, name, image, claimed_status')
+          .order('created_at', { ascending: false })
+          .limit(ITEMS_PER_PAGE);
 
-      if (searchTerm?.trim()) {
-        query = query.ilike('name', `%${searchTerm.trim()}%`);
+        if (searchTerm?.trim()) {
+          query = query.ilike('name', `%${searchTerm.trim()}%`);
+        }
+
+        console.log('[useInfluencers] About to execute query...');
+        const result = await query;
+        
+        console.log('[useInfluencers] Query completed. Result:', {
+          data: result.data,
+          error: result.error,
+          status: result.status,
+          statusText: result.statusText,
+          count: result.count
+        });
+        
+        if (result.error) {
+          console.error('[useInfluencers] Supabase error:', result.error);
+          throw new Error(`Supabase error: ${result.error.message}`);
+        }
+
+        const dataLength = result.data?.length || 0;
+        console.log('[useInfluencers] Successfully fetched:', dataLength, 'influencers');
+        console.log('[useInfluencers] Raw data:', result.data);
+
+        const returnValue = {
+          data: result.data || [],
+          nextPage: result.data && result.data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+          hasMore: result.data && result.data.length === ITEMS_PER_PAGE,
+        };
+        
+        console.log('[useInfluencers] Returning:', returnValue);
+        return returnValue;
+        
+      } catch (error) {
+        console.error('[useInfluencers] Caught error in queryFn:', error);
+        throw error;
       }
-
-      const result = await query;
-      
-      if (result.error) {
-        console.error('[useInfluencers] Error fetching influencers:', result.error);
-        throw result.error;
-      }
-
-      console.log('[useInfluencers] Successfully fetched:', result.data?.length || 0, 'influencers');
-
-      return {
-        data: result.data || [],
-        nextPage: result.data && result.data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
-        hasMore: result.data && result.data.length === ITEMS_PER_PAGE,
-      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
