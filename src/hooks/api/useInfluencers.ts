@@ -8,6 +8,7 @@ const ITEMS_PER_PAGE = 20;
 export const useInfluencers = (searchTerm?: string) => {
   return useInfiniteQuery({
     queryKey: ['influencers', 'infinite', searchTerm],
+    enabled: true, // This table is publicly readable, no auth required
     queryFn: async ({ pageParam = 0 }) => {
       console.log('[useInfluencers] Fetching influencers, page:', pageParam, 'search:', searchTerm);
       
@@ -18,7 +19,8 @@ export const useInfluencers = (searchTerm?: string) => {
               .from('influencers')
               .select('id, name, image, claimed_status')
               .order('created_at', { ascending: false })
-              .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
+              .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1)
+              .limit(ITEMS_PER_PAGE); // Add explicit limit for better performance
 
             if (searchTerm?.trim()) {
               query = query.ilike('name', `%${searchTerm.trim()}%`);
@@ -27,8 +29,8 @@ export const useInfluencers = (searchTerm?: string) => {
             return query;
           },
           { 
-            timeout: 8000, 
-            retries: 2,
+            timeout: 5000, // Reduced from 8000ms to 5000ms
+            retries: 1, // Reduced from 2 to 1 retry
             operation: `fetchInfluencers_page_${pageParam}` 
           }
         );
@@ -52,7 +54,9 @@ export const useInfluencers = (searchTerm?: string) => {
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
-    staleTime: 2 * 60 * 1000, // 2 minutes for frequently changing data
+    staleTime: 5 * 60 * 1000, // 5 minutes - data doesn't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
     retry: (failureCount, error: any) => {
       // Don't retry on timeout or auth errors
       if (error?.message?.includes('timed out')) {
@@ -63,8 +67,9 @@ export const useInfluencers = (searchTerm?: string) => {
         console.log('[useInfluencers] Not retrying auth error');
         return false;
       }
-      return failureCount < 2;
+      // Only retry once for network issues
+      return failureCount < 1;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Max 5 second delay
+    retryDelay: 1000, // Fixed 1 second delay instead of exponential backoff
   });
 };

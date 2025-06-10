@@ -25,14 +25,14 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Use isPending for initial loading state to avoid timeout issues
-  const actuallyLoading = isPending || (isLoading && !data);
+  // More accurate loading state detection
+  const actuallyLoading = isPending && !data?.pages?.length;
 
   // Loading watchdog protection for influencer grid
   useLoadingWatchdog({
     component: 'InfluencerGrid',
     isLoading: actuallyLoading,
-    timeout: 15000, // 15 seconds max for initial load
+    timeout: 10000, // Reduced to 10 seconds to match query timeout
     onTimeout: async () => {
       console.error('[InfluencerGrid] Loading timeout - running diagnostics');
       
@@ -42,10 +42,15 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
       toast({
         title: "Loading Timeout",
         description: connectionOk 
-          ? "Database query is taking too long. Please refresh the page."
-          : "Connection issues detected. Please check your internet and refresh.",
+          ? "Database query timed out. The page will refresh automatically."
+          : "Connection issues detected. Please check your internet.",
         variant: "destructive",
       });
+      
+      // Auto-refresh after timeout to recover
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
     }
   });
 
