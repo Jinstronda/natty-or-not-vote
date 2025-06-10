@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -76,7 +75,7 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={expertNattyPercentage} 
-                  className="h-3"
+                  className="h-3 [&>div]:bg-natty"
                   style={{
                     background: 'hsl(var(--muted))',
                   }}
@@ -124,7 +123,7 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={communityResults.natty} 
-                  className="h-3"
+                  className="h-3 [&>div]:bg-natty"
                   style={{
                     background: 'hsl(var(--muted))',
                   }}
