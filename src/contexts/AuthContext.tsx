@@ -181,7 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       subscription.unsubscribe();
     };
-  }, [queryClient]);
+  }, []);
 
   const createUserFromSupabase = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {

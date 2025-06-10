@@ -12,12 +12,13 @@ export const useRealTimeVotes = (influencerId?: string) => {
   useEffect(() => {
     if (!influencerId) return;
 
-    // Clean up existing channel first
-    if (channelRef.current) {
-      console.log('Cleaning up existing vote channel');
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    const setupChannel = async () => {
+      // Clean up existing channel first
+      if (channelRef.current) {
+        console.log('Cleaning up existing vote channel');
+        await supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
 
     console.log('Setting up real-time vote updates for influencer:', influencerId);
 
@@ -45,6 +46,9 @@ export const useRealTimeVotes = (influencerId?: string) => {
       .subscribe();
 
     channelRef.current = channel;
+    };
+
+    setupChannel();
 
     return () => {
       if (channelRef.current) {
@@ -63,12 +67,13 @@ export const useRealTimeReviews = (influencerId?: string) => {
   useEffect(() => {
     if (!influencerId) return;
 
-    // Clean up existing channel first
-    if (channelRef.current) {
-      console.log('Cleaning up existing review channel');
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    const setupChannel = async () => {
+      // Clean up existing channel first
+      if (channelRef.current) {
+        console.log('Cleaning up existing review channel');
+        await supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
 
     console.log('Setting up real-time review updates for influencer:', influencerId);
 
@@ -107,6 +112,9 @@ export const useRealTimeReviews = (influencerId?: string) => {
       .subscribe();
 
     channelRef.current = channel;
+    };
+
+    setupChannel();
 
     return () => {
       if (channelRef.current) {

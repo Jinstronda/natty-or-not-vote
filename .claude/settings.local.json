@@ -10,8 +10,15 @@
       "Bash(git add:*)",
       "Bash(git config:*)",
       "Bash(npm run lint)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(env)",
+      "Bash(npm run type-check:*)",
+      "Bash(pkill:*)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

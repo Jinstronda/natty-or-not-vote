@@ -60,7 +60,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
     }
 
     // Check if user already has a review for this influencer
-    const userReviews = getUserReviews(user.id);
+    const userReviews = getUserReviews(user?.id || '');
     const hasReviewForInfluencer = userReviews.some(review => review.influencerId === influencerId);
 
     console.log('Casting vote:', vote, 'for influencer:', influencerId);
