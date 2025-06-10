@@ -236,38 +236,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         });
       }
-    }, 8000); // 8 second timeout (reduced from 12)
+    }, 8000);
 
     authDebugger.verbose('⏰ Auth timeout timer set', { timeoutId: authTimeoutId });
-
-    // Check for stale auth state and clear if necessary
-    const clearStaleState = async () => {
-      authDebugger.startTimer('clearStaleState');
-      authDebugger.info('🧹 Starting stale state check');
-
-      const lastActivity = localStorage.getItem('lastAuthActivity');
-      const now = Date.now();
-      
-      // Clear stale state if last activity was more than 1 hour ago
-      if (lastActivity && now - parseInt(lastActivity) > 3600000) {
-        authDebugger.warn('🧹 Clearing stale auth state', { 
-          lastActivity: new Date(parseInt(lastActivity)).toISOString(),
-          currentTime: new Date(now).toISOString()
-        });
-        localStorage.removeItem('lastAuthActivity');
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      authDebugger.endTimer('clearStaleState');
-    };
 
     const getInitialSession = async () => {
       try {
         authDebugger.startTimer('getInitialSession');
-        await clearStaleState();
-
+        
+        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -282,6 +259,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
+        // Create user from session
         const user = await createUserFromSupabase(session.user);
         if (mounted) {
           setUser(user);
@@ -298,6 +276,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      authDebugger.info('🔄 Auth state changed', { event, userId: session?.user?.id });
+
+      try {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const user = await createUserFromSupabase(session.user);
+          setUser(user);
+          localStorage.setItem('lastAuthActivity', Date.now().toString());
+          queryClient.invalidateQueries({ queryKey: ['user-vote'] });
+          queryClient.invalidateQueries({ queryKey: ['vote-stats'] });
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          queryClient.clear();
+          localStorage.removeItem('lastAuthActivity');
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Only update if user data has changed
+          if (!user || user.id !== session.user.id) {
+            const refreshedUser = await createUserFromSupabase(session.user);
+            setUser(refreshedUser);
+            localStorage.setItem('lastAuthActivity', Date.now().toString());
+          }
+        }
+      } catch (error) {
+        authDebugger.error('🚨 Error handling auth state change', error);
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          queryClient.clear();
+          localStorage.removeItem('lastAuthActivity');
+        }
+      }
+
+      if (mounted) {
+        setLoading(false);
+      }
+    });
+
+    // Get initial session
     getInitialSession();
 
     return () => {
@@ -305,6 +323,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (authTimeoutId) {
         clearTimeout(authTimeoutId);
       }
+      subscription.unsubscribe();
     };
   }, []);
 
