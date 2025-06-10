@@ -32,7 +32,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   useLoadingWatchdog({
     component: 'InfluencerGrid',
     isLoading: actuallyLoading,
-    timeout: 10000, // Reduced to 10 seconds to match query timeout
+    timeout: 20000, // Increased to 20 seconds for production resilience
     onTimeout: async () => {
       console.error('[InfluencerGrid] Loading timeout - running diagnostics');
       
