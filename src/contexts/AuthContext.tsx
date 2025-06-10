@@ -135,12 +135,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           } else if (event === 'TOKEN_REFRESHED' && session?.user) {
             // Handle token refresh without expensive DB calls
             if (!user || user.id !== session.user.id) {
-              console.log('[AuthContext] Token refreshed, updating user data');
+              console.log('[AuthContext] Token refreshed, creating user from session metadata (no DB call)');
               
               // Update activity timestamp
               localStorage.setItem('lastAuthActivity', String(Date.now()));
               
-              const refreshedUser = await createUserFromSupabase(session.user);
+              // Use session metadata directly instead of expensive DB call during token refresh
+              const refreshedUser: User = {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'user',
+                role: session.user.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
+              };
+              
               setUser(refreshedUser);
               queryClient.invalidateQueries({ queryKey: ['user-vote'] });
             } else {
