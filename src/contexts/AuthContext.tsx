@@ -140,6 +140,57 @@ class AuthDebugger {
 
 const authDebugger = new AuthDebugger();
 
+// 🔧 GLOBAL DEBUG EXPORT FUNCTIONS
+declare global {
+  interface Window {
+    exportAuthDebugLogs: () => void;
+    exportAllDebugLogs: () => void;
+    clearAuthDebugLogs: () => void;
+    testAuthHypothesis: (hypothesis: string) => void;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.exportAuthDebugLogs = () => {
+    const logs = authDebugger.exportLogs();
+    console.log('📊 AUTH DEBUG LOGS EXPORT:', logs);
+    
+    // Also save to file
+    const blob = new Blob([logs], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `auth-debug-logs-${new Date().toISOString()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  window.exportAllDebugLogs = () => {
+    console.log('📊 EXPORTING ALL DEBUG LOGS...');
+    if (window.exportAuthDebugLogs) window.exportAuthDebugLogs();
+    if (window.exportInfluencerDebugLogs) window.exportInfluencerDebugLogs();
+  };
+
+  window.clearAuthDebugLogs = () => {
+    authDebugger.clearLogs();
+  };
+
+  window.testAuthHypothesis = (hypothesis: string) => {
+    authDebugger.info(`🧪 HYPOTHESIS TEST: ${hypothesis}`, {
+      timestamp: Date.now(),
+      hypothesis,
+      currentState: {
+        localStorage: {
+          lastAuthActivity: localStorage.getItem('lastAuthActivity'),
+          authDebugLogs: localStorage.getItem('auth_debug_logs')
+        }
+      }
+    });
+  };
+}
+
 interface User {
   id: string;
   email: string;
