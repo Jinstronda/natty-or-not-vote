@@ -78,91 +78,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Get initial session with timeout protection and stale state handling
     const getInitialSession = async () => {
+      console.log('[AuthContext] 🚀 Step 1: Function started');
+      
       try {
-        console.log('[AuthContext] 🚀 Initializing session...');
+        console.log('[AuthContext] 🚀 Step 2: Inside try block');
         
-        // Clear stale state first
-        console.log('[AuthContext] 🚀 Starting stale state check...');
-        const staleStart = Date.now();
-        await clearStaleState();
-        console.log('[AuthContext] 🚀 Stale state check completed in:', Date.now() - staleStart, 'ms');
+        // TEMPORARILY SKIP STALE STATE CHECK TO ISOLATE ISSUE
+        console.log('[AuthContext] 🚀 Step 3: Skipping stale state check for debugging');
         
-        // Add timeout protection for getSession
-        console.log('[AuthContext] 🚀 Starting getSession() call...');
-        const sessionStart = Date.now();
-        
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('getSession timeout')), 8000)
-        );
-        
-        const { data: sessionData, error: sessionError } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any;
-        
-        console.log('[AuthContext] 🚀 getSession() completed in:', Date.now() - sessionStart, 'ms');
-        console.log('[AuthContext] 🚀 Session result:', { 
-          hasSession: !!sessionData.session, 
-          hasUser: !!sessionData.session?.user,
-          error: sessionError,
-          userId: sessionData.session?.user?.id 
-        });
+        // Simplified getSession call to debug hanging
+        console.log('[AuthContext] 🚀 Step 4: About to call getSession()');
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        console.log('[AuthContext] 🚀 Step 5: getSession() returned successfully');
         
         if (!mounted) {
-          console.log('[AuthContext] 🚀 Component unmounted, aborting');
+          console.log('[AuthContext] 🚀 Step 6: Component unmounted, aborting');
           return;
         }
         
+        console.log('[AuthContext] 🚀 Step 7: Checking session data:', !!sessionData.session);
+        
         if (sessionError) {
-          console.error('[AuthContext] 🚀 Session error:', sessionError);
+          console.error('[AuthContext] 🚀 Step 8: Session error detected:', sessionError);
           throw sessionError;
         }
         
         if (sessionData.session?.user) {
-          console.log('[AuthContext] 🚀 Found existing session for user:', sessionData.session.user.id);
-          
-          // Record successful auth activity
+          console.log('[AuthContext] 🚀 Step 9: Found session, setting user');
           localStorage.setItem('lastAuthActivity', String(Date.now()));
           
-          console.log('[AuthContext] 🚀 Creating user from Supabase...');
-          const userStart = Date.now();
-          const user = await createUserFromSupabase(sessionData.session.user);
-          console.log('[AuthContext] 🚀 User creation completed in:', Date.now() - userStart, 'ms');
-          setUser(user);
+          // Use session metadata directly to avoid hanging
+          const fastUser = {
+            id: sessionData.session.user.id,
+            email: sessionData.session.user.email || '',
+            username: sessionData.session.user.user_metadata?.username || sessionData.session.user.email?.split('@')[0] || 'user',
+            role: sessionData.session.user.email === 'jistronda100@gmail.com' ? 'admin' : 'user'
+          };
+          
+          setUser(fastUser);
         } else {
-          console.log('[AuthContext] 🚀 No existing session found');
-          // Ensure we're in a clean state
+          console.log('[AuthContext] 🚀 Step 10: No session found, setting null user');
           setUser(null);
         }
         
-        // Clear the timeout since we completed successfully
+        console.log('[AuthContext] 🚀 Step 11: Clearing timeout and setting loading false');
         if (authTimeoutId) {
-          console.log('[AuthContext] 🚀 Clearing auth timeout - session init successful');
           clearTimeout(authTimeoutId);
           authTimeoutId = null;
         }
-        console.log('[AuthContext] 🚀 Setting loading to false');
         setLoading(false);
-      } catch (error) {
-        console.error('[AuthContext] 🚀 Error getting initial session:', error);
-        console.log('[AuthContext] 🚀 Error type:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('[AuthContext] 🚀 Step 12: Complete success');
         
-        if (error instanceof Error && error.message === 'getSession timeout') {
-          console.error('[AuthContext] 🚀 getSession() timed out after 8 seconds!');
-        }
+      } catch (error) {
+        console.error('[AuthContext] 🚀 ERROR in step:', error);
         
         if (mounted) {
-          // Force clean state on initialization error
-          console.log('[AuthContext] 🚀 Forcing clean state due to error');
+          console.log('[AuthContext] 🚀 ERROR: Cleaning up');
           setUser(null);
-          // Clear the timeout
           if (authTimeoutId) {
-            console.log('[AuthContext] 🚀 Clearing auth timeout due to error');
             clearTimeout(authTimeoutId);
             authTimeoutId = null;
           }
-          console.log('[AuthContext] 🚀 Setting loading to false due to error');
           setLoading(false);
         }
       }

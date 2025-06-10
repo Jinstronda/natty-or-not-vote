@@ -26,7 +26,8 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "mcp__supabase__get_project_url",
-      "mcp__supabase__get_logs"
+      "mcp__supabase__get_logs",
+      "WebFetch(domain:nattyorjuicy.com)"
     ],
     "deny": []
   },
