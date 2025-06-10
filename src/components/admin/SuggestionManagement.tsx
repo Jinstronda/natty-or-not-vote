@@ -264,20 +264,21 @@ const SuggestionManagement = () => {
 
   const filteredSuggestions = suggestions.filter((s: any) => (tab === 'pending' ? s.status === 'pending' : tab === 'approved' ? s.status === 'approved' : s.status === 'rejected'));
 
-  // Add color classes
+  // Update statusColors for left border: purple for 'juicy' (rejected), green for 'natty' (approved), gray for pending
   const statusColors = {
     pending: 'border-gray-300',
-    approved: 'border-green-500',
-    rejected: 'border-fuchsia-500',
+    approved: 'border-green-500', // natty
+    rejected: 'border-fuchsia-700', // juicy (purple)
   };
   const badgeColors = {
     pending: 'bg-gray-200 text-gray-700',
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-fuchsia-100 text-fuchsia-800',
   };
+  // Button colors remain as before, no cross-coloring
   const buttonColors = {
-    approve: 'bg-green-600 hover:bg-green-700 text-white',
-    reject: 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white',
+    approve: 'bg-green-600 hover:bg-green-700 text-white', // natty
+    reject: 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white', // juicy
     advanced: 'border-fuchsia-500 text-fuchsia-700 hover:bg-fuchsia-50',
   };
 
