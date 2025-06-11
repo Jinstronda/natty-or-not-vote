@@ -1,7 +1,7 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Influencer } from "@/types/vote";
+import InfluencerPhotoGallery from './InfluencerPhotoGallery';
 
 interface InfluencerInfoProps {
   influencer: Influencer;
@@ -11,13 +11,18 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="aspect-square mb-6 rounded-lg overflow-hidden">
-          <img 
-            src={influencer.image} 
-            alt={influencer.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* Gallery at the top */}
+        {influencer.photos && influencer.photos.length > 0 ? (
+          <InfluencerPhotoGallery photos={influencer.photos} className="mb-6" />
+        ) : (
+          <div className="aspect-square mb-6 rounded-lg overflow-hidden bg-secondary flex items-center justify-center">
+            <img 
+              src={influencer.image} 
+              alt={influencer.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
         
         <h1 className="font-heading font-bold text-2xl mb-2">
           {influencer.name}
