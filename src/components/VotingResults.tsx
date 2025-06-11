@@ -76,10 +76,8 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={expertNattyPercentage} 
+                  colorVariant="natty"
                   className="h-3"
-                  style={{
-                    background: 'hsl(var(--muted))',
-                  }}
                 />
               </div>
               
@@ -91,10 +89,8 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={expertJuicyPercentage} 
-                  className="h-3 [&>div]:bg-juicy"
-                  style={{
-                    background: 'hsl(var(--muted))',
-                  }}
+                  colorVariant="juicy"
+                  className="h-3"
                 />
               </div>
             </div>
@@ -124,10 +120,8 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={communityResults.natty} 
+                  colorVariant="natty"
                   className="h-3"
-                  style={{
-                    background: 'hsl(var(--muted))',
-                  }}
                 />
               </div>
               
@@ -139,10 +133,8 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
                 </div>
                 <Progress 
                   value={communityResults.juicy} 
-                  className="h-3 [&>div]:bg-juicy"
-                  style={{
-                    background: 'hsl(var(--muted))',
-                  }}
+                  colorVariant="juicy"
+                  className="h-3"
                 />
               </div>
             </div>
