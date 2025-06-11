@@ -60,7 +60,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         
         <CardContent className="p-4">
           <h3
-            className="font-semibold text-lg mb-2 text-center transition-colors"
+            className="font-semibold text-lg mb-2 text-center transition-colors text-white"
           >
             {influencer.name}
           </h3>
