@@ -48,7 +48,7 @@ interface DatabaseInfluencer {
 }
 
 // Google Custom Search API integration
-const GOOGLE_CX = 'YOUR_CX_ID_HERE'; // TODO: Replace with your Custom Search Engine ID
+const GOOGLE_CX = import.meta.env.VITE_GOOGLE_CX;
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   try {
