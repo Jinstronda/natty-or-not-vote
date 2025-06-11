@@ -6,6 +6,8 @@ import { VoteButton } from "./VoteButton";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useVoteStats } from "@/hooks/api/useVoteStats";
+import { Lock } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export interface InfluencerCardProps {
   influencer: {
@@ -106,6 +108,30 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                 </Badge>
               </div>
             </div>
+          )}
+
+          {!user && !isLoading && voteStats && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="space-y-2 select-none cursor-pointer">
+                  <div className="flex justify-between items-center text-xs text-muted-foreground opacity-60">
+                    <span>💉 Juicy</span>
+                    <span>🏆 Natty</span>
+                  </div>
+                  <div className="relative">
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden flex">
+                      <div className="h-full bg-muted-foreground/30 w-1/2 transition-all duration-500" style={{ width: '50%' }} />
+                      <div className="h-full bg-muted-foreground/30 w-1/2 transition-all duration-500" style={{ width: '50%' }} />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <Lock className="h-4 w-4 text-muted-foreground mr-1" />
+                      <span className="text-xs text-muted-foreground font-semibold">Sign in to see verdicts</span>
+                    </div>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Sign in to see verdicts and vote!</TooltipContent>
+            </Tooltip>
           )}
 
           {!isLoading && voteStats && totalVotes === 0 && (
