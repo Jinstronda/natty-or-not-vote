@@ -17,17 +17,19 @@ interface ExpertReviewsProps {
 
 const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
   const { user } = useAuth();
-  const { getInfluencerExpertReviews, refetch } = useSupabaseExpertReviews();
-  const allReviews = getInfluencerExpertReviews(influencerId || "");
-  const expertReviews = expertId
-    ? allReviews.filter(r => r.expert_id === expertId)
-    : allReviews;
+  const { expertReviews, loading, refetch } = useSupabaseExpertReviews();
+  let filteredReviews: typeof expertReviews = [];
+  if (expertId) {
+    filteredReviews = expertReviews.filter(r => r.expert_id === expertId);
+  } else if (influencerId) {
+    filteredReviews = expertReviews.filter(r => r.influencer_id === influencerId);
+  }
   const [experts, setExperts] = useState<Record<string, any>>({});
   const [editingReview, setEditingReview] = useState<ExpertReview | null>(null);
 
   useEffect(() => {
     const fetchExperts = async () => {
-      const ids = Array.from(new Set(expertReviews.map(r => r.expert_id).filter(Boolean)));
+      const ids = Array.from(new Set(filteredReviews.map(r => r.expert_id).filter(Boolean)));
       if (ids.length === 0) return;
       const { data } = await supabase.from('experts').select('*').in('id', ids);
       if (data) {
@@ -37,7 +39,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
       }
     };
     fetchExperts();
-  }, [expertReviews]);
+  }, [filteredReviews]);
 
   const handleDeleteExpertReview = async (reviewId: string) => {
     if (user?.role !== 'admin') return;
@@ -65,7 +67,10 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
     }
   };
 
-  if (expertReviews.length === 0) {
+  if (loading) {
+    return <p className="text-center text-muted-foreground py-4">Loading expert reviews...</p>;
+  }
+  if (filteredReviews.length === 0) {
     return <p className="text-center text-muted-foreground py-4">No expert reviews yet.</p>;
   }
 
@@ -85,7 +90,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
         )}
         
         <div className="space-y-6">
-          {expertReviews.map((review) => {
+          {filteredReviews.map((review) => {
             const expert = review.expert_id ? experts[review.expert_id] : null;
             const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
             const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
@@ -137,7 +142,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setEditingReview(expertReviews[0])}
+              onClick={() => setEditingReview(filteredReviews[0])}
               className="text-blue-600 hover:text-blue-700"
             >
               <Edit className="h-4 w-4" />
@@ -145,7 +150,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleDeleteExpertReview(expertReviews[0].id)}
+              onClick={() => handleDeleteExpertReview(filteredReviews[0].id)}
               className="text-destructive hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
