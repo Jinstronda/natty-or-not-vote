@@ -1,6 +1,7 @@
 import AdminTopBar from "@/components/AdminTopBar";
 import Header from "@/components/Header";
 import { ReactNode } from "react";
+import Footer from "@/components/Footer";
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ const Layout = ({ children }: LayoutProps) => {
       <AdminTopBar />
       <Header />
       {children}
+      <Footer />
     </div>
   );
 };

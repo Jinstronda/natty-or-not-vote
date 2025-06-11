@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import HowItWorks from "./pages/HowItWorks";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
+import Terms from "./pages/Terms";
 import "./utils/emergencyDebug"; // Import emergency debug utilities
 
 const App = () => (
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
