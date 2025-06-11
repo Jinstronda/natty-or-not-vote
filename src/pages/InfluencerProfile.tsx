@@ -42,6 +42,11 @@ const InfluencerProfile = () => {
     userReviewsRef.current?.fetchReviews();
   };
   
+  // Debug logs
+  console.log('[InfluencerProfile] id:', id);
+  console.log('[InfluencerProfile] influencerData:', influencerData);
+  console.log('[InfluencerProfile] error:', error);
+
   // Transform the data to match the Influencer type with all required properties
   const influencer: Influencer | null = influencerData ? {
     id: influencerData.id,
@@ -55,6 +60,8 @@ const InfluencerProfile = () => {
     social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {},
     photos: influencerData.photos || []
   } : null;
+
+  console.log('[InfluencerProfile] influencer:', influencer);
   
   if (isLoading) {
     return (
