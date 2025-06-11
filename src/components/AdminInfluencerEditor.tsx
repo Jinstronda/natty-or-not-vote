@@ -10,6 +10,7 @@ import { Upload } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
 import InfluencerPhotoGallery from './InfluencerPhotoGallery';
 import { InfluencerPhoto } from '@/types/vote';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Influencer {
   id: string;
@@ -85,6 +86,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch latest photos on mount or influencer change
   useEffect(() => {
@@ -106,6 +108,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     setPhotos([...photos, ...(data || [])]);
     setNewPhotoUrl('');
     setNewPhotoDesc('');
+    queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
   };
 
   // Delete photo
@@ -113,6 +116,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     const { error } = await supabase.from('influencer_photos').delete().eq('id', photoId);
     if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
     setPhotos(photos.filter(p => p.id !== photoId));
+    queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
   };
 
   // Update description
@@ -120,6 +124,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     const { error } = await supabase.from('influencer_photos').update({ description: desc }).eq('id', photoId);
     if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
     setPhotos(photos.map(p => p.id === photoId ? { ...p, description: desc } : p));
+    queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
   };
 
   // Reorder photos
@@ -133,6 +138,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
       supabase.from('influencer_photos').update({ order: i }).eq('id', p.id)
     ));
     setPhotos(reordered);
+    queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
   };
 
   const handleSave = async () => {
