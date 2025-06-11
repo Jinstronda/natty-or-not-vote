@@ -119,13 +119,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                     <span>🏆 Natty</span>
                   </div>
                   <div className="relative">
-                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden flex">
-                      <div className="h-full bg-muted-foreground/30 w-1/2 transition-all duration-500" style={{ width: '50%' }} />
-                      <div className="h-full bg-muted-foreground/30 w-1/2 transition-all duration-500" style={{ width: '50%' }} />
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <Lock className="h-4 w-4 text-muted-foreground mr-1" />
-                      <span className="text-xs text-muted-foreground font-semibold">Sign in to see verdicts</span>
+                    <div className="w-full rounded-full h-2 overflow-hidden flex blur-sm opacity-80">
+                      <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
+                      <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
                     </div>
                   </div>
                 </div>
