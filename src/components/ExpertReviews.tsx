@@ -113,7 +113,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                   <div className="text-base mb-2 break-words whitespace-pre-line text-gray-900">{review.content}</div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold text-xs text-muted-foreground">VEREDICT:</span>
-                    <span className={`font-bold text-sm ${isNatty ? 'text-green-700' : 'text-purple-700'}`}>{isNatty ? 'Natural' : 'Not Natural'}</span>
+                    <span className={`font-bold text-sm ${isNatty ? 'text-green-700' : 'text-purple-700'}`}>{isNatty ? 'Natty' : 'Juicy'}</span>
                   </div>
                   {review.link_url && (
                     <div className="mb-1">
