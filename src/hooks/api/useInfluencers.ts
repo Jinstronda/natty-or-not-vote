@@ -46,4 +46,18 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
   };
 };
 
+export const useInfluencers = (searchTerm?: string, enabled: boolean = true) => {
+  const stableSearchTerm = searchTerm || '';
+
+  return useInfiniteQuery({
+    queryKey: ['influencers', 'infinite', stableSearchTerm],
+    queryFn: ({ pageParam }: { pageParam: number }) => fetchInfluencers({ pageParam, searchTerm: stableSearchTerm }),
+    enabled: enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: InfluencerPage) => lastPage.nextPage,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
 export default fetchInfluencers;
