@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music } from "lucide-react";
+import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music, Loader2 } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,30 @@ interface DatabaseInfluencer {
   social_links?: any;
   created_at: string;
   updated_at: string;
+}
+
+// Google Custom Search API integration
+const GOOGLE_CX = 'YOUR_CX_ID_HERE'; // TODO: Replace with your Custom Search Engine ID
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+async function fetchImagesForInfluencer(name: string): Promise<string[]> {
+  try {
+    const params = new URLSearchParams({
+      key: GOOGLE_API_KEY,
+      cx: GOOGLE_CX,
+      q: name,
+      searchType: 'image',
+      num: '3',
+      safe: 'active',
+    });
+    const res = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+    if (!res.ok) throw new Error('Google API error');
+    const data = await res.json();
+    if (!data.items || !Array.isArray(data.items)) throw new Error('No images found');
+    return data.items.map((item: any) => item.link).slice(0, 3);
+  } catch (err) {
+    // Fallback to placeholder images
+    return [1, 2, 3].map(i => `https://via.placeholder.com/400x400?text=${encodeURIComponent(name)}+${i}`);
+  }
 }
 
 const InfluencerManagement = () => {
@@ -86,6 +110,7 @@ const InfluencerManagement = () => {
   });
 
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
+  const [fetchingImages, setFetchingImages] = useState(false);
 
   const addInfluencerMutation = useMutation({
     mutationFn: async (influencer: Omit<Influencer, 'id'>) => {
@@ -313,8 +338,66 @@ const InfluencerManagement = () => {
     }
   };
 
+  // Fetch and add images for influencers without photos
+  const handleFetchImagesForMissing = async () => {
+    setFetchingImages(true);
+    try {
+      // 1. Get all influencers
+      const { data: allInfluencers, error: infError } = await supabase
+        .from('influencers')
+        .select('id, name');
+      if (infError) throw infError;
+      // 2. For each, check if they have photos
+      let updatedCount = 0;
+      for (const inf of allInfluencers) {
+        const { data: photos, error: photoError } = await supabase
+          .from('influencer_photos')
+          .select('id')
+          .eq('influencer_id', inf.id);
+        if (photoError) continue;
+        if (!photos || photos.length === 0) {
+          // 3. Fetch 3 images (placeholder for now)
+          const images = await fetchImagesForInfluencer(inf.name);
+          // 4. Set the first image as the influencer's main image
+          if (images[0]) {
+            await supabase.from('influencers').update({ image: images[0] }).eq('id', inf.id);
+          }
+          // 5. Insert all images into influencer_photos
+          for (let i = 0; i < images.length; i++) {
+            await supabase.from('influencer_photos').insert({
+              influencer_id: inf.id,
+              image_url: images[i],
+              description: `Auto-fetched image for ${inf.name}`,
+              order: i
+            });
+          }
+          updatedCount++;
+        }
+      }
+      toast({
+        title: 'Image Fetch Complete',
+        description: `Added images for ${updatedCount} influencer(s) without photos.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch or add images.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-4 mb-2">
+        <Button onClick={handleFetchImagesForMissing} disabled={fetchingImages} variant="outline">
+          {fetchingImages && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
+          Fetch Images for Influencers Without Photos
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
