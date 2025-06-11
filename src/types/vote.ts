@@ -1,4 +1,3 @@
-
 export interface Vote {
   userId: string;
   influencerId: string;
@@ -33,6 +32,11 @@ export interface Influencer {
     youtube?: string;
     tiktok?: string;
   };
+  photos?: Array<{
+    id: string;
+    image_url: string;
+    description: string | null;
+  }>;
 }
 
 export interface InfluencerSuggestion {
