@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -146,18 +145,6 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
       <h2 className="font-heading font-bold text-2xl mb-6 text-center">
         What do you think?
       </h2>
-      
-      {/* Dynamic Percentage Button */}
-      {totalVotes > 0 && (
-        <div className="mb-6 flex justify-center">
-          <DynamicPercentageButton
-            nattyPercentage={nattyPercentage}
-            juicyPercentage={juicyPercentage}
-            totalVotes={totalVotes}
-            className="px-6 py-3 text-base"
-          />
-        </div>
-      )}
       
       <div className="grid grid-cols-2 gap-4 mb-6">
         <Button
