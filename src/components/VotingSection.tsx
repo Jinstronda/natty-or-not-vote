@@ -247,10 +247,14 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
           </div>
           
           <div className="relative">
-            <div className="w-full bg-secondary rounded-full h-4 overflow-hidden">
-              <div 
+            <div className="w-full bg-secondary rounded-full h-4 overflow-hidden flex">
+              <div
                 className="h-full bg-gradient-to-r from-natty to-natty/80 transition-all duration-500"
                 style={{ width: `${voteStats.natty_percentage}%` }}
+              />
+              <div
+                className="h-full bg-gradient-to-r from-juicy to-juicy/80 transition-all duration-500"
+                style={{ width: `${voteStats.not_natty_percentage}%` }}
               />
             </div>
           </div>
