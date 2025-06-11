@@ -26,7 +26,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     isError,
     isSuccess,
     isFetching
-  } = useInfluencers(searchTerm, !!user); // Only enable query when user is authenticated
+  } = useInfluencers(searchTerm, true); // Always enable query for everyone
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
