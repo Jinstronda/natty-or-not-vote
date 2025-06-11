@@ -71,75 +71,18 @@ async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   }
 }
 
-// Debug log state
-const [debugLogs, setDebugLogs] = useState<string[]>([]);
-const addDebugLog = (msg: string) => {
-  setDebugLogs(logs => [
-    `[${new Date().toLocaleTimeString()}] ${msg}`,
-    ...logs.slice(0, 49)
-  ]);
-  console.log(`[SerpAPI DEBUG] ${msg}`);
-};
-
-// SerpAPI integration (Google Images via SerpAPI)
-const SERPAPI_KEY = 'fd4f8562688510f66d448e7c21beaf36d015aa4d'; // Provided by user
-async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
-  try {
-    const url = `/api/serpapi-proxy?q=${encodeURIComponent(name)}`;
-    addDebugLog(`Fetching for: ${name} | URL: ${url}`);
-    const res = await fetch(url);
-    addDebugLog(`Response status for ${name}: ${res.status}`);
-    const text = await res.text();
-    addDebugLog(`Raw response text for ${name}: ${text}`);
-    if (!res.ok) throw new Error(`SerpAPI proxy error for ${name}: ${res.status}`);
-    let data;
-    try {
-      data = JSON.parse(text);
-      addDebugLog(`Parsed JSON for ${name}: ${JSON.stringify(data)}`);
-    } catch (err) {
-      addDebugLog(`JSON parse error for ${name}: ${err}`);
-      throw new Error(`Invalid JSON from proxy for ${name}`);
-    }
-    if (!data.images_results || !Array.isArray(data.images_results)) {
-      addDebugLog(`No images_results array for ${name}`);
-      throw new Error('No images found');
-    }
-    return data.images_results.map((item: any) => item.original).slice(0, 5);
-  } catch (err) {
-    addDebugLog(`Error in fetchImagesFromSerpAPI for ${name}: ${err}`);
-    toast({
-      title: 'SerpAPI Error',
-      description: `${name}: ${err}`,
-      variant: 'destructive',
-    });
-    return [];
-  }
-}
-
-// Utility: fetch vote counts for a list of influencer IDs (copied from InfluencerGrid)
-const useInfluencerVoteCounts = (influencerIds: string[]) => {
-  return useQuery({
-    queryKey: ['admin-influencer-vote-counts', influencerIds],
-    queryFn: async () => {
-      if (influencerIds.length === 0) return {};
-      const { data, error } = await supabase
-        .from('influencer_vote_counts')
-        .select('influencer_id, total_votes')
-        .in('influencer_id', influencerIds);
-      if (error) throw error;
-      const map: Record<string, number> = {};
-      data?.forEach((row: any) => {
-        map[row.influencer_id] = row.total_votes;
-      });
-      return map;
-    },
-    enabled: influencerIds.length > 0,
-    staleTime: 30000,
-  });
-};
-
 const InfluencerManagement = () => {
   const queryClient = useQueryClient();
+
+  // Debug log state and function must be inside the component
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const addDebugLog = (msg: string) => {
+    setDebugLogs(logs => [
+      `[${new Date().toLocaleTimeString()}] ${msg}`,
+      ...logs.slice(0, 49)
+    ]);
+    console.log(`[SerpAPI DEBUG] ${msg}`);
+  };
 
   const { data: influencers = [] } = useQuery({
     queryKey: ['admin-influencers'],
