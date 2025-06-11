@@ -345,59 +345,70 @@ const InfluencerManagement = () => {
       // 1. Get all influencers
       const { data: allInfluencers, error: infError } = await supabase
         .from('influencers')
-        .select('id, name');
+        .select('id, name, image');
       if (infError) throw infError;
-      // 2. For each, check if they have photos
       let updatedCount = 0;
       for (const inf of allInfluencers) {
+        // Helper to check if an image is valid
+        function isValidImageUrl(url) {
+          if (!url || typeof url !== 'string') return false;
+          const lower = url.trim().toLowerCase();
+          if (
+            lower === '' ||
+            lower.endsWith('.svg') ||
+            lower.includes('placeholder') ||
+            lower.includes('no-image') ||
+            lower.includes('default') ||
+            lower.includes('broken') ||
+            lower.includes('/image/') ||
+            lower.includes('/photo/') ||
+            lower.includes('/missing/')
+          ) {
+            return false;
+          }
+          return /\.(jpg|jpeg|png|webp)$/i.test(lower);
+        }
+        // 2. Check if main image is missing or broken
+        const mainImageIsBad = !isValidImageUrl(inf.image);
+        // 3. Get all photos for this influencer
         const { data: photos, error: photoError } = await supabase
           .from('influencer_photos')
-          .select('id')
+          .select('id, image_url')
           .eq('influencer_id', inf.id);
         if (photoError) continue;
-        if (!photos || photos.length === 0) {
-          // 3. Fetch 3 images (placeholder for now)
-          const images = await fetchImagesForInfluencer(inf.name);
-          // Filter out placeholder images
-          function isValidImageUrl(url) {
-            if (!url || typeof url !== 'string') return false;
-            const lower = url.trim().toLowerCase();
-            if (
-              lower === '' ||
-              lower.endsWith('.svg') ||
-              lower.includes('placeholder') ||
-              lower.includes('no-image') ||
-              lower.includes('default') ||
-              lower.includes('broken') ||
-              lower.includes('/image/') ||
-              lower.includes('/photo/') ||
-              lower.includes('/missing/')
-            ) {
-              return false;
+        // 4. Try to use a good image from existing photos
+        let goodPhoto = null;
+        if (photos && photos.length > 0) {
+          goodPhoto = photos.find(p => isValidImageUrl(p.image_url));
+        }
+        if (mainImageIsBad) {
+          if (goodPhoto) {
+            // Set main image to first good photo
+            await supabase.from('influencers').update({ image: goodPhoto.image_url }).eq('id', inf.id);
+            updatedCount++;
+            continue; // No need to fetch new images
+          } else {
+            // Fetch new images
+            const images = await fetchImagesForInfluencer(inf.name);
+            const filteredImages = images.filter(isValidImageUrl);
+            if (filteredImages[0]) {
+              await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
             }
-            // Only allow certain image extensions
-            return /\.(jpg|jpeg|png|webp)$/i.test(lower);
+            for (let i = 0; i < filteredImages.length; i++) {
+              await supabase.from('influencer_photos').insert({
+                influencer_id: inf.id,
+                image_url: filteredImages[i],
+                description: `Auto-fetched image for ${inf.name}`,
+                order: i
+              });
+            }
+            if (filteredImages.length > 0) updatedCount++;
           }
-          const filteredImages = images.filter(isValidImageUrl);
-          // 4. Set the first image as the influencer's main image
-          if (filteredImages[0]) {
-            await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
-          }
-          // 5. Insert all images into influencer_photos
-          for (let i = 0; i < filteredImages.length; i++) {
-            await supabase.from('influencer_photos').insert({
-              influencer_id: inf.id,
-              image_url: filteredImages[i],
-              description: `Auto-fetched image for ${inf.name}`,
-              order: i
-            });
-          }
-          updatedCount++;
         }
       }
       toast({
         title: 'Image Fetch Complete',
-        description: `Added images for ${updatedCount} influencer(s) without photos.`,
+        description: `Updated main images for ${updatedCount} influencer(s) with missing or broken images.`,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
     } catch (error) {
