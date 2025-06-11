@@ -5,10 +5,35 @@ import InfluencerCard from "./InfluencerCard";
 import { useInfluencers, type InfluencerPage } from "@/hooks/api/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface InfluencerGridProps {
   searchTerm?: string;
 }
+
+// Utility: fetch vote counts for a list of influencer IDs
+const useInfluencerVoteCounts = (influencerIds: string[]) => {
+  return useQuery({
+    queryKey: ['influencer-vote-counts', influencerIds],
+    queryFn: async () => {
+      if (influencerIds.length === 0) return {};
+      // Use the materialized view for performance
+      const { data, error } = await supabase
+        .from('influencer_vote_counts')
+        .select('influencer_id, total_votes')
+        .in('influencer_id', influencerIds);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      data?.forEach((row: any) => {
+        map[row.influencer_id] = row.total_votes;
+      });
+      return map;
+    },
+    enabled: influencerIds.length > 0,
+    staleTime: 30000,
+  });
+};
 
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const { user, loading: authLoading } = useAuth();
@@ -55,6 +80,18 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const allInfluencers = hasData ? data.pages.flatMap(page => page.data) : [];
   
+  // Sort influencers by most voted (descending)
+  const influencerIds = allInfluencers.map(i => i.id);
+  const { data: voteCounts, isLoading: voteCountsLoading } = useInfluencerVoteCounts(influencerIds);
+  let sortedInfluencers = allInfluencers;
+  if (voteCounts && influencerIds.length > 0) {
+    sortedInfluencers = [...allInfluencers].sort((a, b) => {
+      const votesA = voteCounts[a.id] || 0;
+      const votesB = voteCounts[b.id] || 0;
+      return votesB - votesA;
+    });
+  }
+
   // Show loading while checking authentication
   if (authLoading) {
     return (
@@ -125,7 +162,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {allInfluencers.map((influencer) => (
+        {sortedInfluencers.map((influencer) => (
           <InfluencerCard 
             key={influencer.id} 
             influencer={influencer}
