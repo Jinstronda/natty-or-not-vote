@@ -38,6 +38,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
     <Link to={`/influencer/${influencer.id}`}>
       <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden
         ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/20' : ''}
+        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/20' : ''}
       `}>
         <CardHeader className="p-0">
           <div className="aspect-square relative">
@@ -60,7 +61,15 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         <CardContent className="p-4">
           <h3
             className={`font-semibold text-lg mb-2 text-center transition-colors
-              group-hover:${juicyPercentage > 50 ? 'text-juicy' : nattyPercentage > 50 ? 'text-natty' : 'text-primary'}
+              group-hover:text-primary group-hover:text-juicy group-hover:text-natty
+              ${!isLoading && voteStats && totalVotes > 0
+                ? juicyPercentage > 50
+                  ? 'group-hover:text-juicy'
+                  : nattyPercentage > 50
+                    ? 'group-hover:text-natty'
+                    : 'group-hover:text-primary'
+                : ''
+              }
             `}
           >
             {influencer.name}
