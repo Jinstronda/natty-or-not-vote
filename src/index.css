@@ -133,4 +133,8 @@
   .pulse-glow {
     animation: pulse-glow 2s infinite;
   }
+
+  .hover-bg-juicy-faint:hover {
+    background-color: hsl(var(--juicy) / 0.12);
+  }
 }
