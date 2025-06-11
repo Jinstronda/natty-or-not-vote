@@ -133,6 +133,19 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
                 <TooltipContent>Login to vote and see the verdict</TooltipContent>
               </Tooltip>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full mt-4">
+                  <div className="relative">
+                    <div className="w-full rounded-full h-3 overflow-hidden flex blur-sm opacity-80">
+                      <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
+                      <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
+                    </div>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Sign in to see the verdicts!</TooltipContent>
+            </Tooltip>
             <div className="w-full text-center mt-2">
               <span className="text-muted-foreground text-base">Sign in to see the community verdict and cast your vote!</span>
             </div>
