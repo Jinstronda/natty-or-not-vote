@@ -1,0 +1,14 @@
+# Bulk Expert Review Import Format
+
+Each line should be:
+expert_name,influencer_name,natty_or_not,comment,url
+
+- expert_name: Name of the expert (must match or will be created)
+- influencer_name: Name of the influencer (must match or will be created)
+- natty_or_not: "natty" or "juicy"
+- comment: The expert's review comment
+- url: (optional) Link to the full review
+
+Example:
+Dr. Smith,John Doe,natty,Looks natural based on muscle insertions.,https://example.com/review1
+Dr. Smith,Jane Fit,juicy,Obvious signs of enhancement., 
