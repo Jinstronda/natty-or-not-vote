@@ -19,13 +19,11 @@ interface SocialLinks {
 
 interface BulkInfluencer {
   name: string;
-  image?: string;
-  height?: string;
   weight?: string;
-  years_training?: string;
+  height?: string;
   claimed_status?: string;
-  description?: string;
-  social_links?: SocialLinks;
+  years_training?: string;
+  youtube?: string;
 }
 
 const BulkInfluencerImport = () => {
@@ -40,13 +38,12 @@ const BulkInfluencerImport = () => {
         .from('influencers')
         .insert(influencers.map(inf => ({
           name: inf.name,
-          image: inf.image || '/placeholder.svg',
-          height: inf.height || null,
           weight: inf.weight || null,
-          years_training: inf.years_training || null,
+          height: inf.height || null,
           claimed_status: inf.claimed_status || 'unclaimed',
-          description: inf.description || null,
-          social_links: inf.social_links as any || {}
+          years_training: inf.years_training || null,
+          youtube: inf.youtube || null,
+          image: '/placeholder.svg',
         })));
       
       if (error) throw error;
@@ -61,45 +58,30 @@ const BulkInfluencerImport = () => {
     try {
       const lines = importData.trim().split('\n');
       const parsed: BulkInfluencer[] = [];
-
-      for (const line of lines) {
-        if (!line.trim()) continue;
-
-        // Support both CSV and simple format
-        const parts = line.includes(',') ? line.split(',').map(p => p.trim()) : [line.trim()];
-        
-        if (parts.length >= 1) {
-          const influencer: BulkInfluencer = {
-            name: parts[0],
-            height: parts[1] || undefined,
-            weight: parts[2] || undefined,
-            years_training: parts[3] || undefined,
-            description: parts[4] || undefined,
-            claimed_status: parts[5] || 'unclaimed'
-          };
-
-          // Parse social links from remaining parts
-          const socialLinks: SocialLinks = {};
-          for (let i = 6; i < parts.length; i++) {
-            const link = parts[i];
-            if (link && link.includes('instagram')) socialLinks.instagram = link;
-            else if (link && link.includes('youtube')) socialLinks.youtube = link;
-            else if (link && link.includes('tiktok')) socialLinks.tiktok = link;
-            else if (link && link.includes('twitter')) socialLinks.twitter = link;
-            else if (link && link.startsWith('http')) socialLinks.website = link;
-          }
-          
-          if (Object.keys(socialLinks).length > 0) {
-            influencer.social_links = socialLinks;
-          }
-
-          parsed.push(influencer);
+      let header: string[] = [];
+      for (let i = 0; i < lines.length; i++) {
+        const row = lines[i];
+        if (!row.trim()) continue;
+        const parts = row.split(',').map(p => p.trim());
+        if (i === 0) {
+          header = parts;
+          continue;
         }
+        if (parts.length < 1 || !parts[0]) continue; // skip if no name
+        let claimed_status = (header.length > 3 && parts[3]) ? parts[3].toLowerCase() : 'natty';
+        if (claimed_status !== 'natty' && claimed_status !== 'juicy') claimed_status = 'natty';
+        const influencer: BulkInfluencer = {
+          name: parts[0],
+          weight: header.length > 1 ? parts[1] || undefined : undefined,
+          height: header.length > 2 ? parts[2] || undefined : undefined,
+          claimed_status,
+          years_training: header.length > 4 ? parts[4] || undefined : undefined,
+          youtube: header.length > 5 ? parts[5] || undefined : undefined,
+        };
+        parsed.push(influencer);
       }
-
       setParsedData(parsed);
       setShowPreview(true);
-
       toast({
         title: "Success",
         description: `Parsed ${parsed.length} influencers. Review and import.`,
@@ -147,9 +129,10 @@ const BulkInfluencerImport = () => {
 
   const downloadTemplate = () => {
     const template = [
-      'Name,Height,Weight,Years Training,Description,Status,Instagram,YouTube,TikTok,Twitter,Website',
-      'John Doe,5\'10",180 lbs,5 years,Fitness influencer,unclaimed,@johndoe,youtube.com/johndoe,@johndoe,@johndoe,johndoe.com',
-      'Jane Smith,5\'6",130 lbs,3 years,Yoga instructor,claimed,@janesmith,,,@janesmith,janesmith.com'
+      'name,weight,height,claimed_status,years_training,youtube',
+      'Will Tennyson,180 lbs,5\'10\",natty,8,https://youtube.com/c/WillTennyson',
+      'David Laid,185 lbs,6\'2\",juicy,7,https://youtube.com/c/DavidLaid',
+      'Jane Doe,,,,,'
     ].join('\n');
 
     const blob = new Blob([template], { type: 'text/csv' });
@@ -177,7 +160,7 @@ const BulkInfluencerImport = () => {
           <Alert>
             <FileText className="h-4 w-4" />
             <AlertDescription>
-              Import multiple influencers at once using CSV format or simple text. Each line should contain: Name, Height, Weight, Years Training, Description, Status, Social Links.
+              Import multiple influencers at once using CSV format or simple text. Each line should contain: Name, Weight, Height, Claimed Status, Years Training, YouTube.
             </AlertDescription>
           </Alert>
 
@@ -199,10 +182,10 @@ const BulkInfluencerImport = () => {
               placeholder={`Paste your data here. Examples:
               
 CSV Format:
-John Doe,5'10",180 lbs,5 years,Fitness influencer,unclaimed,@johndoe,youtube.com/johndoe
+Will Tennyson,180 lbs,5'10",natty,8,https://youtube.com/c/WillTennyson
 
 Simple Format (one name per line):
-John Doe
+Will Tennyson
 Jane Smith
 Mike Johnson`}
               value={importData}
@@ -250,16 +233,8 @@ Mike Johnson`}
                         {influencer.height && <div>Height: {influencer.height}</div>}
                         {influencer.weight && <div>Weight: {influencer.weight}</div>}
                         {influencer.years_training && <div>Training: {influencer.years_training}</div>}
-                        {influencer.description && <div>Description: {influencer.description}</div>}
+                        {influencer.youtube && <div>YouTube: {influencer.youtube}</div>}
                         <div>Status: {influencer.claimed_status || 'unclaimed'}</div>
-                        {influencer.social_links && Object.keys(influencer.social_links).length > 0 && (
-                          <div>
-                            Social Links: {Object.entries(influencer.social_links)
-                              .filter(([_, value]) => value)
-                              .map(([platform, _]) => platform)
-                              .join(', ')}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
