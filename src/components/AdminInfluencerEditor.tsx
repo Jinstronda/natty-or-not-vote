@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +19,7 @@ interface Influencer {
   claimed_status: string;
   description: string;
   social_links: any;
+  photos?: Array<{ id?: string; image_url: string; description: string }>;
 }
 
 interface AdminInfluencerEditorProps {
@@ -38,11 +39,35 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
     description: influencer.description,
     socialLinks: influencer.social_links || {}
   });
+  const [photos, setPhotos] = useState<Array<{ id?: string; image_url: string; description: string }>>(influencer.photos || []);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const { toast } = useToast();
 
+  // Fetch latest photos if influencer changes
+  useEffect(() => {
+    setPhotos(influencer.photos || []);
+  }, [influencer.photos]);
+
+  // Add new photo
+  const handleAddPhoto = (image_url: string) => {
+    setPhotos(prev => [...prev, { image_url, description: "" }]);
+  };
+
+  // Update photo description
+  const handlePhotoDescriptionChange = (idx: number, desc: string) => {
+    setPhotos(prev => prev.map((p, i) => i === idx ? { ...p, description: desc } : p));
+  };
+
+  // Remove photo
+  const handleRemovePhoto = (idx: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Save all changes (influencer + photos)
   const handleSave = async () => {
     try {
+      // Save influencer fields as before
       const { error } = await supabase
         .from('influencers')
         .update({
@@ -56,8 +81,19 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           social_links: formData.socialLinks
         })
         .eq('id', influencer.id);
-
       if (error) throw error;
+
+      // Save photos: delete all old, insert all new (simple approach)
+      await supabase.from('influencer_photos').delete().eq('influencer_id', influencer.id);
+      for (const photo of photos) {
+        if (photo.image_url) {
+          await supabase.from('influencer_photos').insert({
+            influencer_id: influencer.id,
+            image_url: photo.image_url,
+            description: photo.description || null,
+          });
+        }
+      }
 
       setIsEditing(false);
       toast({
@@ -201,6 +237,33 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
             value={formData.socialLinks?.tiktok || ''}
             onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
           />
+        </div>
+
+        {/* Multiple Photos Section */}
+        <div>
+          <Label>Influencer Photos</Label>
+          <div className="space-y-4">
+            {photos.map((photo, idx) => (
+              <div key={photo.id || photo.image_url} className="flex items-center gap-4 mb-2">
+                <img src={photo.image_url} alt="Influencer" className="w-20 h-20 object-cover rounded-lg border" />
+                <Input
+                  className="flex-1"
+                  placeholder="Description (optional)"
+                  value={photo.description}
+                  onChange={e => handlePhotoDescriptionChange(idx, e.target.value)}
+                  maxLength={80}
+                />
+                <Button variant="destructive" size="icon" onClick={() => handleRemovePhoto(idx)}>
+                  &times;
+                </Button>
+              </div>
+            ))}
+            <SecureImageUpload
+              onImageUploaded={handleAddPhoto}
+              currentImage={undefined}
+              onImageRemoved={() => {}}
+            />
+          </div>
         </div>
 
         <div className="flex gap-2">
