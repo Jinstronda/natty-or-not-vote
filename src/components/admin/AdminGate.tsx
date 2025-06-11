@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useEffect, useState } from 'react';
@@ -14,22 +15,54 @@ const AdminGate = ({ children }: AdminGateProps) => {
 
   useEffect(() => {
     let isMounted = true;
-    if (user) {
-      fetchUserProfile(user).then((p) => {
-        if (isMounted) {
-          setProfile(p);
-          setLoading(false);
+    
+    const checkAdminStatus = async () => {
+      if (user) {
+        try {
+          const userProfile = await fetchUserProfile(user);
+          if (isMounted) {
+            setProfile(userProfile);
+            console.log('AdminGate: User profile fetched:', userProfile);
+          }
+        } catch (error) {
+          console.error('AdminGate: Error fetching profile:', error);
+          if (isMounted) {
+            setProfile(null);
+          }
         }
-      });
-    } else {
-      setLoading(false);
-    }
-    return () => { isMounted = false; };
+      } else {
+        if (isMounted) {
+          setProfile(null);
+        }
+      }
+      
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+    
+    return () => { 
+      isMounted = false; 
+    };
   }, [user, fetchUserProfile]);
 
-  if (loading) return null; // or a spinner
-  if (!profile || profile.role !== 'admin') return null;
+  if (loading) {
+    console.log('AdminGate: Loading...');
+    return null; // or a spinner
+  }
+  
+  const isAdmin = profile?.role === 'admin';
+  console.log('AdminGate: Check admin status:', { profile: profile, isAdmin });
+  
+  if (!profile || !isAdmin) {
+    console.log('AdminGate: Access denied - not admin');
+    return null;
+  }
+  
+  console.log('AdminGate: Access granted - user is admin');
   return <>{children}</>;
 };
 
-export default AdminGate; 
+export default AdminGate;

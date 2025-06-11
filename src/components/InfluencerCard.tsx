@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,6 +63,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               </div>
                 <Progress 
                   value={voteStats.natty_percentage} 
+                  colorVariant="natty"
                 className="h-2 transition-all duration-300"
                 />
               <div className="text-center">

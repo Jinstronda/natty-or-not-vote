@@ -1,5 +1,6 @@
+
 import { useParams } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
 import VotingResults from "@/components/VotingResults";
@@ -9,14 +10,35 @@ import UserReviews, { UserReviewsRef } from "@/components/UserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
 import { useInfluencer } from "@/hooks/api/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Influencer } from "@/types/vote";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { fetchUserProfile } = useUserProfile();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
   const userReviewsRef = useRef<UserReviewsRef>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Fetch user profile to get role
+  useEffect(() => {
+    if (user && !userProfile) {
+      setProfileLoading(true);
+      fetchUserProfile(user)
+        .then(profile => {
+          setUserProfile(profile);
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+        })
+        .finally(() => {
+          setProfileLoading(false);
+        });
+    }
+  }, [user, userProfile, fetchUserProfile]);
 
   const handleReviewSubmitted = () => {
     userReviewsRef.current?.fetchReviews();
@@ -69,6 +91,9 @@ const InfluencerProfile = () => {
     );
   }
 
+  // Check if user is admin based on profile data
+  const isAdmin = userProfile?.role === 'admin';
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -78,7 +103,7 @@ const InfluencerProfile = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            {user?.role === 'admin' && (
+            {isAdmin && !profileLoading && (
               <AdminInfluencerEditor influencer={influencer} />
             )}
             <InfluencerInfo influencer={influencer} />
