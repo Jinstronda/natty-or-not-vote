@@ -36,7 +36,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
 
   return (
     <Link to={`/influencer/${influencer.id}`}>
-      <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+      <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden
+        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/20' : ''}
+      `}>
         <CardHeader className="p-0">
           <div className="aspect-square relative">
           <img
