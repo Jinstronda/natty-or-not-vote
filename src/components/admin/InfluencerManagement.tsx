@@ -422,12 +422,112 @@ const InfluencerManagement = () => {
     }
   };
 
+  // Add this function below handleFetchImagesForMissing
+  const handleFetchImagesDuckDuckGoForMissing = async () => {
+    setFetchingImages(true);
+    try {
+      const { data: allInfluencers, error: infError } = await supabase
+        .from('influencers')
+        .select('id, name, image');
+      if (infError) throw infError;
+      let updatedCount = 0;
+      for (const inf of allInfluencers) {
+        function isValidImageUrl(url) {
+          if (!url || typeof url !== 'string') return false;
+          const lower = url.trim().toLowerCase();
+          if (
+            lower === '' ||
+            lower.endsWith('.svg') ||
+            lower.includes('placeholder') ||
+            lower.includes('no-image') ||
+            lower.includes('default') ||
+            lower.includes('broken') ||
+            lower.includes('/image/') ||
+            lower.includes('/photo/') ||
+            lower.includes('/missing/') ||
+            lower.startsWith('http://') // Only allow https
+          ) {
+            return false;
+          }
+          return /\.(jpg|jpeg|png|webp)$/i.test(lower);
+        }
+        const mainImageIsBad = !isValidImageUrl(inf.image);
+        const { data: photos, error: photoError } = await supabase
+          .from('influencer_photos')
+          .select('id, image_url')
+          .eq('influencer_id', inf.id);
+        if (photoError) continue;
+        let goodPhoto = null;
+        if (photos && photos.length > 0) {
+          goodPhoto = photos.find(p => isValidImageUrl(p.image_url));
+        }
+        if (mainImageIsBad) {
+          if (goodPhoto) {
+            await supabase.from('influencers').update({ image: goodPhoto.image_url }).eq('id', inf.id);
+            updatedCount++;
+            continue;
+          } else {
+            // Fetch images from DuckDuckGo
+            const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(inf.name)}&format=json&no_redirect=1&no_html=1`;
+            const res = await fetch(ddgUrl);
+            if (!res.ok) continue;
+            const data = await res.json();
+            let images = [];
+            if (data.Image && isValidImageUrl(data.Image)) images.push(data.Image);
+            if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
+              for (const topic of data.RelatedTopics) {
+                if (topic.Icon && isValidImageUrl(topic.Icon.URL)) images.push(topic.Icon.URL);
+                if (topic.Topics && Array.isArray(topic.Topics)) {
+                  for (const sub of topic.Topics) {
+                    if (sub.Icon && isValidImageUrl(sub.Icon.URL)) images.push(sub.Icon.URL);
+                  }
+                }
+              }
+            }
+            // Remove duplicates
+            images = [...new Set(images)];
+            const filteredImages = images.filter(isValidImageUrl);
+            if (filteredImages[0]) {
+              await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
+            }
+            for (let i = 0; i < filteredImages.length; i++) {
+              await supabase.from('influencer_photos').insert({
+                influencer_id: inf.id,
+                image_url: filteredImages[i],
+                description: `DuckDuckGo image for ${inf.name}`,
+                order: i
+              });
+            }
+            if (filteredImages.length > 0) updatedCount++;
+          }
+        }
+      }
+      toast({
+        title: 'DuckDuckGo Image Fetch Complete',
+        description: `Updated main images for ${updatedCount} influencer(s) with missing or broken images.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch or add images from DuckDuckGo.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-2">
         <Button onClick={handleFetchImagesForMissing} disabled={fetchingImages} variant="outline">
           {fetchingImages && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
           Fetch Images for Influencers Without Photos
+        </Button>
+        <Button onClick={handleFetchImagesDuckDuckGoForMissing} disabled={fetchingImages} variant="outline">
+          {fetchingImages && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
+          Fetch Images (DuckDuckGo)
         </Button>
       </div>
       <Card>
