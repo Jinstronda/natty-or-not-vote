@@ -1,4 +1,3 @@
-
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -214,7 +213,8 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
               <ReviewReactions 
                 reviewId={review.id}
                 likes={review.likes}
-                dislikes={0}
+                dislikes={review.dislikes || 0}
+                onReacted={fetchReviews}
               />
             </div>
           ))

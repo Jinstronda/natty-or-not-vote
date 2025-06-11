@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { useSupabaseReactions } from '@/hooks/useSupabaseReactions';
@@ -9,9 +8,10 @@ interface ReviewReactionsProps {
   reviewId: string;
   likes: number;
   dislikes: number;
+  onReacted?: () => void;
 }
 
-const ReviewReactions = ({ reviewId, likes, dislikes }: ReviewReactionsProps) => {
+const ReviewReactions = ({ reviewId, likes, dislikes, onReacted }: ReviewReactionsProps) => {
   const { user } = useAuth();
   const { toggleReaction, getUserReaction } = useSupabaseReactions();
   
@@ -29,6 +29,7 @@ const ReviewReactions = ({ reviewId, likes, dislikes }: ReviewReactionsProps) =>
 
     try {
       await toggleReaction(reviewId, type);
+      if (onReacted) onReacted();
     } catch (error) {
       toast({
         title: "Error",
