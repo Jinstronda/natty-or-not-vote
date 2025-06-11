@@ -327,6 +327,38 @@ export type Database = {
           },
         ]
       }
+      influencer_photos: {
+        Row: {
+          id: string;
+          influencer_id: string;
+          image_url: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          influencer_id: string;
+          image_url: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          influencer_id?: string;
+          image_url?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "influencer_photos_influencer_id_fkey",
+            columns: ["influencer_id"],
+            isOneToOne: false,
+            referencedRelation: "influencers",
+            referencedColumns: ["id"]
+          },
+        ];
+      },
     }
     Views: {
       influencer_vote_counts: {
