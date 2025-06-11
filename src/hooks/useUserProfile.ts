@@ -27,7 +27,12 @@ export const useUserProfile = () => {
           username: profile.username,
           email: profile.email,
           role: profile.role as 'user' | 'admin',
-          profile_picture_url: profile.profile_picture_url
+          profile_picture_url: profile.profile_picture_url,
+          // Add required Supabase User properties
+          app_metadata: supabaseUser.app_metadata || {},
+          user_metadata: supabaseUser.user_metadata || {},
+          aud: supabaseUser.aud || '',
+          created_at: supabaseUser.created_at || ''
         };
       } else {
         console.log('🔄 UserProfile: No profile found, creating for OAuth user');
@@ -60,7 +65,12 @@ export const useUserProfile = () => {
 
         return {
           ...newProfile,
-          profile_picture_url: undefined
+          profile_picture_url: undefined,
+          // Add required Supabase User properties
+          app_metadata: supabaseUser.app_metadata || {},
+          user_metadata: supabaseUser.user_metadata || {},
+          aud: supabaseUser.aud || '',
+          created_at: supabaseUser.created_at || ''
         };
       }
     } catch (error) {

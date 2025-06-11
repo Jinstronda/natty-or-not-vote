@@ -26,7 +26,6 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
   const totalExpertReviews = expertReviews.length;
   
   const expertNattyPercentage = totalExpertReviews > 0 ? Math.round((expertNattyCount / totalExpertReviews) * 100) : 0;
-  const expertJuicyPercentage = totalExpertReviews > 0 ? Math.round((expertJuicyCount / totalExpertReviews) * 100) : 0;
 
   if (isLoading) {
     return (
@@ -37,12 +36,10 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
             <div>
               <Skeleton className="h-6 w-32 mb-4" />
               <Skeleton className="h-8 w-full mb-3" />
-              <Skeleton className="h-8 w-full" />
             </div>
             <div>
               <Skeleton className="h-6 w-32 mb-4" />
               <Skeleton className="h-8 w-full mb-3" />
-              <Skeleton className="h-8 w-full" />
             </div>
           </div>
         </CardContent>
@@ -68,30 +65,26 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
           
           {totalExpertReviews > 0 ? (
             <div className="space-y-4">
-              {/* Natty Bar */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-natty font-semibold">🏆 Natty</span>
-                  <span className="text-natty font-bold text-lg">{expertNattyPercentage}%</span>
-                </div>
-                <Progress 
-                  value={expertNattyPercentage} 
-                  colorVariant="natty"
-                  className="h-3"
-                />
-              </div>
-              
-              {/* Juicy Bar */}
+              {/* Single Progress Bar */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-juicy font-semibold">💉 Juicy</span>
-                  <span className="text-juicy font-bold text-lg">{expertJuicyPercentage}%</span>
+                  <span className="text-natty font-semibold">🏆 Natty</span>
                 </div>
                 <Progress 
-                  value={expertJuicyPercentage} 
-                  colorVariant="juicy"
-                  className="h-3"
+                  value={expertNattyPercentage} 
+                  colorVariant="gradient"
+                  className="h-4"
                 />
+                <div className="text-center mt-2">
+                  <span className="font-bold text-lg">
+                    {expertNattyPercentage > 50 ? (
+                      <span className="text-natty">{expertNattyPercentage}% Natty</span>
+                    ) : (
+                      <span className="text-juicy">{100 - expertNattyPercentage}% Juicy</span>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
           ) : (
@@ -112,30 +105,26 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
           
           {communityResults.total > 0 ? (
             <div className="space-y-4">
-              {/* Natty Bar */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-natty font-semibold">🏆 Natty</span>
-                  <span className="text-natty font-bold text-lg">{communityResults.natty}%</span>
-                </div>
-                <Progress 
-                  value={communityResults.natty} 
-                  colorVariant="natty"
-                  className="h-3"
-                />
-              </div>
-              
-              {/* Juicy Bar */}
+              {/* Single Progress Bar */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-juicy font-semibold">💉 Juicy</span>
-                  <span className="text-juicy font-bold text-lg">{communityResults.juicy}%</span>
+                  <span className="text-natty font-semibold">🏆 Natty</span>
                 </div>
                 <Progress 
-                  value={communityResults.juicy} 
-                  colorVariant="juicy"
-                  className="h-3"
+                  value={communityResults.natty} 
+                  colorVariant="gradient"
+                  className="h-4"
                 />
+                <div className="text-center mt-2">
+                  <span className="font-bold text-lg">
+                    {communityResults.natty > 50 ? (
+                      <span className="text-natty">{communityResults.natty}% Natty</span>
+                    ) : (
+                      <span className="text-juicy">{communityResults.juicy}% Juicy</span>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
           ) : (

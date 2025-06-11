@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
@@ -16,7 +15,7 @@ import { Influencer } from "@/types/vote";
 
 const InfluencerProfile = () => {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, supabaseUser } = useAuth();
   const { fetchUserProfile } = useUserProfile();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
   const userReviewsRef = useRef<UserReviewsRef>(null);
@@ -25,9 +24,9 @@ const InfluencerProfile = () => {
 
   // Fetch user profile to get role
   useEffect(() => {
-    if (user && !userProfile) {
+    if (supabaseUser && !userProfile) {
       setProfileLoading(true);
-      fetchUserProfile(user)
+      fetchUserProfile(supabaseUser)
         .then(profile => {
           setUserProfile(profile);
         })
@@ -38,7 +37,7 @@ const InfluencerProfile = () => {
           setProfileLoading(false);
         });
     }
-  }, [user, userProfile, fetchUserProfile]);
+  }, [supabaseUser, userProfile, fetchUserProfile]);
 
   const handleReviewSubmitted = () => {
     userReviewsRef.current?.fetchReviews();

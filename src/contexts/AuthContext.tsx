@@ -7,6 +7,7 @@ import { User } from '@/types/auth';
 
 interface AuthContextValue {
   user: User | null;
+  supabaseUser: SupabaseUser | null; // Add separate supabase user for hooks that need it
   loading: boolean;
   signUp: (email: string, password: string, username?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const { fetchUserProfile } = useUserProfile();
 
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (session?.user) {
+          setSupabaseUser(session.user);
           try {
             const userProfile = await fetchUserProfile(session.user);
             setUser(userProfile);
@@ -39,10 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else {
           setUser(null);
+          setSupabaseUser(null);
         }
       } catch (error) {
         console.error('Exception getting session:', error);
         setUser(null);
+        setSupabaseUser(null);
       } finally {
         setLoading(false);
       }
@@ -57,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Auth state changed:', event, session?.user?.email);
       
       if (session?.user) {
+        setSupabaseUser(session.user);
         // Defer profile fetching to avoid blocking the auth callback
         setTimeout(async () => {
           try {
@@ -71,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }, 0);
       } else {
         setUser(null);
+        setSupabaseUser(null);
         setLoading(false);
       }
     });
@@ -119,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, supabaseUser, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
