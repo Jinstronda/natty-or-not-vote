@@ -7,6 +7,21 @@ interface InfluencerInfoProps {
   influencer: Influencer;
 }
 
+function displayStatus(status: string | undefined) {
+  if (!status) return 'Not Known';
+  const s = status.toLowerCase();
+  if (s === 'natty') return 'Natty';
+  if (s === 'juicy') return 'Juicy';
+  return 'Not Known';
+}
+
+function getStatusBadgeClass(status: string | undefined) {
+  const s = status?.toLowerCase();
+  if (s === 'natty') return 'bg-natty text-white';
+  if (s === 'juicy') return 'bg-juicy text-white';
+  return 'bg-gray-300 text-gray-700';
+}
+
 const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
   return (
     <Card>
@@ -47,8 +62,8 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Claims:</span>
-            <Badge className={influencer.claimed_status === 'Natural' ? 'bg-natty' : 'bg-juicy'}>
-              {influencer.claimed_status}
+            <Badge className={getStatusBadgeClass(influencer.claimed_status)}>
+              {displayStatus(influencer.claimed_status)}
             </Badge>
           </div>
         </div>
