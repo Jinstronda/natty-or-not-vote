@@ -21,6 +21,10 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
     .from('influencers')
     .select('id, name, image, claimed_status, influencer_vote_counts(total_votes)')
     .order('influencer_vote_counts.total_votes', { ascending: false })
+    .not('name', 'is', null)
+    .not('name', 'eq', '')
+    .not('image', 'is', null)
+    .not('image', 'eq', '')
     .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
   if (searchTerm.trim()) {
@@ -33,13 +37,15 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
     throw new Error(`Supabase error: ${error.message}`);
   }
 
-  const influencers = (data || []).map((row: any) => ({
-    id: row.id,
-    name: row.name || '',
-    image: row.image || '',
-    claimed_status: row.claimed_status || '',
-    total_votes: row.influencer_vote_counts?.total_votes || 0,
-  }));
+  const influencers = (data || [])
+    .filter((row: any) => row.name && row.name.trim() && row.image && row.image.trim())
+    .map((row: any) => ({
+      id: row.id,
+      name: row.name || '',
+      image: row.image || '',
+      claimed_status: row.claimed_status || '',
+      total_votes: row.influencer_vote_counts?.total_votes || 0,
+    }));
 
   return {
     data: influencers,
