@@ -166,7 +166,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
                  shadow-lg shadow-natty/40
                  border-natty text-white` 
               : `bg-gradient-to-r from-natty/10 via-natty/5 to-natty/10
-                 border-natty text-natty 
+                 border-natty text-white 
                  hover:from-natty hover:to-natty/90 hover:text-white
                  hover:shadow-lg hover:shadow-natty/30
                  shadow-md shadow-natty/10`
