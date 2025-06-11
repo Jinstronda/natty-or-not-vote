@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,9 +9,8 @@ import AdminExpertEditor from '@/components/AdminExpertEditor';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ExpertProfilePage = () => {
-  const router = useRouter();
-  const { expertId } = router.query;
-  const [expert, setExpert] = useState<any>(null);
+  const { expertId } = useParams();
+  const [expert, setExpert] = useState<any & { influencer_id?: string; bio?: string; twitter?: string; instagram?: string } | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [influencer, setInfluencer] = useState<any>(null);
   const { user } = useAuth();
@@ -20,7 +19,13 @@ const ExpertProfilePage = () => {
     if (!expertId) return;
     const fetchExpert = async () => {
       const { data } = await supabase.from('experts').select('*').eq('id', expertId).single();
-      setExpert(data);
+      setExpert({
+        ...data,
+        influencer_id: data?.influencer_id ?? undefined,
+        bio: data?.bio ?? undefined,
+        twitter: data?.twitter ?? undefined,
+        instagram: data?.instagram ?? undefined,
+      });
       if (data?.influencer_id) {
         const { data: inf } = await supabase.from('influencers').select('*').eq('id', data.influencer_id).single();
         setInfluencer(inf);
@@ -94,7 +99,7 @@ const ExpertProfilePage = () => {
       {influencer && (
         <div className="mt-8">
           <h3 className="text-xl font-bold mb-4">Influencer Profile</h3>
-          <InfluencerProfile id={influencer.id} />
+          <InfluencerProfile />
         </div>
       )}
     </div>
