@@ -307,6 +307,46 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           />
         </div>
 
+        <div>
+          <Label htmlFor="main-image">Main Image</Label>
+          <SecureImageUpload
+            onImageUploaded={(url) => setFormData(prev => ({ ...prev, image: url }))}
+            currentImage={formData.image}
+            onImageRemoved={() => setFormData(prev => ({ ...prev, image: "" }))}
+          />
+          <div className="flex gap-2 mt-2">
+            <Button
+              onClick={async () => {
+                const { error } = await supabase
+                  .from('influencers')
+                  .update({ image: formData.image })
+                  .eq('id', influencer.id);
+                if (error) {
+                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                } else {
+                  toast({ title: "Success", description: "Main image updated!" });
+                  queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
+                }
+              }}
+              disabled={!formData.image || formData.image === influencer.image}
+            >
+              Save Main Image
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setFormData(prev => ({ ...prev, image: "" }));
+                await supabase.from('influencers').update({ image: null }).eq('id', influencer.id);
+                toast({ title: "Main image removed" });
+                queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
+              }}
+              disabled={!formData.image}
+            >
+              Remove Main Image
+            </Button>
+          </div>
+        </div>
+
         <div className="mt-8">
           <h3 className="font-semibold mb-2">Photos</h3>
           {/* Defensive logs and checks for photos */}
