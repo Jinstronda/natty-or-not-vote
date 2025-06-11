@@ -11,13 +11,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExpertReview } from "@/types/vote";
 
 interface ExpertReviewsProps {
-  influencerId: string;
+  influencerId?: string;
+  expertId?: string;
 }
 
-const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
+const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
   const { user } = useAuth();
   const { getInfluencerExpertReviews, refetch } = useSupabaseExpertReviews();
-  const expertReviews = getInfluencerExpertReviews(influencerId);
+  const allReviews = getInfluencerExpertReviews(influencerId || "");
+  const expertReviews = expertId
+    ? allReviews.filter(r => r.expert_id === expertId)
+    : allReviews;
   const [experts, setExperts] = useState<Record<string, any>>({});
   const [editingReview, setEditingReview] = useState<ExpertReview | null>(null);
 
