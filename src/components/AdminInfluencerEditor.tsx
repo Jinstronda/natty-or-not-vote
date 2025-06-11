@@ -104,7 +104,11 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
       order: photos.length
     }).select();
     setUploadingPhoto(false);
-    if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    console.log('Add photo result:', { data, error });
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
     setPhotos([...photos, ...(data || [])]);
     setNewPhotoUrl('');
     setNewPhotoDesc('');
