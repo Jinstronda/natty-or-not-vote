@@ -70,7 +70,8 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         vote: review.vote as 'natty' | 'juicy',
         content: review.content,
         timestamp: review.timestamp,
-        likes: review.likes || 0
+        likes: review.likes || 0,
+        dislikes: review.dislikes || 0,
       })) || [];
 
       console.log('[UserReviews] Found reviews:', formattedReviews.length);
