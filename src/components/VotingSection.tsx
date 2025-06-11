@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -132,6 +133,14 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
     );
   }
 
+  // Calculate proper percentages that add up to 100%
+  const totalVotes = voteStats?.total_votes || 0;
+  const nattyCount = voteStats?.natty_count || 0;
+  const juicyCount = totalVotes - nattyCount;
+  
+  const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
+  const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
+
   return (
     <div className="bg-card border border-border rounded-lg p-6">
       <h2 className="font-heading font-bold text-2xl mb-6 text-center">
@@ -139,12 +148,12 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
       </h2>
       
       {/* Dynamic Percentage Button */}
-      {voteStats && voteStats.total_votes > 0 && (
+      {totalVotes > 0 && (
         <div className="mb-6 flex justify-center">
           <DynamicPercentageButton
-            nattyPercentage={voteStats.natty_percentage}
-            juicyPercentage={voteStats.not_natty_percentage}
-            totalVotes={voteStats.total_votes}
+            nattyPercentage={nattyPercentage}
+            juicyPercentage={juicyPercentage}
+            totalVotes={totalVotes}
             className="px-6 py-3 text-base"
           />
         </div>
@@ -232,33 +241,33 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
         </div>
       )}
 
-      {voteStats && voteStats.total_votes > 0 && (
+      {totalVotes > 0 && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-natty font-semibold">Natty: {voteStats.natty_percentage}%</span>
-            <span className="text-juicy font-semibold">Juicy: {voteStats.not_natty_percentage}%</span>
+            <span className="text-juicy font-semibold">💉 Juicy: {juicyPercentage}%</span>
+            <span className="text-natty font-semibold">🏆 Natty: {nattyPercentage}%</span>
           </div>
           
           <div className="relative">
             <div className="w-full bg-secondary rounded-full h-4 overflow-hidden flex">
               <div
-                className={`h-full bg-gradient-to-r from-natty to-natty/80 transition-all duration-500${voteStats.natty_percentage === 0 ? ' min-w-[2px]' : ''}`}
-                style={{ width: `${voteStats.natty_percentage}%` }}
+                className="h-full bg-juicy transition-all duration-500"
+                style={{ width: `${juicyPercentage}%` }}
               />
               <div
-                className={`h-full bg-gradient-to-r from-juicy to-juicy/80 transition-all duration-500${voteStats.not_natty_percentage === 0 ? ' min-w-[2px]' : ''}`}
-                style={{ width: `${voteStats.not_natty_percentage}%` }}
+                className="h-full bg-natty transition-all duration-500"
+                style={{ width: `${nattyPercentage}%` }}
               />
             </div>
           </div>
           
           <div className="text-center text-sm text-muted-foreground">
-            {voteStats.total_votes.toLocaleString()} total votes
+            {totalVotes.toLocaleString()} total votes
           </div>
         </div>
       )}
 
-      {(!voteStats || voteStats.total_votes === 0) && (
+      {totalVotes === 0 && (
         <div className="text-center text-sm text-muted-foreground">
           Be the first to vote!
         </div>
