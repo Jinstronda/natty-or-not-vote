@@ -48,7 +48,6 @@ export class QueryManager {
       authRequired?: boolean;
       authReady?: boolean;
       select?: (data: any) => any;
-      onSuccess?: (data: any) => void;
       onError?: (error: TError) => void;
     }
   ): UseInfiniteQueryOptions<TData, TError> {
@@ -90,30 +89,6 @@ export class QueryManager {
           queryState: this.getQueryState(keyString)
         });
         return previousData;
-      },
-
-      // 🔧 SUCCESS/ERROR HANDLING
-      onSuccess: (data: any) => {
-        this.updateQueryState(keyString, {
-          status: 'success',
-          fetchStatus: 'idle',
-          dataAvailable: !!data,
-          lastSuccessTime: Date.now(),
-          errorCount: 0
-        });
-        options?.onSuccess?.(data);
-        this.clearQueryTimeout(keyString);
-      },
-
-      onError: (error: TError) => {
-        const queryState = this.getQueryState(keyString);
-        this.updateQueryState(keyString, {
-          status: 'error',
-          fetchStatus: 'idle',
-          errorCount: queryState.errorCount + 1
-        });
-        options?.onError?.(error);
-        this.clearQueryTimeout(keyString);
       },
 
       // 🔧 PAGINATION
@@ -184,6 +159,17 @@ export class QueryManager {
         ]);
 
         console.log(`[QueryManager] Query ${keyString} completed successfully`);
+        
+        // Update success state
+        this.updateQueryState(keyString, {
+          status: 'success',
+          fetchStatus: 'idle',
+          dataAvailable: !!result,
+          lastSuccessTime: Date.now(),
+          errorCount: 0
+        });
+        
+        this.clearQueryTimeout(keyString);
         return result;
 
       } catch (error) {
@@ -197,6 +183,7 @@ export class QueryManager {
           errorCount: state.errorCount + 1
         });
 
+        this.clearQueryTimeout(keyString);
         throw error;
       }
     };
