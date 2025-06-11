@@ -13,6 +13,7 @@ export interface InfluencerCardProps {
     name: string;
     image: string;
     claimed_status: string;
+    photos?: { image_url: string }[];
   };
 }
 
@@ -34,6 +35,10 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
   const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
 
+  const mainImage = influencer.photos && influencer.photos.length > 0
+    ? influencer.photos[0].image_url
+    : influencer.image;
+
   return (
     <Link to={`/influencer/${influencer.id}`}>
       <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden
@@ -43,7 +48,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         <CardHeader className="p-0">
           <div className="aspect-square relative">
           <img
-              src={influencer.image}
+              src={mainImage}
             alt={influencer.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => {
