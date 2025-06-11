@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, User } from 'lucide-react';
-import InfluencerProfile from '@/pages/InfluencerProfile';
+import { User } from 'lucide-react';
 import AdminExpertEditor from '@/components/AdminExpertEditor';
 import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/components/Header';
+import ExpertReviews from '@/components/ExpertReviews';
 
 const ExpertProfilePage = () => {
   const { expertId } = useParams();
@@ -46,16 +46,22 @@ const ExpertProfilePage = () => {
   if (!expert) return <div className="text-center py-12">Loading...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      {user?.role === 'admin' && <AdminExpertEditor expert={expert} />}
-      <Card className="mb-8">
-        <CardHeader className="flex flex-row items-center gap-4">
-          <div className="rounded-full bg-primary text-white w-16 h-16 flex items-center justify-center text-3xl font-bold">
-            {expert.name?.[0] || <User className="w-8 h-8" />}
-          </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">{expert.name}</CardTitle>
-            <div className="flex gap-3 mt-2">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        {user?.role === 'admin' && <AdminExpertEditor expert={expert} />}
+        <Card className="mb-8">
+          <CardContent className="p-6 flex flex-col items-center">
+            <div className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-4xl font-bold mb-4 overflow-hidden">
+              {expert.profile_picture_url ? (
+                <img src={expert.profile_picture_url} alt={expert.name} className="w-full h-full object-cover rounded-full" />
+              ) : (
+                expert.name?.[0] || <User className="w-10 h-10" />
+              )}
+            </div>
+            <h1 className="font-heading font-bold text-2xl mb-1 text-center">{expert.name}</h1>
+            {expert.bio && <p className="mb-3 text-muted-foreground text-center">{expert.bio}</p>}
+            <div className="flex flex-wrap gap-3 justify-center mb-3">
               {expert.email && (
                 <a href={`mailto:${expert.email}`} className="text-blue-600 hover:underline text-sm">{expert.email}</a>
               )}
@@ -65,44 +71,24 @@ const ExpertProfilePage = () => {
               {expert.instagram && (
                 <a href={expert.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline text-sm">Instagram</a>
               )}
-              {/* Add more socials as needed */}
             </div>
             {expert.influencer_id && (
-              <a href={`/influencer/${expert.influencer_id}`} className="inline-block mt-4 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
+              <a href={`/influencer/${expert.influencer_id}`} className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
                 View Natty or Juicy Page
               </a>
             )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {expert.bio && <p className="mb-4 text-muted-foreground">{expert.bio}</p>}
-          <h3 className="font-semibold mb-2">Expert Reviews</h3>
-          {reviews.length === 0 && <div className="text-muted-foreground text-sm">No reviews yet.</div>}
-          <ul className="space-y-4">
-            {reviews.map((review) => (
-              <li key={review.id} className="border rounded-lg p-4 bg-yellow-50/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold">For:</span>
-                  {review.link_url ? (
-                    <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm font-medium inline-flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4" /> Read Full Review
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground text-sm font-medium">No video link</span>
-                  )}
-                </div>
-                <div className="mb-2 text-base text-muted-foreground">{review.content}</div>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-      {influencer && (
-        <div className="mt-8">
-          <h3 className="text-xl font-bold mb-4">Influencer Profile</h3>
-          <InfluencerProfile />
+          </CardContent>
+        </Card>
+        <div className="mb-8">
+          <ExpertReviews influencerId={expert.influencer_id} />
         </div>
-      )}
+        {influencer && (
+          <div className="mt-8">
+            <h3 className="text-xl font-bold mb-4">Influencer Profile</h3>
+            {/* Optionally render InfluencerProfile or InfluencerInfo here if you want */}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
