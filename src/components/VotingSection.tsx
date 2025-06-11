@@ -202,7 +202,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
             'border-2',
             userVote === 'juicy'
               ? 'bg-gradient-to-r from-juicy via-juicy/90 to-juicy shadow-lg shadow-juicy/40 border-juicy text-white'
-              : 'bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10 border-juicy text-juicy hover:from-juicy hover:to-juicy/90 hover:text-white hover:shadow-lg hover:shadow-juicy/30 shadow-md shadow-juicy/10',
+              : 'bg-gradient-to-r from-juicy to-juicy border-juicy text-juicy hover:from-juicy hover:to-juicy/90 hover:text-white hover:shadow-lg hover:shadow-juicy/30 shadow-md shadow-juicy/10',
             isVoting ? 'animate-pulse cursor-not-allowed' : 'group cursor-pointer',
           ].join(' ')}
         >
