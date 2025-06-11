@@ -111,6 +111,7 @@ const InfluencerManagement = () => {
 
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
   const [fetchingImages, setFetchingImages] = useState(false);
+  const [updatedInfluencersLog, setUpdatedInfluencersLog] = useState<string[]>([]);
 
   const addInfluencerMutation = useMutation({
     mutationFn: async (influencer: Omit<Influencer, 'id'>) => {
@@ -425,6 +426,7 @@ const InfluencerManagement = () => {
   // Add this function below handleFetchImagesForMissing
   const handleFetchImagesDuckDuckGoForMissing = async () => {
     setFetchingImages(true);
+    setUpdatedInfluencersLog([]);
     try {
       const { data: allInfluencers, error: infError } = await supabase
         .from('influencers')
@@ -464,6 +466,7 @@ const InfluencerManagement = () => {
         if (mainImageIsBad) {
           if (goodPhoto) {
             await supabase.from('influencers').update({ image: goodPhoto.image_url }).eq('id', inf.id);
+            setUpdatedInfluencersLog(log => [...log, inf.name]);
             updatedCount++;
             continue;
           } else {
@@ -489,6 +492,7 @@ const InfluencerManagement = () => {
             const filteredImages = images.filter(isValidImageUrl);
             if (filteredImages[0]) {
               await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
+              setUpdatedInfluencersLog(log => [...log, inf.name]);
             }
             for (let i = 0; i < filteredImages.length; i++) {
               await supabase.from('influencer_photos').insert({
@@ -530,6 +534,11 @@ const InfluencerManagement = () => {
           Fetch Images (DuckDuckGo)
         </Button>
       </div>
+      {updatedInfluencersLog.length > 0 && (
+        <div className="mt-2 text-xs text-muted-foreground">
+          <strong>Updated Influencers:</strong> {updatedInfluencersLog.join(', ')}
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
