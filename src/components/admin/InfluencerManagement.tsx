@@ -71,18 +71,45 @@ async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   }
 }
 
+// SerpAPI integration (Google Images via SerpAPI)
+const SERPAPI_KEY = 'fd4f8562688510f66d448e7c21beaf36d015aa4d'; // Provided by user
+async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
+  try {
+    // Use the local proxy endpoint to avoid CORS issues
+    const res = await fetch(`/api/serpapi-proxy?q=${encodeURIComponent(name)}`);
+    if (!res.ok) throw new Error('SerpAPI proxy error');
+    const data = await res.json();
+    if (!data.images_results || !Array.isArray(data.images_results)) throw new Error('No images found');
+    return data.images_results.map((item: any) => item.original).slice(0, 5);
+  } catch (err) {
+    return [];
+  }
+}
+
+// Utility: fetch vote counts for a list of influencer IDs (copied from InfluencerGrid)
+const useInfluencerVoteCounts = (influencerIds: string[]) => {
+  return useQuery({
+    queryKey: ['admin-influencer-vote-counts', influencerIds],
+    queryFn: async () => {
+      if (influencerIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from('influencer_vote_counts')
+        .select('influencer_id, total_votes')
+        .in('influencer_id', influencerIds);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      data?.forEach((row: any) => {
+        map[row.influencer_id] = row.total_votes;
+      });
+      return map;
+    },
+    enabled: influencerIds.length > 0,
+    staleTime: 30000,
+  });
+};
+
 const InfluencerManagement = () => {
   const queryClient = useQueryClient();
-
-  // Debug log state and function must be inside the component
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const addDebugLog = (msg: string) => {
-    setDebugLogs(logs => [
-      `[${new Date().toLocaleTimeString()}] ${msg}`,
-      ...logs.slice(0, 49)
-    ]);
-    console.log(`[SerpAPI DEBUG] ${msg}`);
-  };
 
   const { data: influencers = [] } = useQuery({
     queryKey: ['admin-influencers'],
@@ -646,14 +673,6 @@ const InfluencerManagement = () => {
           Fetch Images from SerpAPI (Replace Placeholders & Broken)
         </Button>
       </div>
-      {debugLogs.length > 0 && (
-        <div className="bg-black text-green-400 p-2 mb-4 rounded max-h-64 overflow-y-auto text-xs font-mono">
-          <strong>SerpAPI Debug Log:</strong>
-          <ul>
-            {debugLogs.map((log, i) => <li key={i}>{log}</li>)}
-          </ul>
-        </div>
-      )}
       {updatedInfluencersLog.length > 0 && (
         <div className="mt-2 text-xs text-muted-foreground">
           <strong>Updated Influencers:</strong> {updatedInfluencersLog.join(', ')}
