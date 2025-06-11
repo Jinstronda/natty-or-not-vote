@@ -194,24 +194,17 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
           size="lg"
           onClick={() => handleVote('juicy')}
           disabled={isVoting}
-          className={`
-            relative overflow-hidden h-16 text-lg font-semibold
-            transition-all duration-300 ease-out
-            hover:scale-105 active:scale-95
-            hover:-translate-y-1
-            border-2
-            ${userVote === 'juicy' 
-              ? `bg-gradient-to-r from-juicy via-juicy/90 to-juicy 
-                 shadow-lg shadow-juicy/40
-                 border-juicy text-white` 
-              : `bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10
-                 border-juicy text-juicy 
-                 hover:from-juicy hover:to-juicy/90 hover:text-white
-                 hover:shadow-lg hover:shadow-juicy/30
-                 shadow-md shadow-juicy/10`
-            }
-            ${isVoting ? 'animate-pulse cursor-not-allowed' : 'group cursor-pointer'}
-          `}
+          className={[
+            'relative overflow-hidden h-16 text-lg font-semibold',
+            'transition-all duration-300 ease-out',
+            'hover:scale-105 active:scale-95',
+            'hover:-translate-y-1',
+            'border-2',
+            userVote === 'juicy'
+              ? 'bg-gradient-to-r from-juicy via-juicy/90 to-juicy shadow-lg shadow-juicy/40 border-juicy text-white'
+              : 'bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10 border-juicy text-juicy hover:from-juicy hover:to-juicy/90 hover:text-white hover:shadow-lg hover:shadow-juicy/30 shadow-md shadow-juicy/10',
+            isVoting ? 'animate-pulse cursor-not-allowed' : 'group cursor-pointer',
+          ].join(' ')}
         >
           {/* Shimmer effect overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
