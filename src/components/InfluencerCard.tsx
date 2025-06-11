@@ -60,17 +60,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         
         <CardContent className="p-4">
           <h3
-            className={`font-semibold text-lg mb-2 text-center transition-colors
-              group-hover:text-primary group-hover:text-juicy group-hover:text-natty
-              ${!isLoading && voteStats && totalVotes > 0
-                ? juicyPercentage > 50
-                  ? 'group-hover:text-juicy'
-                  : nattyPercentage > 50
-                    ? 'group-hover:text-natty'
-                    : 'group-hover:text-primary'
-                : ''
-              }
-            `}
+            className="font-semibold text-lg mb-2 text-center transition-colors"
           >
             {influencer.name}
           </h3>
