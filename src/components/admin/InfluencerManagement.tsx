@@ -359,7 +359,15 @@ const InfluencerManagement = () => {
           // 3. Fetch 3 images (placeholder for now)
           const images = await fetchImagesForInfluencer(inf.name);
           // Filter out placeholder images
-          const filteredImages = images.filter(url => !url.includes('placeholder.com'));
+          function isValidImageUrl(url) {
+            return /\.(jpg|jpeg|png|webp)$/i.test(url);
+          }
+          const filteredImages = images.filter(
+            url =>
+              isValidImageUrl(url) &&
+              !url.includes('placeholder.com') &&
+              !url.includes('lookaside.instagram.com/seo/google_widget/crawler')
+          );
           // 4. Set the first image as the influencer's main image
           if (filteredImages[0]) {
             await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
