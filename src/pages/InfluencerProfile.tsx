@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
@@ -53,7 +52,8 @@ const InfluencerProfile = () => {
     years_training: influencerData.years_training || '',
     claimed_status: influencerData.claimed_status || '',
     description: influencerData.description || '',
-    social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
+    social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {},
+    photos: influencerData.photos || []
   } : null;
   
   if (isLoading) {
