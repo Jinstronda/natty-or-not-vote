@@ -75,15 +75,9 @@ async function fetchImagesForInfluencer(name: string): Promise<string[]> {
 const SERPAPI_KEY = 'fd4f8562688510f66d448e7c21beaf36d015aa4d'; // Provided by user
 async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
   try {
-    const params = new URLSearchParams({
-      q: name,
-      api_key: SERPAPI_KEY,
-      tbm: 'isch',
-      hl: 'en',
-      num: '5',
-    });
-    const res = await fetch(`https://serpapi.com/search.json?${params.toString()}`);
-    if (!res.ok) throw new Error('SerpAPI error');
+    // Use the local proxy endpoint to avoid CORS issues
+    const res = await fetch(`/api/serpapi-proxy?q=${encodeURIComponent(name)}`);
+    if (!res.ok) throw new Error('SerpAPI proxy error');
     const data = await res.json();
     if (!data.images_results || !Array.isArray(data.images_results)) throw new Error('No images found');
     return data.images_results.map((item: any) => item.original).slice(0, 5);
@@ -91,6 +85,28 @@ async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
     return [];
   }
 }
+
+// Utility: fetch vote counts for a list of influencer IDs (copied from InfluencerGrid)
+const useInfluencerVoteCounts = (influencerIds: string[]) => {
+  return useQuery({
+    queryKey: ['admin-influencer-vote-counts', influencerIds],
+    queryFn: async () => {
+      if (influencerIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from('influencer_vote_counts')
+        .select('influencer_id, total_votes')
+        .in('influencer_id', influencerIds);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      data?.forEach((row: any) => {
+        map[row.influencer_id] = row.total_votes;
+      });
+      return map;
+    },
+    enabled: influencerIds.length > 0,
+    staleTime: 30000,
+  });
+};
 
 const InfluencerManagement = () => {
   const queryClient = useQueryClient();
@@ -633,6 +649,17 @@ const InfluencerManagement = () => {
     }
   };
 
+  const influencerIds = influencers.map(i => i.id);
+  const { data: voteCounts } = useInfluencerVoteCounts(influencerIds);
+  let sortedInfluencers = influencers;
+  if (voteCounts && influencerIds.length > 0) {
+    sortedInfluencers = [...influencers].sort((a, b) => {
+      const votesA = voteCounts[a.id] || 0;
+      const votesB = voteCounts[b.id] || 0;
+      return votesB - votesA;
+    });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 mb-4">
@@ -750,12 +777,12 @@ const InfluencerManagement = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Manage Influencers ({influencers.length})
+            Manage Influencers ({sortedInfluencers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {influencers.map((influencer) => (
+            {sortedInfluencers.map((influencer) => (
               <div key={influencer.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <img 
@@ -904,7 +931,7 @@ const InfluencerManagement = () => {
               </div>
             ))}
             
-            {influencers.length === 0 && (
+            {sortedInfluencers.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No influencers yet. Add your first influencer above!
               </div>
