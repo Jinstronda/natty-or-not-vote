@@ -71,17 +71,47 @@ async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   }
 }
 
+// Debug log state
+const [debugLogs, setDebugLogs] = useState<string[]>([]);
+const addDebugLog = (msg: string) => {
+  setDebugLogs(logs => [
+    `[${new Date().toLocaleTimeString()}] ${msg}`,
+    ...logs.slice(0, 49)
+  ]);
+  console.log(`[SerpAPI DEBUG] ${msg}`);
+};
+
 // SerpAPI integration (Google Images via SerpAPI)
 const SERPAPI_KEY = 'fd4f8562688510f66d448e7c21beaf36d015aa4d'; // Provided by user
 async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
   try {
-    // Use the local proxy endpoint to avoid CORS issues
-    const res = await fetch(`/api/serpapi-proxy?q=${encodeURIComponent(name)}`);
-    if (!res.ok) throw new Error('SerpAPI proxy error');
-    const data = await res.json();
-    if (!data.images_results || !Array.isArray(data.images_results)) throw new Error('No images found');
+    const url = `/api/serpapi-proxy?q=${encodeURIComponent(name)}`;
+    addDebugLog(`Fetching for: ${name} | URL: ${url}`);
+    const res = await fetch(url);
+    addDebugLog(`Response status for ${name}: ${res.status}`);
+    const text = await res.text();
+    addDebugLog(`Raw response text for ${name}: ${text}`);
+    if (!res.ok) throw new Error(`SerpAPI proxy error for ${name}: ${res.status}`);
+    let data;
+    try {
+      data = JSON.parse(text);
+      addDebugLog(`Parsed JSON for ${name}: ${JSON.stringify(data)}`);
+    } catch (err) {
+      addDebugLog(`JSON parse error for ${name}: ${err}`);
+      throw new Error(`Invalid JSON from proxy for ${name}`);
+    }
+    if (!data.images_results || !Array.isArray(data.images_results)) {
+      addDebugLog(`No images_results array for ${name}`);
+      throw new Error('No images found');
+    }
     return data.images_results.map((item: any) => item.original).slice(0, 5);
   } catch (err) {
+    addDebugLog(`Error in fetchImagesFromSerpAPI for ${name}: ${err}`);
+    toast({
+      title: 'SerpAPI Error',
+      description: `${name}: ${err}`,
+      variant: 'destructive',
+    });
     return [];
   }
 }
@@ -673,6 +703,14 @@ const InfluencerManagement = () => {
           Fetch Images from SerpAPI (Replace Placeholders & Broken)
         </Button>
       </div>
+      {debugLogs.length > 0 && (
+        <div className="bg-black text-green-400 p-2 mb-4 rounded max-h-64 overflow-y-auto text-xs font-mono">
+          <strong>SerpAPI Debug Log:</strong>
+          <ul>
+            {debugLogs.map((log, i) => <li key={i}>{log}</li>)}
+          </ul>
+        </div>
+      )}
       {updatedInfluencersLog.length > 0 && (
         <div className="mt-2 text-xs text-muted-foreground">
           <strong>Updated Influencers:</strong> {updatedInfluencersLog.join(', ')}
