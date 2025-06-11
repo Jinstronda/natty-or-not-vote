@@ -360,14 +360,21 @@ const InfluencerManagement = () => {
           const images = await fetchImagesForInfluencer(inf.name);
           // Filter out placeholder images
           function isValidImageUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            // Exclude empty, null, or non-string
+            if (
+              url.trim() === '' ||
+              url.includes('placeholder.com') ||
+              url.includes('lookaside.instagram.com/seo/google_widget/crawler') ||
+              url.includes('lookaside.fbsbx.com/lookaside/crawler/media') ||
+              url.endsWith('.svg')
+            ) {
+              return false;
+            }
+            // Only allow certain image extensions
             return /\.(jpg|jpeg|png|webp)$/i.test(url);
           }
-          const filteredImages = images.filter(
-            url =>
-              isValidImageUrl(url) &&
-              !url.includes('placeholder.com') &&
-              !url.includes('lookaside.instagram.com/seo/google_widget/crawler')
-          );
+          const filteredImages = images.filter(isValidImageUrl);
           // 4. Set the first image as the influencer's main image
           if (filteredImages[0]) {
             await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
