@@ -13,6 +13,7 @@ import { Review } from "@/types/vote";
 import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
+import { useRealTimeReviews } from '@/hooks/useRealTime';
 
 interface UserReviewsProps {
   influencerId: string;
@@ -109,6 +110,8 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
       setError('Reviews took too long to load. Please refresh the page.');
     }
   });
+
+  useRealTimeReviews(influencerId);
 
   useEffect(() => {
     fetchReviews();
