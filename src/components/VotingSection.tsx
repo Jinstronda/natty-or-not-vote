@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { useUserVote } from "@/hooks/api/useUserVote";
@@ -99,28 +101,44 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
 
   if (!user) {
     return (
-      <div className="bg-card border border-border rounded-lg p-6 text-center">
-        <h2 className="font-heading font-bold text-2xl mb-4">
-          What do you think?
-        </h2>
-        <p className="text-muted-foreground mb-4">
-          Please login to vote and see the verdict results
-        </p>
-        <div className="flex gap-4 justify-center mb-6">
-          <Button asChild variant="outline">
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/signup">Sign Up</Link>
-          </Button>
-        </div>
-        {/* Show voting buttons but hide results */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button size="lg" disabled className="opacity-60 cursor-not-allowed">🏆 Natty</Button>
-          <Button size="lg" disabled className="opacity-60 cursor-not-allowed">💉 Juicy</Button>
-        </div>
-        <div className="text-muted-foreground text-sm">Login to see the community verdict and vote!</div>
-      </div>
+      <Card className="max-w-xl mx-auto border-2 border-primary/20 shadow-lg bg-background/80">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl font-bold tracking-tight">What do you think?</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-6">
+          <div className="flex gap-3 w-full justify-center">
+            <Button asChild variant="outline" size="lg" className="w-32">
+              <Link to="/login">Login</Link>
+            </Button>
+            <Button asChild variant="default" size="lg" className="w-32">
+              <Link to="/signup">Sign Up</Link>
+            </Button>
+          </div>
+          <div className="w-full flex flex-col items-center gap-2 mt-2">
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-natty bg-gradient-to-r from-natty/10 via-natty/5 to-natty/10 text-natty">
+                    🏆 Natty
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Login to vote and see the verdict</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-juicy bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10 text-juicy">
+                    💉 Juicy
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Login to vote and see the verdict</TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="w-full text-center mt-2">
+              <span className="text-muted-foreground text-base">Sign in to see the community verdict and cast your vote!</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
