@@ -69,6 +69,8 @@ export interface ExpertReview {
   likes: number;
   created_at: string;
   updated_at: string;
+  expert_id?: string;
+  natty_or_not?: string;
 }
 
 export interface ReviewReaction {
