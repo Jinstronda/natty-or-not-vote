@@ -101,16 +101,22 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    {review.link_url ? (
-                      <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-lg text-white drop-shadow hover:underline inline-flex items-center gap-1">
+                    {expert?.id ? (
+                      <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
                         {expert?.name || review.author}
-                        <ExternalLink className="h-4 w-4" />
                       </a>
                     ) : (
                       <span className="font-semibold text-lg text-white drop-shadow">{expert?.name || review.author}</span>
                     )}
                     <span className="text-muted-foreground text-base">said:</span>
                   </div>
+                  {review.link_url && (
+                    <div className="mb-1">
+                      <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
+                        <ExternalLink className="h-4 w-4" /> Read Full Review
+                      </a>
+                    </div>
+                  )}
                   <div className="text-base mb-2 break-words whitespace-pre-line text-white drop-shadow">{review.content}</div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold text-xs text-muted-foreground">VEREDICT:</span>
