@@ -6,19 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import SecureImageUpload from '@/components/SecureImageUpload';
 
 interface AdminExpertEditorProps {
   expert: any;
 }
 
 const AdminExpertEditor = ({ expert }: AdminExpertEditorProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    bio: string;
+    twitter: string;
+    instagram: string;
+    influencer_id: string;
+    profile_picture_url?: string;
+  }>({
     name: expert.name || '',
     email: expert.email || '',
     bio: expert.bio || '',
     twitter: expert.twitter || '',
     instagram: expert.instagram || '',
     influencer_id: expert.influencer_id || '',
+    profile_picture_url: expert.profile_picture_url || '',
   });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -35,6 +45,26 @@ const AdminExpertEditor = ({ expert }: AdminExpertEditorProps) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: 'Expert updated successfully' });
+    }
+  };
+
+  const handleProfilePictureUpload = async (url: string) => {
+    setFormData(prev => ({ ...prev, profile_picture_url: url }));
+    const { error } = await supabase.from('experts').update({ profile_picture_url: url }).eq('id', expert.id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Profile picture updated' });
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
+    setFormData(prev => ({ ...prev, profile_picture_url: '' }));
+    const { error } = await supabase.from('experts').update({ profile_picture_url: null }).eq('id', expert.id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Profile picture removed' });
     }
   };
 
@@ -67,6 +97,16 @@ const AdminExpertEditor = ({ expert }: AdminExpertEditorProps) => {
         <div>
           <Label>Influencer ID</Label>
           <Input value={formData.influencer_id} onChange={e => handleChange('influencer_id', e.target.value)} placeholder="(optional)" />
+        </div>
+        <div>
+          <Label>Profile Picture</Label>
+          <SecureImageUpload
+            onImageUploaded={handleProfilePictureUpload}
+            currentImage={formData.profile_picture_url}
+            onImageRemoved={handleRemoveProfilePicture}
+            allowedTypes={["image/jpeg", "image/png", "image/webp", "image/gif"]}
+            maxSizeBytes={2 * 1024 * 1024}
+          />
         </div>
         <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
       </CardContent>
