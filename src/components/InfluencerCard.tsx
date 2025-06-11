@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,18 +106,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         </CardContent>
         
         <CardFooter className="p-4 pt-0 flex justify-center gap-2">
-          <VoteButton influencerId={influencer.id} voteType="natty" />
-          <VoteButton influencerId={influencer.id} voteType="not_natty" />
-          {influencer.claimed_status !== 'claimed' && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleClaim}
-              className="transition-all duration-200 hover:scale-105"
-            >
-              Claim
-            </Button>
-          )}
+          {/* Removed VoteButton and Claim button as per new requirements. Only show the bar/statistics above. */}
         </CardFooter>
       </Card>
     </Link>
