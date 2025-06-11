@@ -72,28 +72,6 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // Show login prompt for non-authenticated users
-  if (!user) {
-    return (
-      <div className="text-center py-16">
-        <div className="max-w-md mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Join the Community</h2>
-          <p className="text-muted-foreground mb-8">
-            Sign up or log in to discover fitness influencers and cast your vote on whether they're natty or not!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg">
-              <Link to="/signup">Sign Up</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/login">Login</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Loading state for authenticated users
   if (isInitialLoading) {
     return (

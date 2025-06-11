@@ -71,7 +71,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
           </h3>
           
           {/* Vote Statistics */}
-          {!isLoading && voteStats && totalVotes > 0 && (
+          {user && !isLoading && voteStats && totalVotes > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <span>💉 Juicy: {juicyPercentage}%</span>
