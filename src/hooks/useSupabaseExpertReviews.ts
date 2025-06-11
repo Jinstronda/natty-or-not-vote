@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +12,8 @@ export interface ExpertReview {
   likes: number;
   created_at: string;
   updated_at: string;
+  expert_id?: string;
+  natty_or_not?: string;
 }
 
 export const useSupabaseExpertReviews = () => {
