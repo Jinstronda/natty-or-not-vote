@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
@@ -44,17 +43,19 @@ const InfluencerProfile = () => {
   };
   
   // Transform the data to match the Influencer type with all required properties
-  const influencer: Influencer | null = influencerData ? {
-    id: influencerData.id,
-    name: influencerData.name,
-    image: influencerData.image || '/placeholder.svg',
-    height: influencerData.height || '',
-    weight: influencerData.weight || '',
-    years_training: influencerData.years_training || '',
-    claimed_status: influencerData.claimed_status || '',
-    description: influencerData.description || '',
-    social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {}
-  } : null;
+  const influencer: Influencer | null = influencerData
+    ? {
+        ...influencerData,
+        social_links:
+          influencerData.social_links && typeof influencerData.social_links === 'object' && !Array.isArray(influencerData.social_links)
+            ? {
+                instagram: influencerData.social_links.instagram ? String(influencerData.social_links.instagram) : undefined,
+                youtube: influencerData.social_links.youtube ? String(influencerData.social_links.youtube) : undefined,
+                tiktok: influencerData.social_links.tiktok ? String(influencerData.social_links.tiktok) : undefined,
+              }
+            : {},
+      }
+    : null;
   
   if (isLoading) {
     return (
