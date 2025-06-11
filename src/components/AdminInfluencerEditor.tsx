@@ -32,26 +32,37 @@ interface AdminInfluencerEditorProps {
 }
 
 // Sortable photo card component
-function SortablePhotoCard({ photo, idx, listeners, attributes, isDragging, style, ...props }: any) {
+function SortablePhotoCard({ photo, idx, photosLength, onUpdateDesc, onDeletePhoto, onMovePhoto }: any) {
+  const {
+    setNodeRef,
+    listeners,
+    attributes,
+    isDragging,
+    transform,
+    transition,
+  } = useSortable({ id: photo.id });
   return (
     <div
+      ref={setNodeRef}
       className={`relative rounded-lg overflow-hidden border bg-secondary transition-shadow ${isDragging ? 'ring-2 ring-primary shadow-xl opacity-80' : ''}`}
-      style={style}
+      style={{
+        ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
+        ...(transition ? { transition } : {}),
+      }}
       {...attributes}
       {...listeners}
-      {...props}
     >
       <img src={photo.image_url} alt="" className="w-full h-40 object-cover select-none" draggable={false} />
       <input
         className="absolute bottom-2 left-2 right-10 bg-black/60 text-white text-xs rounded px-2 py-1"
         value={photo.description}
-        onChange={e => props.onUpdateDesc(photo.id, e.target.value)}
+        onChange={e => onUpdateDesc(photo.id, e.target.value)}
         placeholder="Description"
         style={{ minWidth: 0 }}
       />
       <button
         className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1"
-        onClick={() => props.onDeletePhoto(photo.id)}
+        onClick={() => onDeletePhoto(photo.id)}
         type="button"
         title="Delete photo"
       >
@@ -60,14 +71,14 @@ function SortablePhotoCard({ photo, idx, listeners, attributes, isDragging, styl
       <div className="absolute bottom-2 right-2 flex gap-1">
         <button
           className="bg-black/40 text-white rounded-full px-2 py-0.5 text-xs"
-          onClick={() => props.onMovePhoto(idx, idx - 1)}
+          onClick={() => onMovePhoto(idx, idx - 1)}
           disabled={idx === 0}
           type="button"
         >↑</button>
         <button
           className="bg-black/40 text-white rounded-full px-2 py-0.5 text-xs"
-          onClick={() => props.onMovePhoto(idx, idx + 1)}
-          disabled={idx === props.photosLength - 1}
+          onClick={() => onMovePhoto(idx, idx + 1)}
+          disabled={idx === photosLength - 1}
           type="button"
         >↓</button>
       </div>
@@ -330,26 +341,17 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           >
             <SortableContext items={photos.map(p => p.id)} strategy={verticalListSortingStrategy}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {photos.map((photo, idx) => {
-                  const sortable = useSortable({ id: photo.id });
-                  return (
-                    <SortablePhotoCard
-                      key={photo.id}
-                      photo={photo}
-                      idx={idx}
-                      photosLength={photos.length}
-                      onUpdateDesc={handleUpdateDesc}
-                      onDeletePhoto={handleDeletePhoto}
-                      onMovePhoto={handleMovePhoto}
-                      // dnd-kit props
-                      ref={sortable.setNodeRef}
-                      listeners={sortable.listeners}
-                      attributes={sortable.attributes}
-                      isDragging={sortable.isDragging}
-                      style={{ ...sortable.transform ? { transform: CSS.Transform.toString(sortable.transform) } : {}, ...sortable.transition ? { transition: sortable.transition } : {} }}
-                    />
-                  );
-                })}
+                {photos.map((photo, idx) => (
+                  <SortablePhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    idx={idx}
+                    photosLength={photos.length}
+                    onUpdateDesc={handleUpdateDesc}
+                    onDeletePhoto={handleDeletePhoto}
+                    onMovePhoto={handleMovePhoto}
+                  />
+                ))}
               </div>
             </SortableContext>
           </DndContext>
