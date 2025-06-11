@@ -361,18 +361,22 @@ const InfluencerManagement = () => {
           // Filter out placeholder images
           function isValidImageUrl(url) {
             if (!url || typeof url !== 'string') return false;
-            // Exclude empty, null, or non-string
+            const lower = url.trim().toLowerCase();
             if (
-              url.trim() === '' ||
-              url.includes('placeholder.com') ||
-              url.includes('lookaside.instagram.com/seo/google_widget/crawler') ||
-              url.includes('lookaside.fbsbx.com/lookaside/crawler/media') ||
-              url.endsWith('.svg')
+              lower === '' ||
+              lower.endsWith('.svg') ||
+              lower.includes('placeholder') ||
+              lower.includes('no-image') ||
+              lower.includes('default') ||
+              lower.includes('broken') ||
+              lower.includes('/image/') ||
+              lower.includes('/photo/') ||
+              lower.includes('/missing/')
             ) {
               return false;
             }
             // Only allow certain image extensions
-            return /\.(jpg|jpeg|png|webp)$/i.test(url);
+            return /\.(jpg|jpeg|png|webp)$/i.test(lower);
           }
           const filteredImages = images.filter(isValidImageUrl);
           // 4. Set the first image as the influencer's main image
