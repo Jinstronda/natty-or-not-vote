@@ -464,6 +464,11 @@ const InfluencerManagement = () => {
           goodPhoto = photos.find(p => isValidImageUrl(p.image_url));
         }
         if (mainImageIsBad) {
+          // Remove all placeholder images for this influencer
+          await supabase.from('influencer_photos').delete().eq('influencer_id', inf.id).ilike('image_url', '%placeholder%');
+          if (inf.image && inf.image.includes('placeholder')) {
+            await supabase.from('influencers').update({ image: null }).eq('id', inf.id);
+          }
           if (goodPhoto) {
             await supabase.from('influencers').update({ image: goodPhoto.image_url }).eq('id', inf.id);
             setUpdatedInfluencersLog(log => [...log, inf.name]);
@@ -508,7 +513,7 @@ const InfluencerManagement = () => {
       }
       toast({
         title: 'DuckDuckGo Image Fetch Complete',
-        description: `Updated main images for ${updatedCount} influencer(s) with missing or broken images.`,
+        description: `Updated main images for ${updatedCount} influencer(s) with missing or broken images and removed placeholders.`,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
     } catch (error) {
