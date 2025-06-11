@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 const ExpertsDirectory = () => {
   const [experts, setExperts] = useState<any[]>([]);
@@ -24,7 +24,7 @@ const ExpertsDirectory = () => {
       <h1 className="text-3xl font-bold mb-8 text-center">Experts</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {experts.map((expert) => (
-          <Link key={expert.id} href={`/experts/${expert.id}`} className="group">
+          <Link key={expert.id} to={`/experts/${expert.id}`} className="group">
             <Card className="transition-transform group-hover:scale-105 cursor-pointer h-full flex flex-col items-center p-6">
               <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold mb-4 overflow-hidden">
                 {expert.profile_picture_url ? (
