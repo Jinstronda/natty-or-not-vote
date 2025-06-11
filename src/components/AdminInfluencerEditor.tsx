@@ -339,6 +339,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
             }
             return (
               <DndContext
+                key={influencer.id}
                 sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
                 collisionDetection={closestCenter}
                 onDragEnd={async (event) => {
