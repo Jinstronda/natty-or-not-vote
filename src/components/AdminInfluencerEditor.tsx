@@ -322,39 +322,57 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
 
         <div className="mt-8">
           <h3 className="font-semibold mb-2">Photos</h3>
-          <DndContext
-            sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
-            collisionDetection={closestCenter}
-            onDragEnd={async (event) => {
-              const { active, over } = event;
-              if (!over || active.id === over.id) return;
-              const oldIndex = photos.findIndex(p => p.id === active.id);
-              const newIndex = photos.findIndex(p => p.id === over.id);
-              if (oldIndex === -1 || newIndex === -1) return;
-              const reordered = arrayMove(photos, oldIndex, newIndex);
-              setPhotos(reordered);
-              // Persist order to DB
-              await Promise.all(reordered.map((p, i) =>
-                supabase.from('influencer_photos').update({ order: i }).eq('id', p.id)
-              ));
-            }}
-          >
-            <SortableContext items={photos.map(p => p.id)} strategy={verticalListSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {photos.map((photo, idx) => (
-                  <SortablePhotoCard
-                    key={photo.id}
-                    photo={photo}
-                    idx={idx}
-                    photosLength={photos.length}
-                    onUpdateDesc={handleUpdateDesc}
-                    onDeletePhoto={handleDeletePhoto}
-                    onMovePhoto={handleMovePhoto}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          {/* Defensive logs and checks for photos */}
+          {(() => {
+            console.log('[AdminInfluencerEditor] photos:', photos);
+            if (!Array.isArray(photos) || photos.length === 0) {
+              return <div className="text-muted-foreground text-sm">No photos available.</div>;
+            }
+            const ids = photos.map(p => p?.id);
+            const hasUndefined = ids.some(id => !id);
+            const hasDuplicates = new Set(ids).size !== ids.length;
+            if (hasUndefined) {
+              return <div className="text-red-600 text-sm">Error: One or more photos have an undefined id.</div>;
+            }
+            if (hasDuplicates) {
+              return <div className="text-red-600 text-sm">Error: Duplicate photo IDs detected.</div>;
+            }
+            return (
+              <DndContext
+                sensors={useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))}
+                collisionDetection={closestCenter}
+                onDragEnd={async (event) => {
+                  const { active, over } = event;
+                  if (!over || active.id === over.id) return;
+                  const oldIndex = photos.findIndex(p => p.id === active.id);
+                  const newIndex = photos.findIndex(p => p.id === over.id);
+                  if (oldIndex === -1 || newIndex === -1) return;
+                  const reordered = arrayMove(photos, oldIndex, newIndex);
+                  setPhotos(reordered);
+                  // Persist order to DB
+                  await Promise.all(reordered.map((p, i) =>
+                    supabase.from('influencer_photos').update({ order: i }).eq('id', p.id)
+                  ));
+                }}
+              >
+                <SortableContext items={photos.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {photos.map((photo, idx) => (
+                      <SortablePhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        idx={idx}
+                        photosLength={photos.length}
+                        onUpdateDesc={handleUpdateDesc}
+                        onDeletePhoto={handleDeletePhoto}
+                        onMovePhoto={handleMovePhoto}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            );
+          })()}
           <div className="flex flex-col md:flex-row gap-2 mt-4 items-end">
             <SecureImageUpload
               onImageUploaded={setNewPhotoUrl}
