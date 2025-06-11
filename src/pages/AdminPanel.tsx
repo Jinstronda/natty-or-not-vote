@@ -1,8 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 import AdminTabs from "@/components/admin/AdminTabs";
-import AdminGate from '@/components/admin/AdminGate';
+import { AdminGate } from "@/components/admin/AdminGate";
 
 const AdminPanel = () => {
   return (
