@@ -73,8 +73,8 @@ const ExpertProfilePage = () => {
               )}
             </div>
             {expert.influencer_id && (
-              <a href={`/influencer/${expert.influencer_id}`} className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
-                View Natty or Juicy Page
+              <a href={`/influencer/${expert.influencer_id}`} className="inline-block mt-2 px-4 py-2 bg-gradient-to-r from-natty to-juicy text-white font-bold rounded-lg shadow hover:scale-105 transition text-lg">
+                NATTY OR JUICY?
               </a>
             )}
           </CardContent>

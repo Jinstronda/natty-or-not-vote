@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +32,15 @@ const AdminExpertEditor = ({ expert }: AdminExpertEditorProps) => {
   });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const [influencers, setInfluencers] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    async function fetchInfluencers() {
+      const { data } = await supabase.from('influencers').select('id, name').order('name');
+      setInfluencers(data || []);
+    }
+    fetchInfluencers();
+  }, []);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -95,8 +104,22 @@ const AdminExpertEditor = ({ expert }: AdminExpertEditorProps) => {
           <Input value={formData.instagram} onChange={e => handleChange('instagram', e.target.value)} placeholder="https://instagram.com/username" />
         </div>
         <div>
-          <Label>Influencer ID</Label>
-          <Input value={formData.influencer_id} onChange={e => handleChange('influencer_id', e.target.value)} placeholder="(optional)" />
+          <Label>Link to Influencer</Label>
+          <select
+            className="w-full border rounded px-2 py-1"
+            value={formData.influencer_id || ''}
+            onChange={e => handleChange('influencer_id', e.target.value)}
+          >
+            <option value="">-- None --</option>
+            {influencers.map(inf => (
+              <option key={inf.id} value={inf.id}>{inf.name}</option>
+            ))}
+          </select>
+          {formData.influencer_id && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Linked to: {influencers.find(i => i.id === formData.influencer_id)?.name || 'Unknown'}
+            </div>
+          )}
         </div>
         <div>
           <Label>Profile Picture</Label>
