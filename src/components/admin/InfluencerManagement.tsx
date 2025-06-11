@@ -48,8 +48,8 @@ interface DatabaseInfluencer {
 }
 
 // Google Custom Search API integration
-const GOOGLE_CX = import.meta.env.VITE_GOOGLE_CX;
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const GOOGLE_CX = '8633be9a799b543bf';
+const GOOGLE_API_KEY = 'AIzaSyBzCiMQVvwRjhXuV3UWeLVPKbzcSMXmutI';
 async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   try {
     const params = new URLSearchParams({
@@ -358,15 +358,17 @@ const InfluencerManagement = () => {
         if (!photos || photos.length === 0) {
           // 3. Fetch 3 images (placeholder for now)
           const images = await fetchImagesForInfluencer(inf.name);
+          // Filter out placeholder images
+          const filteredImages = images.filter(url => !url.includes('placeholder.com'));
           // 4. Set the first image as the influencer's main image
-          if (images[0]) {
-            await supabase.from('influencers').update({ image: images[0] }).eq('id', inf.id);
+          if (filteredImages[0]) {
+            await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
           }
           // 5. Insert all images into influencer_photos
-          for (let i = 0; i < images.length; i++) {
+          for (let i = 0; i < filteredImages.length; i++) {
             await supabase.from('influencer_photos').insert({
               influencer_id: inf.id,
-              image_url: images[i],
+              image_url: filteredImages[i],
               description: `Auto-fetched image for ${inf.name}`,
               order: i
             });
