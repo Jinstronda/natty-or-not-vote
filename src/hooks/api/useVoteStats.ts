@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -22,14 +23,14 @@ export const useVoteStats = (influencerId: string) => {
 
       const total = data?.length || 0;
       const nattyCount = data?.filter(v => v.vote === 'natty').length || 0;
-      const notNattyCount = data?.filter(v => v.vote === 'not_natty').length || 0;
+      const juicyCount = data?.filter(v => v.vote === 'juicy').length || 0;
 
       return {
         total_votes: total,
         natty_count: nattyCount,
-        not_natty_count: notNattyCount,
+        not_natty_count: juicyCount,
         natty_percentage: total > 0 ? Math.round((nattyCount / total) * 100) : 0,
-        not_natty_percentage: total > 0 ? Math.round((notNattyCount / total) * 100) : 0,
+        not_natty_percentage: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
       };
     },
     enabled: !!influencerId,

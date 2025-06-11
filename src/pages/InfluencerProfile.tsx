@@ -1,8 +1,8 @@
+
 import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
-import VotingResults from "@/components/VotingResults";
 import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
 import UserReviews, { UserReviewsRef } from "@/components/UserReviews";
@@ -61,7 +61,6 @@ const InfluencerProfile = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <Skeleton className="h-32 w-full mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
               <Skeleton className="h-96 w-full" />
@@ -98,8 +97,6 @@ const InfluencerProfile = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <VotingResults influencerId={id!} />
-        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             {isAdmin && !profileLoading && (
