@@ -118,7 +118,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
             <div className="grid grid-cols-2 gap-4 w-full">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-natty bg-gradient-to-r from-natty/10 via-natty/5 to-natty/10 text-natty">
+                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-natty bg-natty text-white">
                     🏆 Natty
                   </Button>
                 </TooltipTrigger>
@@ -126,7 +126,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-juicy bg-gradient-to-r from-juicy/10 via-juicy/5 to-juicy/10 text-juicy">
+                  <Button size="lg" disabled className="opacity-60 cursor-not-allowed w-full h-16 text-lg font-semibold border-juicy bg-juicy text-white">
                     💉 Juicy
                   </Button>
                 </TooltipTrigger>
