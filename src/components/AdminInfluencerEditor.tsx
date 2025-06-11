@@ -215,172 +215,76 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
       <CardHeader>
         <CardTitle className="text-lg">Edit Influencer</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-8">
+        {/* Main Profile Picture Section */}
         <div>
-          <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="image">Image</Label>
-          <SecureImageUpload
-            onImageUploaded={(url) => setFormData(prev => ({ ...prev, image: url }))}
-            currentImage={formData.image}
-            onImageRemoved={() => setFormData(prev => ({ ...prev, image: "" }))}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="height">Height</Label>
-          <Input
-            id="height"
-            value={formData.height}
-            onChange={(e) => handleChange('height', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="weight">Weight</Label>
-          <Input
-            id="weight"
-            value={formData.weight}
-            onChange={(e) => handleChange('weight', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="yearsTraining">Years Training</Label>
-          <Input
-            id="yearsTraining"
-            value={formData.yearsTraining}
-            onChange={(e) => handleChange('yearsTraining', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="claimedStatus">Claimed Status</Label>
-          <Input
-            id="claimedStatus"
-            value={formData.claimedStatus}
-            onChange={(e) => handleChange('claimedStatus', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => handleChange('description', e.target.value)}
-            rows={3}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="instagram">Instagram URL</Label>
-          <Input
-            id="instagram"
-            value={formData.socialLinks?.instagram || ''}
-            onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="youtube">YouTube URL</Label>
-          <Input
-            id="youtube"
-            value={formData.socialLinks?.youtube || ''}
-            onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="tiktok">TikTok URL</Label>
-          <Input
-            id="tiktok"
-            value={formData.socialLinks?.tiktok || ''}
-            onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="main-image">Main Image</Label>
-          <SecureImageUpload
-            onImageUploaded={(url) => setFormData(prev => ({ ...prev, image: url }))}
-            currentImage={formData.image}
-            onImageRemoved={() => setFormData(prev => ({ ...prev, image: "" }))}
-          />
-          <div className="flex gap-2 mt-2">
-            <Button
-              onClick={async () => {
-                const { error } = await supabase
-                  .from('influencers')
-                  .update({ image: formData.image })
-                  .eq('id', influencer.id);
-                if (error) {
-                  toast({ title: "Error", description: error.message, variant: "destructive" });
-                } else {
-                  toast({ title: "Success", description: "Main image updated!" });
-                  queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
-                }
-              }}
-              disabled={!formData.image || formData.image === influencer.image}
-            >
-              Save Main Image
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                setFormData(prev => ({ ...prev, image: "" }));
-                await supabase.from('influencers').update({ image: null }).eq('id', influencer.id);
-                toast({ title: "Main image removed" });
-                queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
-              }}
-              disabled={!formData.image}
-            >
-              Remove Main Image
-            </Button>
+          <h3 className="text-xl font-semibold mb-2">Main Profile Picture</h3>
+          <p className="text-muted-foreground mb-4 text-sm">This image is shown as the influencer's main profile picture on the main page and profile cards.</p>
+          <div className="flex flex-col md:flex-row gap-6 items-center">
+            <img
+              src={formData.image || '/placeholder.svg'}
+              alt="Main profile"
+              className="w-40 h-40 object-cover rounded-xl border shadow"
+            />
+            <div className="flex flex-col gap-2">
+              <SecureImageUpload
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, image: url }))}
+                currentImage={formData.image}
+                onImageRemoved={() => setFormData(prev => ({ ...prev, image: "" }))}
+              />
+              <div className="flex gap-2 mt-2">
+                <Button
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from('influencers')
+                      .update({ image: formData.image })
+                      .eq('id', influencer.id);
+                    if (error) {
+                      toast({ title: "Error", description: error.message, variant: "destructive" });
+                    } else {
+                      toast({ title: "Success", description: "Main image updated!" });
+                      queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
+                    }
+                  }}
+                  disabled={!formData.image || formData.image === influencer.image}
+                >
+                  Save Main Image
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    setFormData(prev => ({ ...prev, image: "" }));
+                    await supabase.from('influencers').update({ image: null }).eq('id', influencer.id);
+                    toast({ title: "Main image removed" });
+                    queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
+                  }}
+                  disabled={!formData.image}
+                >
+                  Remove Main Image
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-8">
-          <h3 className="font-semibold mb-2">Photos</h3>
-          {/* Defensive logs and checks for photos */}
-          {(() => {
-            console.log('[AdminInfluencerEditor] photos:', photos);
-            if (!Array.isArray(photos) || photos.length === 0) {
-              return <div className="text-muted-foreground text-sm">No photos available.</div>;
-            }
-            const ids = photos.map(p => p?.id);
-            const hasUndefined = ids.some(id => !id);
-            const hasDuplicates = new Set(ids).size !== ids.length;
-            if (hasUndefined) {
-              return <div className="text-red-600 text-sm">Error: One or more photos have an undefined id.</div>;
-            }
-            if (hasDuplicates) {
-              return <div className="text-red-600 text-sm">Error: Duplicate photo IDs detected.</div>;
-            }
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {photos.map((photo, idx) => (
-                  <PhotoCard
-                    key={photo.id}
-                    photo={photo}
-                    idx={idx}
-                    photosLength={photos.length}
-                    onUpdateDesc={handleUpdateDesc}
-                    onDeletePhoto={handleDeletePhoto}
-                    onMovePhoto={handleMovePhoto}
-                  />
-                ))}
-              </div>
-            );
-          })()}
-          <div className="flex flex-col md:flex-row gap-2 mt-4 items-end">
+        {/* Photo Gallery Section */}
+        <div>
+          <h3 className="text-xl font-semibold mb-2 mt-8">Photo Gallery <span className="text-xs text-muted-foreground">(up to 3 images)</span></h3>
+          <p className="text-muted-foreground mb-4 text-sm">These images appear in the influencer's photo gallery on their profile page. The main profile picture is separate and not automatically linked to these images.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            {photos.map((photo, idx) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                idx={idx}
+                photosLength={photos.length}
+                onUpdateDesc={handleUpdateDesc}
+                onDeletePhoto={handleDeletePhoto}
+                onMovePhoto={handleMovePhoto}
+              />
+            ))}
+          </div>
+          <div className="flex flex-col md:flex-row gap-2 items-end">
             <SecureImageUpload
               onImageUploaded={setNewPhotoUrl}
               currentImage={newPhotoUrl || undefined}
@@ -392,13 +296,112 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
               onChange={e => setNewPhotoDesc(e.target.value)}
               placeholder="Description (optional)"
             />
-            <Button onClick={handleAddPhoto} disabled={!newPhotoUrl || uploadingPhoto}>
+            <Button onClick={handleAddPhoto} disabled={!newPhotoUrl || uploadingPhoto || photos.length >= 3}>
               Add Photo
             </Button>
           </div>
+          {photos.length >= 3 && (
+            <p className="text-xs text-red-500 mt-2">Maximum of 3 gallery images allowed.</p>
+          )}
         </div>
 
-        <div className="flex gap-2">
+        {/* Other influencer fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="height">Height</Label>
+            <Input
+              id="height"
+              value={formData.height}
+              onChange={(e) => handleChange('height', e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="weight">Weight</Label>
+            <Input
+              id="weight"
+              value={formData.weight}
+              onChange={(e) => handleChange('weight', e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="yearsTraining">Years Training</Label>
+            <Input
+              id="yearsTraining"
+              value={formData.yearsTraining}
+              onChange={(e) => handleChange('yearsTraining', e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="claimedStatus">Claimed Status</Label>
+            <Input
+              id="claimedStatus"
+              value={formData.claimedStatus}
+              onChange={(e) => handleChange('claimedStatus', e.target.value)}
+            />
+          </div>
+          <div className="col-span-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+            />
+          </div>
+          {/* Social links */}
+          <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="instagram">Instagram URL</Label>
+              <Input
+                id="instagram"
+                value={formData.socialLinks?.instagram || ''}
+                onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="youtube">YouTube URL</Label>
+              <Input
+                id="youtube"
+                value={formData.socialLinks?.youtube || ''}
+                onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="tiktok">TikTok URL</Label>
+              <Input
+                id="tiktok"
+                value={formData.socialLinks?.tiktok || ''}
+                onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="twitter">Twitter URL</Label>
+              <Input
+                id="twitter"
+                value={formData.socialLinks?.twitter || ''}
+                onChange={(e) => handleSocialLinkChange('twitter', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="website">Website URL</Label>
+              <Input
+                id="website"
+                value={formData.socialLinks?.website || ''}
+                onChange={(e) => handleSocialLinkChange('website', e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-8">
           <Button onClick={handleSave} className="flex-1">
             Save Changes
           </Button>
