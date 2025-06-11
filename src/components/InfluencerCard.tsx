@@ -123,6 +123,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                       <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
                       <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
                     </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="text-xs text-muted-foreground font-semibold drop-shadow-md select-none" style={{zIndex:0}}>Sign in to see verdicts</span>
+                    </div>
                   </div>
                 </div>
               </TooltipTrigger>

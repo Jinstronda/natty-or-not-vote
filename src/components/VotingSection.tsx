@@ -135,7 +135,10 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
             </div>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="w-full mt-4">
+                <div className="w-full mt-4 relative">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-base text-muted-foreground font-semibold drop-shadow-md select-none" style={{zIndex:0}}>Sign in to see the community verdict and cast your vote!</span>
+                  </div>
                   <div className="relative">
                     <div className="w-full rounded-full h-3 overflow-hidden flex blur-sm opacity-80">
                       <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
@@ -146,9 +149,6 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
               </TooltipTrigger>
               <TooltipContent>Sign in to see the verdicts!</TooltipContent>
             </Tooltip>
-            <div className="w-full text-center mt-2">
-              <span className="text-muted-foreground text-base">Sign in to see the community verdict and cast your vote!</span>
-            </div>
           </div>
         </CardContent>
       </Card>
