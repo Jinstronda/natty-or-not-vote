@@ -15,6 +15,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import UserProfile from "./pages/UserProfile";
 import Terms from "./pages/Terms";
 import "./utils/emergencyDebug"; // Import emergency debug utilities
+import ExpertsDirectory from './pages/experts/index';
+import ExpertProfilePage from './pages/experts/[expertId]';
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/experts" element={<ExpertsDirectory />} />
+            <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
