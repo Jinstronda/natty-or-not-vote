@@ -1,68 +1,43 @@
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { useEffect, useState } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useEffect, useState } from "react";
+import { User } from "@/types/auth";
 
 interface AdminGateProps {
   children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
-const AdminGate = ({ children }: AdminGateProps) => {
-  const { user } = useAuth();
+export const AdminGate = ({ children, fallback = null }: AdminGateProps) => {
+  const { user, supabaseUser, loading: authLoading } = useAuth();
   const { fetchUserProfile } = useUserProfile();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const checkAdminStatus = async () => {
-      if (user) {
-        try {
-          const userProfile = await fetchUserProfile(user);
-          if (isMounted) {
-            setProfile(userProfile);
-            console.log('AdminGate: User profile fetched:', userProfile);
-          }
-        } catch (error) {
-          console.error('AdminGate: Error fetching profile:', error);
-          if (isMounted) {
-            setProfile(null);
-          }
-        }
-      } else {
-        if (isMounted) {
-          setProfile(null);
-        }
-      }
-      
-      if (isMounted) {
-        setLoading(false);
-      }
-    };
+    if (supabaseUser && !userProfile) {
+      setProfileLoading(true);
+      fetchUserProfile(supabaseUser)
+        .then(profile => {
+          setUserProfile(profile);
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+        })
+        .finally(() => {
+          setProfileLoading(false);
+        });
+    }
+  }, [supabaseUser, userProfile, fetchUserProfile]);
 
-    checkAdminStatus();
-    
-    return () => { 
-      isMounted = false; 
-    };
-  }, [user, fetchUserProfile]);
+  if (authLoading || profileLoading) {
+    return <div>Loading...</div>;
+  }
 
-  if (loading) {
-    console.log('AdminGate: Loading...');
-    return null; // or a spinner
+  if (!user || userProfile?.role !== 'admin') {
+    return <>{fallback}</>;
   }
-  
-  const isAdmin = profile?.role === 'admin';
-  console.log('AdminGate: Check admin status:', { profile: profile, isAdmin });
-  
-  if (!profile || !isAdmin) {
-    console.log('AdminGate: Access denied - not admin');
-    return null;
-  }
-  
-  console.log('AdminGate: Access granted - user is admin');
+
   return <>{children}</>;
 };
-
-export default AdminGate;
