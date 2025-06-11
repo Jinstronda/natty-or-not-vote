@@ -6,15 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Format: expert_name,influencer_name,natty_or_not,comment
+// Format: expert_name,influencer_name,natty_or_not,comment,url
 const parseCSV = (input: string) => {
   return input
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const [expert, influencer, natty, comment] = line.split(",");
-      return { expert: expert?.trim(), influencer: influencer?.trim(), natty: natty?.trim(), comment: comment?.trim() };
+      const [expert, influencer, natty, comment, url] = line.split(",");
+      return { expert: expert?.trim(), influencer: influencer?.trim(), natty: natty?.trim(), comment: comment?.trim(), url: url?.trim() };
     });
 };
 
@@ -101,6 +101,7 @@ const BulkExpertReviewImport: React.FC = () => {
           expert_id: expertId,
           content: row.comment || "",
           rating: nattyValue,
+          link_url: row.url || null,
         };
       } else {
         reviewInsert = {
@@ -108,6 +109,7 @@ const BulkExpertReviewImport: React.FC = () => {
           author: row.expert,
           content: row.comment || "",
           rating: nattyValue,
+          link_url: row.url || null,
         };
       }
       const { error: reviewErr } = await supabase.from("expert_reviews").insert(reviewInsert);
@@ -126,12 +128,12 @@ const BulkExpertReviewImport: React.FC = () => {
     <Card className="max-w-3xl mx-auto mt-8">
       <CardContent className="space-y-6 py-8">
         <h2 className="text-xl font-bold mb-2">Bulk Import Expert Reviews</h2>
-        <p className="text-muted-foreground text-sm mb-2">Paste CSV: <code>expert_name,influencer_name,natty_or_not,comment</code></p>
+        <p className="text-muted-foreground text-sm mb-2">Paste CSV: <code>expert_name,influencer_name,natty_or_not,comment,url</code></p>
         <Textarea
           value={input}
           onChange={e => setInput(e.target.value)}
           rows={8}
-          placeholder="Dr. Smith,John Doe,natty,Looks natural\nDr. Smith,Jane Fit,juicy,Obvious signs of enhancement."
+          placeholder="Dr. Smith,John Doe,natty,Looks natural,https://example.com/review1\nDr. Smith,Jane Fit,juicy,Obvious signs of enhancement,"
         />
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePreview} disabled={!input}>Preview</Button>
@@ -147,6 +149,7 @@ const BulkExpertReviewImport: React.FC = () => {
                 <TableHead>Influencer</TableHead>
                 <TableHead>Natty/Not</TableHead>
                 <TableHead>Comment</TableHead>
+                <TableHead>URL</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -157,6 +160,7 @@ const BulkExpertReviewImport: React.FC = () => {
                   <TableCell>{row.influencer}</TableCell>
                   <TableCell>{row.natty}</TableCell>
                   <TableCell>{row.comment}</TableCell>
+                  <TableCell>{row.url ? <a href={row.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link</a> : ''}</TableCell>
                   <TableCell>{results[i]?.status === 'success' ? '✅' : results[i]?.status === 'error' ? `❌ ${results[i]?.message}` : ''}</TableCell>
                 </TableRow>
               ))}

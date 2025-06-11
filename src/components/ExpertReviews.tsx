@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, ExternalLink, ThumbsUp, Trash2, Edit } from "lucide-react";
@@ -71,7 +70,13 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
             </div>
             <div className="flex items-start justify-between mb-2 pr-16">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-lg">{review.author}</span>
+                {review.expert_id ? (
+                  <a href={`/experts/${review.expert_id}`} className="font-semibold text-lg text-primary hover:underline">
+                    {review.author}
+                  </a>
+                ) : (
+                  <span className="font-semibold text-lg">{review.author}</span>
+                )}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star 
@@ -83,20 +88,19 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
               </div>
             </div>
             <p className="text-muted-foreground mb-3 text-base leading-relaxed">{review.content}</p>
+            {review.link_url && (
+              <div className="mb-2">
+                <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-blue-600 hover:underline text-sm font-medium">
+                  <ExternalLink className="h-4 w-4" /> Link
+                </a>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ThumbsUp className="h-4 w-4" />
                 <span>{review.likes}</span>
               </div>
               <div className="flex items-center gap-2">
-                {review.link_url && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4" />
-                      Read Full Review
-                    </a>
-                  </Button>
-                )}
                 {user?.role === 'admin' && (
                   <>
                     <Button
