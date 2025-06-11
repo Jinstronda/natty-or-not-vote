@@ -8,6 +8,7 @@ export interface Influencer {
   name: string;
   image: string;
   claimed_status: string;
+  total_votes: number;
 }
 
 export interface InfluencerPage {
@@ -17,13 +18,13 @@ export interface InfluencerPage {
 
 const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?: number, searchTerm?: string }): Promise<InfluencerPage> => {
   let query = supabase
-    .from('influencer_vote_counts')
-    .select('influencer_id, total_votes, influencers(id, name, image, claimed_status)')
-    .order('total_votes', { ascending: false })
+    .from('influencers')
+    .select('id, name, image, claimed_status, influencer_vote_counts(total_votes)')
+    .order('influencer_vote_counts.total_votes', { ascending: false })
     .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
   if (searchTerm.trim()) {
-    query = query.ilike('influencers.name', `%${searchTerm.trim()}%`);
+    query = query.ilike('name', `%${searchTerm.trim()}%`);
   }
 
   const { data, error } = await query;
@@ -33,10 +34,11 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
   }
 
   const influencers = (data || []).map((row: any) => ({
-    id: row.influencer_id,
-    name: row.influencers?.name || '',
-    image: row.influencers?.image || '',
-    claimed_status: row.influencers?.claimed_status || '',
+    id: row.id,
+    name: row.name || '',
+    image: row.image || '',
+    claimed_status: row.claimed_status || '',
+    total_votes: row.influencer_vote_counts?.total_votes || 0,
   }));
 
   return {
