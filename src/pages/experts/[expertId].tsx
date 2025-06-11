@@ -83,14 +83,15 @@ const ExpertProfilePage = () => {
               <li key={review.id} className="border rounded-lg p-4 bg-yellow-50/50">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-semibold">For:</span>
-                  <a href={`/influencer/${review.influencer_id}`} className="text-primary hover:underline font-medium">Influencer</a>
+                  {review.link_url ? (
+                    <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm font-medium inline-flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4" /> Read Full Review
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-sm font-medium">No video link</span>
+                  )}
                 </div>
                 <div className="mb-2 text-base text-muted-foreground">{review.content}</div>
-                {review.link_url && (
-                  <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-blue-600 hover:underline text-sm font-medium">
-                    <ExternalLink className="h-4 w-4" /> Read Full Review
-                  </a>
-                )}
               </li>
             ))}
           </ul>
