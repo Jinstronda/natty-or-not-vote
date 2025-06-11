@@ -101,7 +101,13 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-lg text-primary">{expert?.name || review.author}</span>
+                    {review.expert_id ? (
+                      <a href={`/experts/${review.expert_id}`} className="font-semibold text-lg text-primary hover:underline">
+                        {expert?.name || review.author}
+                      </a>
+                    ) : (
+                      <span className="font-semibold text-lg text-primary">{expert?.name || review.author}</span>
+                    )}
                     <span className="text-muted-foreground text-base">said:</span>
                   </div>
                   <div className="text-base mb-2 break-words whitespace-pre-line text-gray-900">{review.content}</div>
