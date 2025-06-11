@@ -17,13 +17,13 @@ export interface InfluencerPage {
 
 const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?: number, searchTerm?: string }): Promise<InfluencerPage> => {
   let query = supabase
-    .from('influencers')
-    .select('id, name, image, claimed_status')
-    .order('created_at', { ascending: false })
+    .from('influencer_vote_counts')
+    .select('influencer_id, total_votes, influencers(id, name, image, claimed_status)')
+    .order('total_votes', { ascending: false })
     .range(pageParam * ITEMS_PER_PAGE, (pageParam + 1) * ITEMS_PER_PAGE - 1);
 
   if (searchTerm.trim()) {
-    query = query.ilike('name', `%${searchTerm.trim()}%`);
+    query = query.ilike('influencers.name', `%${searchTerm.trim()}%`);
   }
 
   const { data, error } = await query;
@@ -32,8 +32,15 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
     throw new Error(`Supabase error: ${error.message}`);
   }
 
+  const influencers = (data || []).map((row: any) => ({
+    id: row.influencer_id,
+    name: row.influencers?.name || '',
+    image: row.influencers?.image || '',
+    claimed_status: row.influencers?.claimed_status || '',
+  }));
+
   return {
-    data: data || [],
+    data: influencers,
     nextPage: data && data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
   };
 };
