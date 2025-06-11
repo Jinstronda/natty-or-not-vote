@@ -84,7 +84,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
           {expertReviews.map((review) => {
             const expert = review.expert_id ? experts[review.expert_id] : null;
             const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
-            const cardColor = isNatty ? 'bg-green-100 border-green-400' : 'bg-purple-100 border-purple-400';
+            const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
             return (
               <div
                 key={review.id}
@@ -113,7 +113,7 @@ const ExpertReviews = ({ influencerId }: ExpertReviewsProps) => {
                   <div className="text-base mb-2 break-words whitespace-pre-line text-gray-900">{review.content}</div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold text-xs text-muted-foreground">VEREDICT:</span>
-                    <span className={`font-bold text-sm ${isNatty ? 'text-green-700' : 'text-purple-700'}`}>{isNatty ? 'Natty' : 'Juicy'}</span>
+                    <span className={`font-bold text-sm ${isNatty ? 'text-natty' : 'text-juicy'}`}>{isNatty ? 'Natty' : 'Juicy'}</span>
                   </div>
                   {review.link_url && (
                     <div className="mb-1">
