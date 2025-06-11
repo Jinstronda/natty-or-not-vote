@@ -80,7 +80,7 @@ const ExpertProfilePage = () => {
           </CardContent>
         </Card>
         <div className="mb-8">
-          <ExpertReviews influencerId={expert.influencer_id} />
+          <ExpertReviews expertId={expert.id} />
         </div>
         {influencer && (
           <div className="mt-8">
