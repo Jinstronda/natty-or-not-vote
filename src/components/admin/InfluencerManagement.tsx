@@ -71,6 +71,27 @@ async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   }
 }
 
+// SerpAPI integration (Google Images via SerpAPI)
+const SERPAPI_KEY = 'fd4f8562688510f66d448e7c21beaf36d015aa4d'; // Provided by user
+async function fetchImagesFromSerpAPI(name: string): Promise<string[]> {
+  try {
+    const params = new URLSearchParams({
+      q: name,
+      api_key: SERPAPI_KEY,
+      tbm: 'isch',
+      hl: 'en',
+      num: '5',
+    });
+    const res = await fetch(`https://serpapi.com/search.json?${params.toString()}`);
+    if (!res.ok) throw new Error('SerpAPI error');
+    const data = await res.json();
+    if (!data.images_results || !Array.isArray(data.images_results)) throw new Error('No images found');
+    return data.images_results.map((item: any) => item.original).slice(0, 5);
+  } catch (err) {
+    return [];
+  }
+}
+
 const InfluencerManagement = () => {
   const queryClient = useQueryClient();
 
@@ -527,16 +548,102 @@ const InfluencerManagement = () => {
     }
   };
 
+  const handleFetchImagesSerpAPIMissing = async () => {
+    setFetchingImages(true);
+    setUpdatedInfluencersLog([]);
+    try {
+      const { data: allInfluencers, error: infError } = await supabase
+        .from('influencers')
+        .select('id, name, image');
+      if (infError) throw infError;
+      let updatedCount = 0;
+      // Prioritize influencers with placeholder main images
+      const isPlaceholder = (url: string) => url && url.toLowerCase().includes('placeholder');
+      const isValidImageUrl = (url: string) => {
+        if (!url || typeof url !== 'string') return false;
+        const lower = url.trim().toLowerCase();
+        if (
+          lower === '' ||
+          lower.endsWith('.svg') ||
+          lower.includes('placeholder') ||
+          lower.includes('no-image') ||
+          lower.includes('default') ||
+          lower.includes('broken') ||
+          lower.includes('/image/') ||
+          lower.includes('/photo/') ||
+          lower.includes('/missing/') ||
+          lower.startsWith('http://')
+        ) {
+          return false;
+        }
+        return /\.(jpg|jpeg|png|webp)$/i.test(lower);
+      };
+      // First, influencers with placeholder main images
+      const placeholderFirst = [
+        ...allInfluencers.filter(inf => isPlaceholder(inf.image)),
+        ...allInfluencers.filter(inf => !isPlaceholder(inf.image)),
+      ];
+      for (const inf of placeholderFirst) {
+        const mainImageIsBad = !isValidImageUrl(inf.image);
+        if (mainImageIsBad) {
+          // Remove all placeholder/broken images for this influencer
+          await supabase.from('influencer_photos').delete().eq('influencer_id', inf.id).or(`image_url.ilike.%placeholder%,image_url.ilike.%no-image%,image_url.ilike.%default%,image_url.ilike.%broken%,image_url.ilike.%/image/%,image_url.ilike.%/photo/%,image_url.ilike.%/missing%`);
+          if (inf.image && (
+            inf.image.includes('placeholder') ||
+            inf.image.includes('no-image') ||
+            inf.image.includes('default') ||
+            inf.image.includes('broken') ||
+            inf.image.includes('/image/') ||
+            inf.image.includes('/photo/') ||
+            inf.image.includes('/missing/')
+          )) {
+            await supabase.from('influencers').update({ image: null }).eq('id', inf.id);
+          }
+          // Fetch images from SerpAPI
+          const images = await fetchImagesFromSerpAPI(inf.name);
+          const filteredImages = images.filter(isValidImageUrl);
+          if (filteredImages[0]) {
+            await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
+            setUpdatedInfluencersLog(log => [...log, inf.name]);
+          }
+          for (let i = 0; i < filteredImages.length; i++) {
+            await supabase.from('influencer_photos').insert({
+              influencer_id: inf.id,
+              image_url: filteredImages[i],
+              description: `SerpAPI image for ${inf.name}`,
+              order: i
+            });
+          }
+          if (filteredImages.length > 0) updatedCount++;
+        }
+      }
+      toast({
+        title: 'SerpAPI Image Fetch Complete',
+        description: `Updated main images for ${updatedCount} influencer(s) with missing, broken, or placeholder images.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch or add images from SerpAPI.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4 mb-2">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Button onClick={handleFetchImagesForMissing} disabled={fetchingImages} variant="outline">
-          {fetchingImages && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
-          Fetch Images for Influencers Without Photos
+          Fetch Images from Google
         </Button>
         <Button onClick={handleFetchImagesDuckDuckGoForMissing} disabled={fetchingImages} variant="outline">
-          {fetchingImages && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
-          Fetch Images (DuckDuckGo)
+          Fetch Images from DuckDuckGo
+        </Button>
+        <Button onClick={handleFetchImagesSerpAPIMissing} disabled={fetchingImages} variant="outline">
+          Fetch Images from SerpAPI (Replace Placeholders & Broken)
         </Button>
       </div>
       {updatedInfluencersLog.length > 0 && (
