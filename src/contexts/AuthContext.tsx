@@ -1,6 +1,9 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { User } from '@/types/auth';
 
 interface AuthContextValue {
   user: User | null;
@@ -15,6 +18,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { fetchUserProfile } = useUserProfile();
 
   useEffect(() => {
     // Check for existing session on mount
@@ -24,7 +28,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
-        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          try {
+            const userProfile = await fetchUserProfile(session.user);
+            setUser(userProfile);
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         console.error('Exception getting session:', error);
         setUser(null);
@@ -40,14 +55,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      
+      if (session?.user) {
+        // Defer profile fetching to avoid blocking the auth callback
+        setTimeout(async () => {
+          try {
+            const userProfile = await fetchUserProfile(session.user);
+            setUser(userProfile);
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            setUser(null);
+          } finally {
+            setLoading(false);
+          }
+        }, 0);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchUserProfile]);
 
   const signUp = async (email: string, password: string, username?: string) => {
     setLoading(true);
@@ -98,4 +129,4 @@ export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
-}; 
+};

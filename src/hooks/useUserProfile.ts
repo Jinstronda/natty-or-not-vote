@@ -26,7 +26,8 @@ export const useUserProfile = () => {
           id: profile.id,
           username: profile.username,
           email: profile.email,
-          role: profile.role as 'user' | 'admin'
+          role: profile.role as 'user' | 'admin',
+          profile_picture_url: profile.profile_picture_url
         };
       } else {
         console.log('🔄 UserProfile: No profile found, creating for OAuth user');
@@ -57,7 +58,10 @@ export const useUserProfile = () => {
           console.log('⚠️ UserProfile: Profile creation error:', insertError);
         }
 
-        return newProfile;
+        return {
+          ...newProfile,
+          profile_picture_url: undefined
+        };
       }
     } catch (error) {
       console.error('❌ UserProfile: Exception:', error);
