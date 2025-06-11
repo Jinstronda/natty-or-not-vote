@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, User } from 'lucide-react';
 import InfluencerProfile from '@/pages/InfluencerProfile';
+import AdminExpertEditor from '@/components/AdminExpertEditor';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ExpertProfilePage = () => {
   const router = useRouter();
@@ -12,6 +14,7 @@ const ExpertProfilePage = () => {
   const [expert, setExpert] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [influencer, setInfluencer] = useState<any>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!expertId) return;
@@ -39,6 +42,7 @@ const ExpertProfilePage = () => {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
+      {user?.role === 'admin' && <AdminExpertEditor expert={expert} />}
       <Card className="mb-8">
         <CardHeader className="flex flex-row items-center gap-4">
           <div className="rounded-full bg-primary text-white w-16 h-16 flex items-center justify-center text-3xl font-bold">
