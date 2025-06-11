@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import Masonry from 'react-masonry-css';
 
 interface InfluencerGridProps {
   searchTerm?: string;
@@ -160,27 +159,16 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   }
 
   // Success state
-  const breakpointColumnsObj = {
-    default: 4,
-    1280: 4,
-    1024: 3,
-    768: 2,
-    0: 1
-  };
   return (
     <div className="space-y-8">
-      <Masonry
-        breakpointCols={breakpointColumnsObj}
-        className="my-masonry-grid"
-        columnClassName="my-masonry-grid_column"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {sortedInfluencers.map((influencer) => (
           <InfluencerCard 
             key={influencer.id} 
             influencer={influencer}
           />
         ))}
-      </Masonry>
+      </div>
 
       <div ref={loadMoreRef} className="flex justify-center">
         {isFetchingNextPage && (

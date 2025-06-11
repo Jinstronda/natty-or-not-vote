@@ -48,11 +48,11 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/20' : ''}
       `}>
         <CardHeader className="p-0">
-          <div className="aspect-square relative flex items-center justify-center">
+          <div className="aspect-square relative">
           <img
               src={mainImage}
             alt={influencer.name}
-            className="w-40 h-40 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.src = '/placeholder.svg';
             }}
