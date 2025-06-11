@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AuthContextValue {
   user: User | null;
@@ -11,6 +12,33 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+interface Profile {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
+const fetchProfile = async (supabaseUser: SupabaseUser | null): Promise<User | null> => {
+  if (!supabaseUser) return null;
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (profile) {
+      // Merge profile role into user object
+      return { ...supabaseUser, role: profile.role, user_metadata: { ...supabaseUser.user_metadata, username: profile.username } } as User;
+    }
+    return supabaseUser;
+  } catch (e) {
+    console.error('Error fetching profile:', e);
+    return supabaseUser;
+  }
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -24,7 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
-        setUser(session?.user ?? null);
+        const userWithProfile = await fetchProfile(session?.user ?? null);
+        setUser(userWithProfile);
       } catch (error) {
         console.error('Exception getting session:', error);
         setUser(null);
@@ -40,7 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      setUser(session?.user ?? null);
+      const userWithProfile = await fetchProfile(session?.user ?? null);
+      setUser(userWithProfile);
       setLoading(false);
     });
 
