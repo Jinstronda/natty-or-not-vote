@@ -161,7 +161,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   // Success state
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-flow-dense">
         {sortedInfluencers.map((influencer) => (
           <InfluencerCard 
             key={influencer.id} 
