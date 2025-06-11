@@ -104,9 +104,9 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
           What do you think?
         </h2>
         <p className="text-muted-foreground mb-4">
-          Please login to vote and see results
+          Please login to vote and see the verdict results
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center mb-6">
           <Button asChild variant="outline">
             <Link to="/login">Login</Link>
           </Button>
@@ -114,6 +114,12 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
             <Link to="/signup">Sign Up</Link>
           </Button>
         </div>
+        {/* Show voting buttons but hide results */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <Button size="lg" disabled className="opacity-60 cursor-not-allowed">🏆 Natty</Button>
+          <Button size="lg" disabled className="opacity-60 cursor-not-allowed">💉 Juicy</Button>
+        </div>
+        <div className="text-muted-foreground text-sm">Login to see the community verdict and vote!</div>
       </div>
     );
   }
