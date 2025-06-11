@@ -1,4 +1,3 @@
-
 export interface Vote {
   userId: string;
   influencerId: string;
@@ -19,6 +18,15 @@ export interface Review {
   dislikes?: number;
 }
 
+export interface InfluencerPhoto {
+  id: string;
+  influencer_id: string;
+  image_url: string;
+  description: string;
+  order: number;
+  created_at: string;
+}
+
 export interface Influencer {
   id: string;
   name: string;
@@ -33,6 +41,7 @@ export interface Influencer {
     youtube?: string;
     tiktok?: string;
   };
+  photos?: InfluencerPhoto[];
 }
 
 export interface InfluencerSuggestion {
