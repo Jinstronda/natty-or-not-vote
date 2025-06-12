@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Trash2 } from "lucide-react";
 import UserProfile from "@/components/UserProfile";
-import ReviewForm from "@/components/ReviewForm";
 import ReviewReactions from "@/components/ReviewReactions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +13,7 @@ import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 import { useRealTimeReviews } from '@/hooks/useRealTime';
+import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 
 interface UserReviewsProps {
   influencerId: string;
@@ -25,9 +25,12 @@ export interface UserReviewsRef {
 
 const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId }, ref) => {
   const { user } = useAuth();
+  const { submitReview } = useSupabaseReviews();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState<string>("");
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -182,44 +185,88 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         {reviews.length === 0 && !error ? (
           <p className="text-muted-foreground text-center py-4">No reviews yet</p>
         ) : (
-          reviews.map((review) => (
-            <div key={review.id} className="border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <UserProfile 
-                    username={review.username} 
-                    userId={review.userId}
-                    profilePicture={review.profilePicture}
-                  />
-                  <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
-                    {review.vote === 'natty' ? '🏆' : '💉'}
-                  </Badge>
+          reviews.map((review) => {
+            const isOwnReview = user && review.userId === user.id;
+            return (
+              <div key={review.id} className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <UserProfile 
+                      username={review.username} 
+                      userId={review.userId}
+                      profilePicture={review.profilePicture}
+                    />
+                    <Badge className={review.vote === 'natty' ? 'bg-natty text-xs' : 'bg-juicy text-xs'}>
+                      {review.vote === 'natty' ? '🏆' : '💉'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(review.timestamp).toLocaleDateString()}
+                    </span>
+                    {isOwnReview && editingReviewId !== review.id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingReviewId(review.id);
+                          setEditContent(review.content);
+                        }}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    {user?.role === 'admin' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteReview(review.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(review.timestamp).toLocaleDateString()}
-                  </span>
-                  {user?.role === 'admin' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteReview(review.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                {editingReviewId === review.id ? (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!user) return;
+                      await submitReview(user.id, user.username, influencerId, review.vote, editContent.trim());
+                      setEditingReviewId(null);
+                      setEditContent("");
+                      await fetchReviews();
+                    }}
+                    className="space-y-2"
+                  >
+                    <textarea
+                      className="w-full border rounded p-2 mb-2 bg-background text-foreground"
+                      rows={3}
+                      value={editContent}
+                      onChange={e => setEditContent(e.target.value)}
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" className="bg-primary text-white">Save</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setEditingReviewId(null)}>Cancel</Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground mb-3">{review.content}</p>
+                    <ReviewReactions 
+                      reviewId={review.id}
+                      likes={review.likes}
+                      dislikes={review.dislikes || 0}
+                      onReacted={fetchReviews}
+                    />
+                  </>
+                )}
               </div>
-              <p className="text-muted-foreground mb-3">{review.content}</p>
-              <ReviewReactions 
-                reviewId={review.id}
-                likes={review.likes}
-                dislikes={review.dislikes || 0}
-                onReacted={fetchReviews}
-              />
-            </div>
-          ))
+            );
+          })
         )}
       </CardContent>
     </Card>
