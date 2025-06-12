@@ -173,8 +173,6 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <ReviewForm influencerId={influencerId} />
-        
         {error && (
           <div className="text-center py-4 text-red-500">
             Error loading reviews: {error}
