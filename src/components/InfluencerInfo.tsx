@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Influencer } from "@/types/vote";
 import InfluencerPhotoGallery from './InfluencerPhotoGallery';
+import { Instagram, Youtube, Music, Link } from "lucide-react";
 
 interface InfluencerInfoProps {
   influencer: Influencer;
@@ -46,6 +47,61 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
         <p className="text-muted-foreground mb-6">
           {influencer.description}
         </p>
+        {/* Social Links */}
+        {influencer.social_links && Object.values(influencer.social_links).some(link => link) && (
+          <div className="flex flex-wrap gap-3 mb-6">
+            {influencer.social_links.instagram && (
+              <a
+                href={influencer.social_links.instagram.startsWith('http') ? influencer.social_links.instagram : `https://instagram.com/${influencer.social_links.instagram.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-pink-500 hover:underline text-sm"
+              >
+                <Instagram className="h-4 w-4" />Instagram
+              </a>
+            )}
+            {influencer.social_links.youtube && (
+              <a
+                href={influencer.social_links.youtube.startsWith('http') ? influencer.social_links.youtube : `https://youtube.com/${influencer.social_links.youtube}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-red-500 hover:underline text-sm"
+              >
+                <Youtube className="h-4 w-4" />YouTube
+              </a>
+            )}
+            {influencer.social_links.tiktok && (
+              <a
+                href={influencer.social_links.tiktok.startsWith('http') ? influencer.social_links.tiktok : `https://tiktok.com/@${influencer.social_links.tiktok.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-black hover:underline text-sm"
+              >
+                <Music className="h-4 w-4" />TikTok
+              </a>
+            )}
+            {influencer.social_links.twitter && (
+              <a
+                href={influencer.social_links.twitter.startsWith('http') ? influencer.social_links.twitter : `https://twitter.com/${influencer.social_links.twitter.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-blue-500 hover:underline text-sm"
+              >
+                <Link className="h-4 w-4" />Twitter
+              </a>
+            )}
+            {influencer.social_links.website && (
+              <a
+                href={influencer.social_links.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-gray-500 hover:underline text-sm"
+              >
+                <Link className="h-4 w-4" />Website
+              </a>
+            )}
+          </div>
+        )}
         
         <div className="space-y-3">
           <div className="flex justify-between">
