@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/types/vote';
@@ -63,6 +62,14 @@ export const useSupabaseReviews = () => {
     if (!user) return;
 
     try {
+      // First, delete any existing review for this user and influencer
+      await supabase
+        .from('reviews')
+        .delete()
+        .eq('user_id', userId)
+        .eq('influencer_id', influencerId);
+
+      // Then insert the new review
       const { error } = await supabase
         .from('reviews')
         .insert({
