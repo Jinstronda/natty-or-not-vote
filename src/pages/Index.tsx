@@ -1,12 +1,25 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import SearchBar from "@/components/SearchBar";
 import InfluencerGrid from "@/components/InfluencerGrid";
+import VirtualizedInfluencerGrid from "@/components/VirtualizedInfluencerGrid";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
+import { Button } from "@/components/ui/button";
+import { Zap, Grid3X3 } from "lucide-react";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [useVirtualization, setUseVirtualization] = useState(() => {
+    // Check localStorage or default to false for compatibility
+    const saved = localStorage.getItem('natty-virtualization');
+    return saved === 'true';
+  });
+
+  // Save virtualization preference
+  useEffect(() => {
+    localStorage.setItem('natty-virtualization', useVirtualization.toString());
+  }, [useVirtualization]);
 
   return (
     <Layout>
@@ -21,11 +34,39 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="mb-16 max-w-2xl mx-auto">
+        <div className="mb-16 max-w-2xl mx-auto space-y-6">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          
+          {/* Virtualization Toggle */}
+          <div className="flex items-center justify-center gap-4 p-4 bg-card/50 rounded-xl border">
+            <span className="text-sm font-medium text-muted-foreground">Grid Mode:</span>
+            <Button
+              variant={!useVirtualization ? "default" : "outline"}
+              size="sm"
+              onClick={() => setUseVirtualization(false)}
+              className="gap-2"
+            >
+              <Grid3X3 className="w-4 h-4" />
+              Masonry
+            </Button>
+            <Button
+              variant={useVirtualization ? "default" : "outline"}
+              size="sm"
+              onClick={() => setUseVirtualization(true)}
+              className="gap-2"
+            >
+              <Zap className="w-4 h-4" />
+              Virtualized
+            </Button>
+          </div>
         </div>
         
-        <InfluencerGrid searchTerm={searchTerm} />
+        {/* Conditional Grid Rendering */}
+        {useVirtualization ? (
+          <VirtualizedInfluencerGrid searchTerm={searchTerm} />
+        ) : (
+          <InfluencerGrid searchTerm={searchTerm} />
+        )}
         
         <div className="mt-32 mb-16">
           <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl p-12 text-center border border-border/50">
