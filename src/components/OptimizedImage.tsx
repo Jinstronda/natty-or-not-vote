@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface OptimizedImageProps {
-  src: string;
+  src: string | null | undefined;
   alt: string;
   className?: string;
   width?: number;
@@ -13,7 +13,13 @@ interface OptimizedImageProps {
 }
 
 // Generate WebP and AVIF URLs from original image URL
-const generateOptimizedUrls = (src: string) => {
+const generateOptimizedUrls = (src: string | null | undefined) => {
+  // Early validation - fail fast on null/undefined/empty values
+  if (!src || typeof src !== 'string' || src.trim() === '') {
+    const fallback = '/placeholder.svg';
+    return { avif: fallback, webp: fallback, original: fallback };
+  }
+  
   if (src.includes('placeholder.svg') || src.startsWith('data:')) {
     return { avif: src, webp: src, original: src };
   }
