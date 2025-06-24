@@ -137,65 +137,44 @@
   .hover-bg-juicy-faint:hover {
     background-color: hsl(var(--juicy) / 0.12);
   }
+}
 
-  /* 3D Card Flip Animations */
-  .flip-card-flipped {
-    transform: rotateY(180deg);
-  }
+/* Enhanced Micro-Interactions Utilities */
+.micro-hover {
+  @apply transition-all duration-200 ease-gentle transform-gpu hover:scale-[1.02] hover:shadow-md;
+}
 
-  /* Enhanced mobile touch interactions */
-  @media (hover: none) {
-    .mobile-touch-feedback:active {
-      transform: scale(0.98);
-      opacity: 0.8;
-    }
-  }
+.micro-press {
+  @apply transition-all duration-150 ease-gentle transform-gpu active:scale-[0.98];
+}
 
-  /* Better focus states for accessibility */
-  .focus-ring:focus-visible {
-    outline: 2px solid hsl(var(--primary));
-    outline-offset: 2px;
-  }
+.micro-float {
+  @apply transition-all duration-300 ease-gentle transform-gpu hover:-translate-y-1 hover:shadow-lg;
+}
 
-  /* Spring animation for buttons */
-  @keyframes spring {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-  
-  .spring-animation {
-    animation: spring 0.3s ease-out;
-  }
+.micro-glow {
+  @apply transition-shadow duration-200 ease-gentle hover:shadow-lg hover:shadow-current/20;
+}
 
-  /* Particle effect for celebrations */
-  @keyframes particle-float {
-    0% {
-      transform: translateY(0) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(-100px) rotate(360deg);
-      opacity: 0;
-    }
-  }
-  
-  .particle-float {
-    animation: particle-float 2s ease-out forwards;
-  }
+.micro-breathe {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
 
-  /* Enhanced button hover states */
-  .btn-enhanced {
-    @apply transition-all duration-300 ease-out;
-    @apply hover:shadow-lg hover:-translate-y-0.5;
-    @apply active:translate-y-0 active:shadow-md;
-  }
+.micro-shimmer {
+  @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent;
+}
 
-  .btn-enhanced:hover {
-    transform: translateY(-2px) scale(1.02);
-  }
+/* Interactive focus states */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2;
+}
 
-  .btn-enhanced:active {
-    transform: translateY(0) scale(0.98);
-  }
+/* Smooth transitions for all interactive elements */
+input, button, [role="button"], [role="link"] {
+  @apply transition-all duration-200 ease-gentle;
+}
+
+/* Enhanced hover states for clickable elements */
+[role="button"]:not(:disabled), button:not(:disabled), .cursor-pointer {
+  @apply transform-gpu;
 }
