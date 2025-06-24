@@ -521,15 +521,43 @@ const BulkExpertReviewImport: React.FC = () => {
     <Card className="max-w-4xl mx-auto mt-8">
       <CardContent className="space-y-6 py-8">
         <h2 className="text-xl font-bold mb-2">Bulk Import Expert Reviews</h2>
-        <p className="text-muted-foreground text-sm mb-2">
-          Paste CSV: <code>expert_name,influencer_name,natty_or_not,comment,url</code>
-        </p>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+          <h3 className="font-semibold text-blue-900 flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            CSV Format Instructions
+          </h3>
+          
+          <div className="text-sm space-y-2">
+            <p className="text-blue-800">
+              <strong>Format:</strong> <code className="bg-white px-2 py-1 rounded">expert_name,influencer_name,verdict,comment,url</code>
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-blue-700">
+              <div>
+                <p><strong>Verdict Field:</strong></p>
+                <ul className="ml-4 space-y-1">
+                  <li>• <code className="bg-green-100 text-green-800 px-1 rounded">natty</code> - Natural physique</li>
+                  <li>• <code className="bg-pink-100 text-pink-800 px-1 rounded">juicy</code> - Enhanced physique</li>
+                </ul>
+              </div>
+              
+              <div>
+                <p><strong>Example Lines:</strong></p>
+                <div className="bg-white p-2 rounded border text-xs font-mono">
+                  Dr. Smith,John Doe,<span className="text-green-600">natty</span>,Looks natural,<br/>
+                  Prof. Jones,Jane Fit,<span className="text-pink-600">juicy</span>,Clear signs of enhancement,https://example.com
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <Textarea
           value={input}
           onChange={e => setInput(e.target.value)}
           rows={8}
-          placeholder="Dr. Smith,John Doe,natty,Looks natural,https://example.com/review1&#10;Dr. Smith,Jane Fit,juicy,Obvious signs of enhancement,"
+          placeholder="Dr. Smith,John Doe,natty,Looks natural,https://example.com/review1&#10;Prof. Jones,Jane Fit,juicy,Clear signs of enhancement,https://example.com/review2&#10;Dr. Garcia,Mike Bulk,natty,Achievable naturally,"
         />
         
         <div className="flex gap-2">
@@ -572,7 +600,7 @@ const BulkExpertReviewImport: React.FC = () => {
                 <TableRow>
                   <TableHead>Expert</TableHead>
                   <TableHead>Influencer</TableHead>
-                  <TableHead>Natty/Not</TableHead>
+                  <TableHead>Verdict</TableHead>
                   <TableHead>Comment</TableHead>
                   <TableHead>URL</TableHead>
                   <TableHead>Status</TableHead>
