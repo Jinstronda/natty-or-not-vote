@@ -8,7 +8,8 @@ import { Link } from "react-router-dom";
 import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { Lock } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import OptimizedImage from "./OptimizedImage";
+import { motion, type Variants } from "framer-motion";
+import Image from 'next-export-optimize-images/image';
 
 export interface InfluencerCardProps {
   influencer: {
@@ -42,121 +43,223 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
     ? influencer.photos[0].image_url
     : influencer.image;
 
+  // Framer Motion variants for enhanced interactions
+  const cardVariants: Variants = {
+    idle: { 
+      scale: 1, 
+      y: 0,
+      rotateX: 0,
+      rotateY: 0,
+    },
+    hover: { 
+      scale: 1.02, 
+      y: -8,
+      rotateX: -2,
+      rotateY: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20
+      }
+    },
+    tap: { 
+      scale: 0.98,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 25
+      }
+    }
+  };
+
+  const imageVariants: Variants = {
+    idle: { scale: 1 },
+    hover: { 
+      scale: 1.05,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20
+      }
+    }
+  };
+
+  const badgeVariants: Variants = {
+    idle: { scale: 1, rotateZ: 0 },
+    hover: { 
+      scale: 1.05,
+      rotateZ: 1,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 15
+      }
+    }
+  };
+
+  const progressVariants: Variants = {
+    hidden: { scaleX: 0 },
+    visible: { 
+      scaleX: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.4, 0.0, 0.2, 1]
+      }
+    }
+  };
+
   return (
     <Link to={`/influencer/${influencer.id}`}>
-      <Card className={`
-        group relative overflow-hidden cursor-pointer
-        transition-all duration-500 ease-out
-        hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2 hover:scale-[1.02]
-        hover:ring-2 hover:ring-primary/20
-        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/10 hover:ring-juicy/30' : ''}
-        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/10 hover:ring-natty/30' : ''}
-        before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100
-      `}>
-        <CardHeader className="p-0">
-          <div className="aspect-square relative overflow-hidden rounded-t-lg">
-            <OptimizedImage
-              src={mainImage}
-              alt={influencer.name}
-              className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
-              priority={false}
-            />
-            {influencer.claimed_status === 'claimed' && (
-              <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                Claimed
-              </div>
-            )}
-        </div>
-        </CardHeader>
-        
-        <CardContent className="p-4">
-          <h3
-            className="font-semibold text-lg mb-2 text-center transition-colors text-white"
-          >
-            {influencer.name}
-          </h3>
-          
-          {/* Vote Statistics */}
-          {user && !isLoading && voteStats && totalVotes > 0 && (
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>💉 Juicy: {juicyPercentage}%</span>
-                <span>🏆 Natty: {nattyPercentage}%</span>
-              </div>
-              
-              <div className="relative">
-                <div className="w-full bg-secondary rounded-full h-2 overflow-hidden flex">
-                  <div
-                    className="h-full bg-juicy transition-all duration-500"
-                    style={{ width: `${juicyPercentage}%` }}
-                  />
-                  <div
-                    className="h-full bg-natty transition-all duration-500"
-                    style={{ width: `${nattyPercentage}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <Badge 
-                  className={`
-                    relative overflow-hidden
-                    transition-all duration-500 ease-out 
-                    hover:scale-110 hover:-translate-y-1 
-                    active:scale-95 active:translate-y-0
-                    hover:shadow-xl hover:shadow-current/30
-                    ${nattyPercentage > 50 
-                      ? 'bg-gradient-to-r from-natty via-natty/95 to-natty/90 hover:from-natty/90 hover:to-natty text-white' 
-                      : 'bg-gradient-to-r from-juicy via-juicy/95 to-juicy/90 hover:from-juicy/90 hover:to-juicy text-white'
-                    }
-                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent 
-                    before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-700 
-                    hover:before:translate-x-[100%]
-                  `}
+      <motion.div
+        variants={cardVariants}
+        initial="idle"
+        whileHover="hover"
+        whileTap="tap"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <Card className={`group overflow-hidden shadow-lg transition-shadow duration-300
+          ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:shadow-juicy/20' : ''}
+          ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:shadow-natty/20' : ''}
+        `}>
+          <CardHeader className="p-0">
+            <div className="aspect-square relative overflow-hidden">
+              <motion.div
+                variants={imageVariants}
+                className="w-full h-full"
+              >
+                <Image
+                  src={mainImage}
+                  alt={influencer.name}
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-cover"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              </motion.div>
+              {influencer.claimed_status === 'claimed' && (
+                <motion.div 
+                  className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs"
+                  initial={{ scale: 0, rotate: -12 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
                 >
-                  <span className="relative z-10 font-semibold">
-                    {nattyPercentage > 50 ? "🏆 Natty" : "💉 Juicy"} 
-                    ({nattyPercentage > 50 ? nattyPercentage : juicyPercentage}%)
-                  </span>
-                </Badge>
-              </div>
+                  Claimed
+                </motion.div>
+              )}
             </div>
-          )}
-
-          {!user && !isLoading && voteStats && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="space-y-2 select-none cursor-pointer">
-                  <div className="flex justify-between items-center text-xs text-muted-foreground opacity-60">
-                    <span>💉 Juicy</span>
-                    <span>🏆 Natty</span>
-                  </div>
-                  <div className="relative">
-                    <div className="w-full rounded-full h-2 overflow-hidden flex blur-sm opacity-80">
-                      <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
-                      <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <span className="text-xs text-muted-foreground font-semibold drop-shadow-md select-none" style={{zIndex:0}}>Sign in to see verdicts</span>
-                    </div>
+          </CardHeader>
+          
+          <CardContent className="p-4">
+            <motion.h3
+              className="font-semibold text-lg mb-2 text-center transition-colors text-white"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {influencer.name}
+            </motion.h3>
+            
+            {/* Vote Statistics */}
+            {user && !isLoading && voteStats && totalVotes > 0 && (
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                  <span>💉 Juicy: {juicyPercentage}%</span>
+                  <span>🏆 Natty: {nattyPercentage}%</span>
+                </div>
+                
+                <div className="relative">
+                  <div className="w-full bg-secondary rounded-full h-2 overflow-hidden flex">
+                    <motion.div
+                      className="h-full bg-juicy"
+                      style={{ width: `${juicyPercentage}%` }}
+                      variants={progressVariants}
+                      initial="hidden"
+                      animate="visible"
+                    />
+                    <motion.div
+                      className="h-full bg-natty"
+                      style={{ width: `${nattyPercentage}%` }}
+                      variants={progressVariants}
+                      initial="hidden"
+                      animate="visible"
+                      transition={{ delay: 0.3 }}
+                    />
                   </div>
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>Sign in to see verdicts and vote!</TooltipContent>
-            </Tooltip>
-          )}
+                
+                <div className="text-center">
+                  <motion.div variants={badgeVariants}>
+                    <Badge 
+                      className={`
+                        transition-all duration-300
+                        ${nattyPercentage > 50 
+                          ? 'bg-gradient-to-r from-natty to-natty/90 hover:shadow-lg hover:shadow-natty/30' 
+                          : 'bg-gradient-to-r from-juicy to-juicy/90 hover:shadow-lg hover:shadow-juicy/30'
+                        }
+                      `}
+                    >
+                      {nattyPercentage > 50 ? "Natty" : "Juicy"} 
+                      ({nattyPercentage > 50 ? nattyPercentage : juicyPercentage}%)
+                    </Badge>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
 
-          {!isLoading && voteStats && totalVotes === 0 && (
-            <div className="text-center text-sm text-muted-foreground">
-              No votes yet
-            </div>
-          )}
-        </CardContent>
-        
-        <CardFooter className="p-4 pt-0 flex justify-center gap-2">
-          {/* Removed VoteButton and Claim button as per new requirements. Only show the bar/statistics above. */}
-        </CardFooter>
-      </Card>
+            {!user && !isLoading && voteStats && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.div 
+                    className="space-y-2 select-none cursor-pointer"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="flex justify-between items-center text-xs text-muted-foreground opacity-60">
+                      <span>💉 Juicy</span>
+                      <span>🏆 Natty</span>
+                    </div>
+                    <div className="relative">
+                      <div className="w-full rounded-full h-2 overflow-hidden flex blur-sm opacity-80">
+                        <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
+                        <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-xs text-muted-foreground font-semibold drop-shadow-md select-none" style={{zIndex:0}}>Sign in to see verdicts</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent>Sign in to see verdicts and vote!</TooltipContent>
+              </Tooltip>
+            )}
+
+            {!isLoading && voteStats && totalVotes === 0 && (
+              <motion.div 
+                className="text-center text-sm text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                No votes yet
+              </motion.div>
+            )}
+          </CardContent>
+          
+          <CardFooter className="p-4 pt-0 flex justify-center gap-2">
+            {/* Removed VoteButton and Claim button as per new requirements. Only show the bar/statistics above. */}
+          </CardFooter>
+        </Card>
+      </motion.div>
     </Link>
   );
 };
