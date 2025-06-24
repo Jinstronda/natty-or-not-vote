@@ -27,16 +27,16 @@ interface EditExpertReviewDialogProps {
 
 const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpertReviewDialogProps) => {
   const [formData, setFormData] = useState({
-    author: review.author,
-    content: review.content,
-    rating: review.rating,
+    author: review.author || '',
+    content: review.content || '',
+    rating: review.rating || 1,
     link_url: review.link_url || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Convert rating to verdict for display
-  const getVerdictFromRating = (rating: number): 'natty' | 'juicy' => {
-    return rating >= 3 ? 'natty' : 'juicy';
+  const getVerdictFromRating = (rating: number | null | undefined): 'natty' | 'juicy' => {
+    return (rating || 1) >= 3 ? 'natty' : 'juicy';
   };
 
   // Convert verdict back to rating
@@ -90,9 +90,9 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
 
   const handleClose = () => {
     setFormData({
-      author: review.author,
-      content: review.content,
-      rating: review.rating,
+      author: review.author || '',
+      content: review.content || '',
+      rating: review.rating || 1,
       link_url: review.link_url || '',
     });
     onClose();
@@ -113,7 +113,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
             <Input
               id="author"
               placeholder="Expert name"
-              value={formData.author}
+              value={formData.author || ''}
               onChange={(e) => setFormData({ ...formData, author: e.target.value })}
             />
           </div>
@@ -154,7 +154,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
             <Textarea
               id="content"
               placeholder="Expert review content..."
-              value={formData.content}
+              value={formData.content || ''}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               rows={4}
               className="resize-none"
@@ -167,7 +167,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
               id="link_url"
               type="url"
               placeholder="https://example.com/full-review"
-              value={formData.link_url}
+              value={formData.link_url || ''}
               onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
             />
           </div>
@@ -182,7 +182,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !formData.author.trim() || !formData.content.trim()}
+            disabled={isSubmitting || !formData.author?.trim() || !formData.content?.trim()}
           >
             {isSubmitting ? "Updating..." : "Update Review"}
           </Button>
