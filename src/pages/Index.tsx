@@ -4,25 +4,22 @@ import Layout from "@/components/Layout";
 import SearchBar from "@/components/SearchBar";
 import InfluencerGrid from "@/components/InfluencerGrid";
 import VirtualizedInfluencerGrid from "@/components/VirtualizedInfluencerGrid";
-import FlippableInfluencerGrid from "@/components/FlippableInfluencerGrid";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
 import { Button } from "@/components/ui/button";
-import { Zap, Grid3X3, RotateCcw } from "lucide-react";
-
-type GridMode = 'masonry' | 'virtualized' | 'flip';
+import { Zap, Grid3X3 } from "lucide-react";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [gridMode, setGridMode] = useState<GridMode>(() => {
-    // Check localStorage or default to masonry for compatibility
-    const saved = localStorage.getItem('natty-grid-mode') as GridMode;
-    return saved && ['masonry', 'virtualized', 'flip'].includes(saved) ? saved : 'masonry';
+  const [useVirtualization, setUseVirtualization] = useState(() => {
+    // Check localStorage or default to false for compatibility
+    const saved = localStorage.getItem('natty-virtualization');
+    return saved === 'true';
   });
 
-  // Save grid mode preference
+  // Save virtualization preference
   useEffect(() => {
-    localStorage.setItem('natty-grid-mode', gridMode);
-  }, [gridMode]);
+    localStorage.setItem('natty-virtualization', useVirtualization.toString());
+  }, [useVirtualization]);
 
   return (
     <Layout>
@@ -40,44 +37,33 @@ const Index = () => {
         <div className="mb-16 max-w-2xl mx-auto space-y-6">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           
-          {/* Grid Mode Toggle */}
-          <div className="flex items-center justify-center gap-3 p-4 bg-card/50 rounded-xl border">
+          {/* Virtualization Toggle */}
+          <div className="flex items-center justify-center gap-4 p-4 bg-card/50 rounded-xl border">
             <span className="text-sm font-medium text-muted-foreground">Grid Mode:</span>
             <Button
-              variant={gridMode === 'masonry' ? "default" : "outline"}
+              variant={!useVirtualization ? "default" : "outline"}
               size="sm"
-              onClick={() => setGridMode('masonry')}
+              onClick={() => setUseVirtualization(false)}
               className="gap-2"
             >
               <Grid3X3 className="w-4 h-4" />
               Masonry
             </Button>
             <Button
-              variant={gridMode === 'virtualized' ? "default" : "outline"}
+              variant={useVirtualization ? "default" : "outline"}
               size="sm"
-              onClick={() => setGridMode('virtualized')}
+              onClick={() => setUseVirtualization(true)}
               className="gap-2"
             >
               <Zap className="w-4 h-4" />
               Virtualized
             </Button>
-            <Button
-              variant={gridMode === 'flip' ? "default" : "outline"}
-              size="sm"
-              onClick={() => setGridMode('flip')}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Flip Cards
-            </Button>
           </div>
         </div>
         
         {/* Conditional Grid Rendering */}
-        {gridMode === 'virtualized' ? (
+        {useVirtualization ? (
           <VirtualizedInfluencerGrid searchTerm={searchTerm} />
-        ) : gridMode === 'flip' ? (
-          <FlippableInfluencerGrid searchTerm={searchTerm} />
         ) : (
           <InfluencerGrid searchTerm={searchTerm} />
         )}
