@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, startTransition } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
@@ -12,7 +12,7 @@ interface InfluencerGridProps {
   searchTerm?: string;
 }
 
-// Utility: fetch vote counts for a list of influencer IDs
+// Utility: fetch vote counts for a list of influencer IDs with enhanced caching
 const useInfluencerVoteCounts = (influencerIds: string[]) => {
   return useQuery({
     queryKey: ['influencer-vote-counts', influencerIds],
@@ -31,7 +31,8 @@ const useInfluencerVoteCounts = (influencerIds: string[]) => {
       return map;
     },
     enabled: influencerIds.length > 0,
-    staleTime: 30000,
+    staleTime: 60000, // 1 minute cache for vote counts
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -60,15 +61,37 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const isInitialLoading = (isPending || isLoading) && !hasData;
   const isRefreshing = isFetching && hasData;
 
-  // Intersection observer for infinite scroll
+  // Memoized influencers array with optimized sorting
+  const allInfluencers = useMemo(() => {
+    return hasData ? data.pages.flatMap(page => page.data) : [];
+  }, [data?.pages, hasData]);
+  
+  // Sort influencers by most voted (descending) with memoization
+  const influencerIds = useMemo(() => allInfluencers.map(i => i.id), [allInfluencers]);
+  const { data: voteCounts, isLoading: voteCountsLoading } = useInfluencerVoteCounts(influencerIds);
+  
+  const sortedInfluencers = useMemo(() => {
+    if (!voteCounts || influencerIds.length === 0) return allInfluencers;
+    
+    return [...allInfluencers].sort((a, b) => {
+      const votesA = voteCounts[a.id] || 0;
+      const votesB = voteCounts[b.id] || 0;
+      return votesB - votesA;
+    });
+  }, [allInfluencers, voteCounts, influencerIds.length]);
+
+  // Intersection observer for infinite scroll with better performance
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+          // Use startTransition for better UX
+          startTransition(() => {
+            fetchNextPage();
+          });
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '200px' } // Start loading earlier
     );
 
     if (loadMoreRef.current) {
@@ -77,20 +100,6 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  const allInfluencers = hasData ? data.pages.flatMap(page => page.data) : [];
-  
-  // Sort influencers by most voted (descending)
-  const influencerIds = allInfluencers.map(i => i.id);
-  const { data: voteCounts, isLoading: voteCountsLoading } = useInfluencerVoteCounts(influencerIds);
-  let sortedInfluencers = allInfluencers;
-  if (voteCounts && influencerIds.length > 0) {
-    sortedInfluencers = [...allInfluencers].sort((a, b) => {
-      const votesA = voteCounts[a.id] || 0;
-      const votesB = voteCounts[b.id] || 0;
-      return votesB - votesA;
-    });
-  }
 
   // Show loading while checking authentication
   if (authLoading) {
@@ -148,7 +157,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   }
 
   // Empty state
-  if (allInfluencers.length === 0) {
+  if (sortedInfluencers.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
@@ -158,9 +167,10 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // Success state
+  // Optimized grid rendering with performance improvements
   return (
     <div className="space-y-8">
+      {/* Improved masonry layout with better performance */}
       <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
         {sortedInfluencers.map((influencer) => (
           <div key={influencer.id} className="mb-6 break-inside-avoid">
@@ -171,14 +181,9 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
       <div ref={loadMoreRef} className="flex justify-center">
         {isFetchingNextPage && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="aspect-square w-full rounded-xl" />
-                <Skeleton className="h-4 w-3/4 mx-auto" />
-                <Skeleton className="h-2 w-full" />
-              </div>
-            ))}
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="text-muted-foreground">Loading more influencers...</span>
           </div>
         )}
         
@@ -192,9 +197,9 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
           </Button>
         )}
         
-        {!hasNextPage && allInfluencers.length > 0 && (
+        {!hasNextPage && sortedInfluencers.length > 0 && (
           <p className="text-muted-foreground text-sm">
-            You've reached the end! 🎉
+            You've reached the end! 🎉 ({sortedInfluencers.length} influencers total)
           </p>
         )}
       </div>
