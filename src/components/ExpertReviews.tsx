@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, ExternalLink, ThumbsUp, Trash2, Edit, User } from "lucide-react";
+import { Star, ExternalLink, ThumbsUp, Trash2, Edit, User, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ExpertReviewForm from "@/components/ExpertReviewForm";
 import EditExpertReviewDialog from "@/components/EditExpertReviewDialog";
 import { useSupabaseExpertReviews } from '@/hooks/useSupabaseExpertReviews';
@@ -41,7 +42,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
     fetchExperts();
   }, [filteredReviews]);
 
-  const handleDeleteExpertReview = async (reviewId: string) => {
+  const handleDeleteExpertReview = async (reviewId: string, expertName: string) => {
     if (user?.role !== 'admin') return;
 
     try {
@@ -54,7 +55,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
 
       toast({
         title: "Expert review deleted",
-        description: "The expert review has been successfully deleted.",
+        description: `${expertName}'s review has been successfully deleted.`,
       });
 
       refetch();
@@ -92,33 +93,66 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
         <div className="space-y-6">
           {filteredReviews.map((review) => {
             const expert = review.expert_id ? experts[review.expert_id] : null;
+            const expertName = expert?.name || review.author || 'Unknown Expert';
             const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
             const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
+            
             return (
               <div
                 key={review.id}
-                className={`flex items-start gap-4 border-2 ${cardColor} rounded-xl p-4 shadow-sm`}
+                className={`relative flex items-start gap-4 border-2 ${cardColor} rounded-xl p-4 shadow-sm`}
               >
+                {/* Admin Actions - Top Right */}
+                {user?.role === 'admin' && (
+                  <div className="absolute top-3 right-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white/20">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          onClick={() => setEditingReview(review)}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                          <span>Edit Review</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteExpertReview(review.id, expertName)}
+                          className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span>Delete Review</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+
                 {/* Avatar */}
                 <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden">
                   {expert?.profile_picture_url ? (
-                    <img src={expert.profile_picture_url} alt={expert.name} className="w-full h-full object-cover rounded-full" />
+                    <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
                   ) : (
-                    (expert?.name?.[0] || review.author?.[0] || <User className="w-8 h-8" />)
+                    (expertName[0] || <User className="w-8 h-8" />)
                   )}
                 </div>
+                
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pr-8">
                   <div className="flex items-center gap-2 mb-1">
                     {expert?.id ? (
                       <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
-                        {expert?.name || review.author}
+                        {expertName}
                       </a>
                     ) : (
-                      <span className="font-semibold text-lg text-white drop-shadow">{expert?.name || review.author}</span>
+                      <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
                     )}
                     <span className="text-muted-foreground text-base">said:</span>
                   </div>
+                  
                   {review.link_url && (
                     <div className="mb-1">
                       <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
@@ -126,37 +160,20 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
                       </a>
                     </div>
                   )}
+                  
                   <div className="text-base mb-2 break-words whitespace-pre-line text-white drop-shadow">{review.content}</div>
+                  
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-xs text-muted-foreground">VEREDICT:</span>
-                    <span className={`font-bold text-sm ${isNatty ? 'text-natty' : 'text-juicy'}`}>{isNatty ? 'Natty' : 'Juicy'}</span>
+                    <span className="font-semibold text-xs text-muted-foreground">VERDICT:</span>
+                    <span className={`font-bold text-sm ${isNatty ? 'text-natty' : 'text-juicy'}`}>
+                      {isNatty ? 'Natty' : 'Juicy'}
+                    </span>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-        
-        {user?.role === 'admin' && (
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditingReview(filteredReviews[0])}
-              className="text-blue-600 hover:text-blue-700"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDeleteExpertReview(filteredReviews[0].id)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
 
         {editingReview && (
           <EditExpertReviewDialog
