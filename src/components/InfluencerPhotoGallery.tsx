@@ -69,7 +69,13 @@ const InfluencerPhotoGallery: React.FC<InfluencerPhotoGalleryProps> = ({ photos,
           {photos.map((_, i) => (
             <span
               key={i}
-              className={`block w-2 h-2 rounded-full ${i === index ? 'bg-white' : 'bg-white/40'}`}
+              className={`block w-2 h-2 rounded-full transition-all duration-200 cursor-pointer hover:scale-125 ${
+                i === index ? 'bg-white' : 'bg-white/40 hover:bg-white/60'
+              }`}
+              onClick={() => {
+                setIndex(i);
+                if ('vibrate' in navigator) navigator.vibrate(3);
+              }}
             />
           ))}
         </div>
