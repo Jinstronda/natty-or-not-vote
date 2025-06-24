@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +33,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
     link_url: review.link_url || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldRefetchAfterClose, setShouldRefetchAfterClose] = useState(false);
 
   // Convert rating to verdict for display
   const getVerdictFromRating = (rating: number | null | undefined): 'natty' | 'juicy' => {
@@ -46,6 +47,19 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
 
   const currentVerdict = getVerdictFromRating(formData.rating);
   const expertName = review.author || 'Unknown Expert';
+
+  // Handle refetch after dialog closes to prevent race condition
+  useEffect(() => {
+    if (shouldRefetchAfterClose && !isOpen) {
+      // Small delay to ensure dialog is fully closed
+      const timeout = setTimeout(() => {
+        onSuccess();
+        setShouldRefetchAfterClose(false);
+      }, 100);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [shouldRefetchAfterClose, isOpen, onSuccess]);
 
   const handleVerdictChange = (verdict: 'natty' | 'juicy') => {
     setFormData({ 
@@ -76,7 +90,9 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
         description: `${expertName}'s review has been successfully updated.`,
       });
 
-      onSuccess();
+      // Set flag to refetch after dialog closes (prevents race condition)
+      setShouldRefetchAfterClose(true);
+      // Close dialog immediately
       onClose();
     } catch (error: any) {
       toast({
@@ -95,6 +111,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
       rating: review.rating || 1,
       link_url: review.link_url || '',
     });
+    setShouldRefetchAfterClose(false);
     onClose();
   };
 
