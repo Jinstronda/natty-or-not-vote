@@ -45,20 +45,20 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   return (
     <Link to={`/influencer/${influencer.id}`}>
       <Card className={`
-        group relative overflow-hidden cursor-pointer transform-gpu
-        transition-all duration-300 ease-gentle
-        hover:shadow-xl hover:shadow-black/15 hover:-translate-y-1 hover:scale-[1.02]
-        hover:ring-1 hover:ring-primary/30
-        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/5 hover:ring-juicy/40' : ''}
-        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/5 hover:ring-natty/40' : ''}
-        before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-200 hover:before:opacity-100
+        group relative overflow-hidden cursor-pointer
+        transition-all duration-500 ease-out
+        hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2 hover:scale-[1.02]
+        hover:ring-2 hover:ring-primary/20
+        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/10 hover:ring-juicy/30' : ''}
+        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/10 hover:ring-natty/30' : ''}
+        before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100
       `}>
         <CardHeader className="p-0">
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             <OptimizedImage
               src={mainImage}
               alt={influencer.name}
-              className="w-full h-full object-cover transition-all duration-300 ease-gentle transform-gpu group-hover:scale-105 group-hover:brightness-105"
+              className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
               priority={false}
             />
             {influencer.claimed_status === 'claimed' && (
@@ -71,7 +71,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
         
         <CardContent className="p-4">
           <h3
-            className="font-semibold text-lg mb-2 text-center transition-all duration-200 ease-gentle text-white group-hover:scale-105 transform-gpu"
+            className="font-semibold text-lg mb-2 text-center transition-colors text-white"
           >
             {influencer.name}
           </h3>
@@ -100,17 +100,17 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               <div className="text-center">
                 <Badge 
                   className={`
-                    relative overflow-hidden transform-gpu
-                    transition-all duration-200 ease-gentle 
-                    hover:scale-105 hover:-translate-y-0.5 
+                    relative overflow-hidden
+                    transition-all duration-500 ease-out 
+                    hover:scale-110 hover:-translate-y-1 
                     active:scale-95 active:translate-y-0
-                    hover:shadow-lg
+                    hover:shadow-xl hover:shadow-current/30
                     ${nattyPercentage > 50 
                       ? 'bg-gradient-to-r from-natty via-natty/95 to-natty/90 hover:from-natty/90 hover:to-natty text-white' 
                       : 'bg-gradient-to-r from-juicy via-juicy/95 to-juicy/90 hover:from-juicy/90 hover:to-juicy text-white'
                     }
-                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/15 before:to-transparent 
-                    before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-400 before:ease-gentle
+                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent 
+                    before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-700 
                     hover:before:translate-x-[100%]
                   `}
                 >

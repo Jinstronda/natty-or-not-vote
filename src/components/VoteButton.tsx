@@ -43,29 +43,29 @@ export const VoteButton = ({ influencerId, voteType }: VoteButtonProps) => {
       onClick={handleVote}
       disabled={isPending}
       className={`
-        relative overflow-hidden font-semibold group transform-gpu
-        transition-all duration-300 ease-gentle
-        hover:scale-[1.05] active:scale-95
-        hover:-translate-y-1 hover:rotate-1
+        relative overflow-hidden font-semibold group
+        transition-all duration-500 ease-out
+        hover:scale-110 active:scale-95
+        hover:-translate-y-2 hover:rotate-1
         border-2 border-opacity-50
-        ${isClicked ? 'scale-[1.08] rotate-2' : ''}
+        ${isClicked ? 'scale-125 rotate-2' : ''}
         ${isNatty 
           ? `bg-gradient-to-r from-natty via-natty/95 to-natty/80 
              hover:from-natty/80 hover:via-natty hover:to-natty/90
              text-white border-natty
-             hover:shadow-xl hover:shadow-natty/30
-             shadow-md shadow-natty/20
-             hover:ring-2 hover:ring-natty/30` 
+             hover:shadow-2xl hover:shadow-natty/40
+             shadow-lg shadow-natty/25
+             hover:ring-4 hover:ring-natty/20` 
           : `bg-gradient-to-r from-juicy via-juicy/95 to-juicy/80 
              hover:from-juicy/80 hover:via-juicy hover:to-juicy/90
              text-white border-juicy
-             hover:shadow-xl hover:shadow-juicy/30
-             shadow-md shadow-juicy/20
-             hover:ring-2 hover:ring-juicy/30`
+             hover:shadow-2xl hover:shadow-juicy/40
+             shadow-lg shadow-juicy/25
+             hover:ring-4 hover:ring-juicy/20`
         }
-        ${isPending ? 'animate-gentle-pulse cursor-not-allowed opacity-70' : 'cursor-pointer'}
-        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent
-        before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-500 before:ease-gentle
+        ${isPending ? 'animate-pulse cursor-not-allowed opacity-70' : 'cursor-pointer'}
+        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent
+        before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-700
         hover:before:translate-x-[100%]
       `}
     >
@@ -83,14 +83,14 @@ export const VoteButton = ({ influencerId, voteType }: VoteButtonProps) => {
       <div className="relative z-10 flex items-center">
         {isNatty ? (
           <ThumbsUp className={`
-            w-4 h-4 mr-2 transition-all duration-200 ease-gentle transform-gpu
-            ${isPending ? 'animate-subtle-bounce' : 'group-hover:rotate-12 group-hover:scale-110'}
+            w-4 h-4 mr-2 transition-all duration-300 
+            ${isPending ? 'animate-bounce' : 'group-hover:rotate-12 group-hover:scale-110'}
             ${isClicked ? 'rotate-12 scale-125' : ''}
           `} />
         ) : (
           <ThumbsDown className={`
-            w-4 h-4 mr-2 transition-all duration-200 ease-gentle transform-gpu
-            ${isPending ? 'animate-subtle-bounce' : 'group-hover:-rotate-12 group-hover:scale-110'}
+            w-4 h-4 mr-2 transition-all duration-300 
+            ${isPending ? 'animate-bounce' : 'group-hover:-rotate-12 group-hover:scale-110'}
             ${isClicked ? '-rotate-12 scale-125' : ''}
           `} />
         )}
@@ -98,8 +98,8 @@ export const VoteButton = ({ influencerId, voteType }: VoteButtonProps) => {
           <span className="animate-pulse font-bold">Voting...</span>
         ) : (
           <span className={`
-            transition-all duration-200 ease-gentle font-semibold transform-gpu
-            group-hover:scale-105
+            transition-all duration-300 font-semibold
+            group-hover:scale-110
             ${isClicked ? 'scale-110' : ''}
           `}>
             {isNatty ? "Natty" : "Juicy"}
