@@ -67,17 +67,19 @@ export default defineConfig(({ mode }) => ({
         name: 'Natty or Not',
         short_name: 'NattyOrNot',
         description: 'Vote on whether fitness influencers are natty or not',
-        theme_color: '#ffffff',
+        theme_color: '#22c55e',
+        background_color: '#0f172a',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: 'favicon.ico',
+            sizes: '48x48',
+            type: 'image/x-icon'
           },
           {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            src: 'pwa-icon.svg',
+            sizes: '192x192 512x512',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           }
         ]
       }
