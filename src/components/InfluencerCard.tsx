@@ -104,7 +104,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                     transition-all duration-200 ease-gentle 
                     hover:scale-105 hover:-translate-y-0.5 
                     active:scale-95 active:translate-y-0
-                    hover:shadow-lg hover:shadow-current/20
+                    hover:shadow-lg
                     ${nattyPercentage > 50 
                       ? 'bg-gradient-to-r from-natty via-natty/95 to-natty/90 hover:from-natty/90 hover:to-natty text-white' 
                       : 'bg-gradient-to-r from-juicy via-juicy/95 to-juicy/90 hover:from-juicy/90 hover:to-juicy text-white'
