@@ -25,6 +25,9 @@ const FlippableInfluencerCard = ({ influencer }: FlippableInfluencerCardProps) =
   const { mutate: vote, isPending } = useVote();
   const [isFlipped, setIsFlipped] = useState(false);
   const [voteEffect, setVoteEffect] = useState<'natty' | 'juicy' | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [swipeDistance, setSwipeDistance] = useState(0);
 
   // Calculate proper percentages that add up to 100%
   const totalVotes = voteStats?.total_votes || 0;
@@ -85,9 +88,77 @@ const FlippableInfluencerCard = ({ influencer }: FlippableInfluencerCardProps) =
     setIsFlipped(false);
   };
 
+  // Swipe gesture handlers for mobile voting
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setSwipeDistance(0);
+    setSwipeDirection(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart || !user) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    
+    // Only process horizontal swipes (ignore vertical scrolling)
+    if (deltaY > 50) return;
+    
+    setSwipeDistance(deltaX);
+    
+    // Determine swipe direction
+    if (Math.abs(deltaX) > 30) {
+      setSwipeDirection(deltaX > 0 ? 'right' : 'left');
+      
+      // Provide haptic feedback when swipe threshold is reached
+      if (Math.abs(deltaX) > 80) {
+        triggerHapticFeedback('light');
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart || !user) {
+      setTouchStart(null);
+      setSwipeDistance(0);
+      setSwipeDirection(null);
+      return;
+    }
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    
+    // Reset states
+    setTouchStart(null);
+    setSwipeDistance(0);
+    setSwipeDirection(null);
+    
+    // Only process horizontal swipes
+    if (deltaY > 50) return;
+    
+    // Swipe threshold for voting
+    const swipeThreshold = 100;
+    
+    if (Math.abs(deltaX) > swipeThreshold) {
+      if (deltaX > 0) {
+        // Swipe right = Natty
+        handleVote("natty");
+      } else {
+        // Swipe left = Juicy
+        handleVote("not_natty");
+      }
+    }
+  };
+
   return (
     <div 
       className="flip-card-container"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       style={{ 
         perspective: '1000px',
         height: '100%',
@@ -100,8 +171,41 @@ const FlippableInfluencerCard = ({ influencer }: FlippableInfluencerCardProps) =
         }`}
         style={{
           transformStyle: 'preserve-3d',
+          transform: swipeDistance ? `translateX(${swipeDistance * 0.3}px) rotateZ(${swipeDistance * 0.05}deg)` : undefined,
         }}
       >
+        {/* Swipe Visual Feedback */}
+        {swipeDirection && user && (
+          <div className={`absolute inset-0 pointer-events-none z-50 flex items-center justify-center transition-opacity duration-200 ${
+            Math.abs(swipeDistance) > 80 ? 'opacity-100' : 'opacity-60'
+          }`}>
+            <div className={`text-6xl font-bold ${
+              swipeDirection === 'right' ? 'text-natty' : 'text-juicy'
+            } animate-pulse`}>
+              {swipeDirection === 'right' ? '🏆' : '💉'}
+            </div>
+          </div>
+        )}
+
+        {/* Swipe Direction Indicators */}
+        {user && !isFlipped && (
+          <>
+            <div className={`absolute left-2 top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ${
+              swipeDirection === 'right' ? 'scale-125 opacity-100' : 'scale-100 opacity-40'
+            }`}>
+              <div className="bg-natty/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
+                🏆 Natty
+              </div>
+            </div>
+            <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ${
+              swipeDirection === 'left' ? 'scale-125 opacity-100' : 'scale-100 opacity-40'
+            }`}>
+              <div className="bg-juicy/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
+                💉 Juicy
+              </div>
+            </div>
+          </>
+        )}
         {/* FRONT SIDE - Original Card */}
         <div 
           className="flip-card-front absolute inset-0"
