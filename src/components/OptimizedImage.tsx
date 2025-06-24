@@ -116,11 +116,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   return (
-    <div ref={imgRef} className="relative">
+    <div ref={imgRef} className={`relative ${className}`}>
       {/* Placeholder/skeleton while loading */}
       {isLoading && isInView && (
         <div 
-          className={`${className} bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse`}
+          className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"
           style={{ aspectRatio: props.style?.aspectRatio || 'auto' }}
         />
       )}
@@ -131,16 +131,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           {...props}
           src={currentSrc || '/placeholder.svg'}
           alt={alt}
-          className={`${className} transition-opacity duration-300 ${
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
             isLoading ? 'opacity-0' : 'opacity-100'
           }`}
           onError={handleError}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
-          style={{
-            ...props.style,
-            ...(isLoading ? { position: 'absolute', top: 0, left: 0 } : {})
-          }}
         />
       )}
       
