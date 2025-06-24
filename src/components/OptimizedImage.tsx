@@ -14,6 +14,12 @@ interface OptimizedImageProps {
 
 // Generate WebP and AVIF URLs from original image URL
 const generateOptimizedUrls = (src: string) => {
+  // Add null/undefined check
+  if (!src || typeof src !== 'string') {
+    const fallback = '/placeholder.svg';
+    return { avif: fallback, webp: fallback, original: fallback };
+  }
+  
   if (src.includes('placeholder.svg') || src.startsWith('data:')) {
     return { avif: src, webp: src, original: src };
   }
