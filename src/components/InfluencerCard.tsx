@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { Lock } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import OptimizedImage from "./OptimizedImage";
 
 export interface InfluencerCardProps {
   influencer: {
@@ -43,20 +44,23 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
 
   return (
     <Link to={`/influencer/${influencer.id}`}>
-      <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden
-        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/20' : ''}
-        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/20' : ''}
+      <Card className={`
+        group relative overflow-hidden cursor-pointer
+        transition-all duration-500 ease-out
+        hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2 hover:scale-[1.02]
+        hover:ring-2 hover:ring-primary/20
+        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/10 hover:ring-juicy/30' : ''}
+        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/10 hover:ring-natty/30' : ''}
+        before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100
       `}>
         <CardHeader className="p-0">
-          <div className="aspect-square relative">
-          <img
+          <div className="aspect-square relative overflow-hidden rounded-t-lg">
+            <OptimizedImage
               src={mainImage}
-            alt={influencer.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={(e) => {
-              e.currentTarget.src = '/placeholder.svg';
-            }}
-          />
+              alt={influencer.name}
+              className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-105"
+              priority={false}
+            />
             {influencer.claimed_status === 'claimed' && (
               <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
                 Claimed
@@ -96,15 +100,24 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               <div className="text-center">
                 <Badge 
                   className={`
-                    transition-all duration-300 hover:scale-105
+                    relative overflow-hidden
+                    transition-all duration-500 ease-out 
+                    hover:scale-110 hover:-translate-y-1 
+                    active:scale-95 active:translate-y-0
+                    hover:shadow-xl hover:shadow-current/30
                     ${nattyPercentage > 50 
-                      ? 'bg-gradient-to-r from-natty to-natty/90 hover:shadow-lg hover:shadow-natty/30' 
-                      : 'bg-gradient-to-r from-juicy to-juicy/90 hover:shadow-lg hover:shadow-juicy/30'
+                      ? 'bg-gradient-to-r from-natty via-natty/95 to-natty/90 hover:from-natty/90 hover:to-natty text-white' 
+                      : 'bg-gradient-to-r from-juicy via-juicy/95 to-juicy/90 hover:from-juicy/90 hover:to-juicy text-white'
                     }
+                    before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent 
+                    before:translate-x-[-100%] before:skew-x-12 before:transition-transform before:duration-700 
+                    hover:before:translate-x-[100%]
                   `}
                 >
-                  {nattyPercentage > 50 ? "Natty" : "Juicy"} 
-                  ({nattyPercentage > 50 ? nattyPercentage : juicyPercentage}%)
+                  <span className="relative z-10 font-semibold">
+                    {nattyPercentage > 50 ? "🏆 Natty" : "💉 Juicy"} 
+                    ({nattyPercentage > 50 ? nattyPercentage : juicyPercentage}%)
+                  </span>
                 </Badge>
               </div>
             </div>
