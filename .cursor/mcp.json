@@ -1,4 +1,4 @@
-  {
+{
   "mcpServers": {
     "supabase": {
       "command": "npx",
@@ -14,7 +14,8 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-puppeteer"
-      ]}, 
+      ]
+    },
     "sequentialThinking": {
       "command": "npx",
       "args": [
@@ -26,7 +27,14 @@
       "command": "npx",
       "args": [
         "-y",
-        "context7"  
+        "context7"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
       ]
     }
   }
