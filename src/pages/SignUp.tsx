@@ -16,6 +16,7 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user) {
@@ -26,15 +27,28 @@ const SignUp = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setIsSubmitting(true);
+    
+    // Log attempt for debugging (remove in production)
+    console.log('Signup attempt:', { email, username: username || 'auto-generated' });
+    
     try {
       await signUp(email, password, username);
+      setSuccess('Account created successfully! You may need to check your email to confirm your account.');
       // Let useEffect handle redirect
     } catch (err: any) {
-      setError(err.message);
+      console.error('Signup error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
   };
+
+  // Input validation helpers
+  const isEmailValid = email.includes('@') && email.includes('.');
+  const isPasswordValid = password.length >= 6;
+  const isUsernameValid = !username || username.length >= 3;
+  const isFormValid = isEmailValid && isPasswordValid && isUsernameValid;
 
   if (loading) {
     return (
@@ -72,17 +86,25 @@ const SignUp = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+            {success && (
+              <Alert className="border-green-200 bg-green-50 text-green-800">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Username (optional)</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Choose a username"
+                placeholder="Choose a username (will be auto-generated if empty)"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
+                onChange={(e) => setUsername(e.target.value.trim())}
                 disabled={isSubmitting}
+                className={!isUsernameValid ? 'border-red-300' : ''}
               />
+              {username && !isUsernameValid && (
+                <p className="text-sm text-red-600">Username must be at least 3 characters</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -91,27 +113,35 @@ const SignUp = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trim())}
                 required
                 disabled={isSubmitting}
+                className={email && !isEmailValid ? 'border-red-300' : ''}
               />
+              {email && !isEmailValid && (
+                <p className="text-sm text-red-600">Please enter a valid email address</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder="Create a password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isSubmitting}
+                className={password && !isPasswordValid ? 'border-red-300' : ''}
               />
+              {password && !isPasswordValid && (
+                <p className="text-sm text-red-600">Password must be at least 6 characters</p>
+              )}
             </div>
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormValid}
             >
               {isSubmitting ? (
                 <>

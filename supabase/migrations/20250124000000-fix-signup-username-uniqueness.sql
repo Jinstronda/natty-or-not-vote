@@ -1,4 +1,6 @@
--- Function to create profile automatically when user signs up
+-- Fix signup username uniqueness issue
+-- This migration updates the handle_new_user function to ensure unique usernames
+
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS TRIGGER AS $$
 DECLARE
@@ -41,10 +43,4 @@ BEGIN
     username = COALESCE(EXCLUDED.username, profiles.username);
   RETURN NEW;
 END;
-$$ language plpgsql security definer;
-
--- Trigger to call the function when a new user is created in auth.users
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+$$ language plpgsql security definer; 
