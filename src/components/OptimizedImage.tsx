@@ -72,6 +72,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     const avifSrc = generateOptimizedSrc(src, 'avif');
     
     const loadImage = (srcToLoad: string) => {
+      // Add null check for img element
+      if (!img) return;
+      
       img.src = srcToLoad;
       
       img.onload = () => {
@@ -80,14 +83,18 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         setIsError(false);
       };
       
-      img.onerror = () => {
+      img.onerror = (errorEvent) => {
+        console.warn(`Failed to load image: ${srcToLoad}`);
         if (srcToLoad !== src) {
           // Fallback to original if optimized version fails
           loadImage(src);
         } else {
           setIsError(true);
           setIsLoading(false);
-          onError?.(new Event('error') as any);
+          // Safely call onError with proper event handling
+          if (onError && errorEvent) {
+            onError(errorEvent as any);
+          }
         }
       };
     };
@@ -102,17 +109,24 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
 
     return () => {
-      img.onload = null;
-      img.onerror = null;
+      // Clean up event handlers to prevent memory leaks
+      if (img) {
+        img.onload = null;
+        img.onerror = null;
+      }
     };
   }, [isInView, src, onError]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.warn(`Image error for src: ${currentSrc}`);
     if (currentSrc !== '/placeholder.svg') {
       setCurrentSrc('/placeholder.svg');
       setIsError(true);
     }
-    onError?.(e);
+    // Safely call onError
+    if (onError) {
+      onError(e);
+    }
   };
 
   return (
