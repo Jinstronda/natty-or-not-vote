@@ -121,38 +121,48 @@ async function testInfluencerProfileEdit() {
           await photoManager.scrollIntoViewIfNeeded();
           console.log('✅ Found Photo Gallery section');
           
-          // Take focused screenshot of the sidebar area
-          const sidebar = page.locator('div.lg\\:col-span-1, [class*="col-span-1"]').first();
-          if (await sidebar.count() > 0) {
-            await sidebar.screenshot({ path: 'sidebar-with-photo-manager.png' });
-            
-            // Measure sidebar dimensions
-            const sidebarBox = await sidebar.boundingBox();
-            if (sidebarBox) {
-              console.log('📏 Sidebar dimensions:', {
-                width: sidebarBox.width,
-                height: sidebarBox.height,
-                screenPercentage: (sidebarBox.width / 1920 * 100).toFixed(1) + '%'
-              });
-            }
-          }
-          
-          // Take screenshot of photo manager section
-          const photoSection = page.locator('div:has(h3:text("Photo Gallery")), [class*="photo-manager"]').first();
-          if (await photoSection.count() > 0) {
-            await photoSection.screenshot({ path: 'photo-manager-in-sidebar.png' });
-            
-            // Check if it's using responsive grid
-            const gridElement = page.locator('.grid').first();
-            const gridBox = await gridElement.boundingBox();
-            if (gridBox) {
-              console.log('📏 Photo grid dimensions:', {
-                width: gridBox.width,
-                height: gridBox.height,
-                sidebarUsage: ((gridBox.width / (sidebarBox?.width || 1)) * 100).toFixed(1) + '%'
-              });
-            }
-          }
+                     // Take focused screenshot of the sidebar area
+           const sidebar = page.locator('div.lg\\:col-span-1, [class*="col-span-1"]').first();
+           let sidebarBox = null;
+           if (await sidebar.count() > 0) {
+             await sidebar.screenshot({ path: 'sidebar-with-photo-manager.png' });
+             
+             // Measure sidebar dimensions
+             sidebarBox = await sidebar.boundingBox();
+             if (sidebarBox) {
+               console.log('📏 Sidebar dimensions:', {
+                 width: sidebarBox.width,
+                 height: sidebarBox.height,
+                 screenPercentage: (sidebarBox.width / 1920 * 100).toFixed(1) + '%'
+               });
+             }
+           }
+           
+           // Take screenshot of photo manager section
+           const photoSection = page.locator('div:has(h3:text("Photo Gallery")), [class*="photo-manager"]').first();
+           if (await photoSection.count() > 0) {
+             await photoSection.screenshot({ path: 'photo-manager-in-sidebar.png' });
+             
+             // Check if it's using responsive grid
+             const gridElement = page.locator('.grid').first();
+             const gridBox = await gridElement.boundingBox();
+             if (gridBox && sidebarBox) {
+               console.log('📏 Photo grid dimensions:', {
+                 width: gridBox.width,
+                 height: gridBox.height,
+                 sidebarUsage: ((gridBox.width / sidebarBox.width) * 100).toFixed(1) + '%'
+               });
+               
+               // Analyze grid layout in sidebar context
+               console.log('🔍 Analyzing grid layout:');
+               console.log(`  Sidebar width: ${sidebarBox.width}px`);
+               console.log(`  Grid width: ${gridBox.width}px`);
+               const approxColumnsIfTwo = Math.floor(gridBox.width / 200); // ~200px per photo
+               const approxColumnsIfThree = Math.floor(gridBox.width / 150); // ~150px per photo
+               console.log(`  Could fit ~${approxColumnsIfTwo} columns at 200px each`);
+               console.log(`  Could fit ~${approxColumnsIfThree} columns at 150px each`);
+             }
+           }
         }
       } else {
         console.log('⚠️ No admin edit functionality found on this profile page');
