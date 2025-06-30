@@ -39,7 +39,7 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     return hasData ? data.pages.flatMap(page => page.data) : [];
   }, [data?.pages, hasData]);
   
-  // Use the database view's ordering (trending first, then by votes, then by creation date)
+  // Use the database view's ordering (controversial first, then by votes, then by creation date)
   // No frontend sorting needed since the database view handles this correctly
   const sortedInfluencers = allInfluencers;
 
@@ -130,15 +130,13 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     );
   }
 
-  // Optimized grid rendering with performance improvements
+  // Optimized grid rendering with preserved database ordering
   return (
     <div className="space-y-8">
-      {/* Improved masonry layout with better performance */}
-      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
+      {/* CSS Grid layout that preserves database order (controversial first) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {sortedInfluencers.map((influencer) => (
-          <div key={influencer.id} className="mb-6 break-inside-avoid">
-            <InfluencerCard influencer={influencer} />
-          </div>
+          <InfluencerCard key={influencer.id} influencer={influencer} />
         ))}
       </div>
 
