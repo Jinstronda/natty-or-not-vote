@@ -32,7 +32,7 @@ interface Influencer {
   years_training?: string;
   claimed_status?: string;
   description?: string;
-  trending?: boolean;
+  controversial?: boolean;
   social_links?: SocialLinks;
 }
 
@@ -133,7 +133,7 @@ const InfluencerManagement = () => {
         years_training: item.years_training || undefined,
         claimed_status: item.claimed_status || undefined,
         description: item.description || undefined,
-        trending: (item as any).trending || false,
+        controversial: (item as any).controversial || false,
         social_links: (item.social_links as SocialLinks) || {}
       }));
     }
