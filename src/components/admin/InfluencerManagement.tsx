@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SearchFilter } from './SearchFilter';
 import { QuickToggle, ControversialBadge } from './QuickToggle';
 import { StatusSelect, StatusBadge } from './StatusSelect';
+import { TabbedEditModal } from './TabbedEditModal';
 
 interface SocialLinks {
   instagram?: string;
@@ -996,125 +997,13 @@ const InfluencerManagement = () => {
                     size="sm"
                     showLabel={false}
                   />
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setEditingInfluencer({...influencer})}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-                      <SheetHeader>
-                        <SheetTitle>Edit {influencer.name}</SheetTitle>
-                      </SheetHeader>
-                      {editingInfluencer && (
-                        <div className="space-y-6 mt-6">
-                          <SecureImageUpload
-                            onImageUploaded={(url) => setEditingInfluencer({...editingInfluencer, image: url})}
-                            currentImage={editingInfluencer.image === '/placeholder.svg' ? undefined : editingInfluencer.image}
-                            onImageRemoved={() => setEditingInfluencer({...editingInfluencer, image: '/placeholder.svg'})}
-                          />
-                          
-                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-name">Name</Label>
-                          <Input
-                                id="edit-name"
-                            placeholder="Name"
-                            value={editingInfluencer.name}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, name: e.target.value})}
-                          />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-status">Claimed Status</Label>
-                              <Select
-                                value={editingInfluencer.claimed_status || 'unclaimed'}
-                                onValueChange={(value) => setEditingInfluencer({...editingInfluencer, claimed_status: value})}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="unclaimed">Unclaimed</SelectItem>
-                                  <SelectItem value="claimed">Claimed</SelectItem>
-                                  <SelectItem value="verified">Verified</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4" />
-                                Controversial Status
-                              </Label>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id="edit-controversial"
-                                  checked={editingInfluencer.controversial || false}
-                                  onCheckedChange={(checked) => setEditingInfluencer({...editingInfluencer, controversial: !!checked})}
-                                />
-                                <Label htmlFor="edit-controversial" className="text-sm">Mark as controversial (appears at top of homepage)</Label>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-height">Height</Label>
-                          <Input
-                                id="edit-height"
-                            placeholder="Height"
-                            value={editingInfluencer.height || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, height: e.target.value})}
-                          />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-weight">Weight</Label>
-                          <Input
-                                id="edit-weight"
-                            placeholder="Weight"
-                            value={editingInfluencer.weight || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, weight: e.target.value})}
-                          />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-years">Years Training</Label>
-                          <Input
-                                id="edit-years"
-                            placeholder="Years Training"
-                            value={editingInfluencer.years_training || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, years_training: e.target.value})}
-                          />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-description">Description</Label>
-                          <Textarea
-                                id="edit-description"
-                            placeholder="Description"
-                            value={editingInfluencer.description || ''}
-                            onChange={(e) => setEditingInfluencer({...editingInfluencer, description: e.target.value})}
-                                rows={3}
-                              />
-                            </div>
-                          </div>
-
-                          <SocialLinksForm
-                            socialLinks={editingInfluencer.social_links || {}}
-                            onUpdate={(platform, value) => updateSocialLink(platform, value, true)}
-                            isEditing={true}
-                          />
-                          
-                          <Button 
-                            onClick={handleUpdateInfluencer} 
-                            className="w-full"
-                            disabled={updateInfluencerMutation.isPending}
-                          >
-                            {updateInfluencerMutation.isPending ? 'Saving...' : 'Save Changes'}
-                          </Button>
-                        </div>
-                      )}
-                    </SheetContent>
-                  </Sheet>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setEditingInfluencer({...influencer})}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button 
                     variant="destructive" 
                     size="sm"
@@ -1140,6 +1029,53 @@ const InfluencerManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tabbed Edit Modal */}
+      {editingInfluencer && (
+        <TabbedEditModal
+          isOpen={!!editingInfluencer}
+          onClose={() => setEditingInfluencer(null)}
+          influencer={{
+            id: editingInfluencer.id,
+            name: editingInfluencer.name,
+            description: editingInfluencer.description,
+            claimed_status: editingInfluencer.claimed_status,
+            controversial: editingInfluencer.controversial,
+            height: editingInfluencer.height,
+            weight: editingInfluencer.weight,
+            years_training: editingInfluencer.years_training,
+            image: editingInfluencer.image,
+            instagram_url: editingInfluencer.social_links?.instagram,
+            youtube_url: editingInfluencer.social_links?.youtube,
+            tiktok_url: editingInfluencer.social_links?.tiktok,
+            twitter_url: editingInfluencer.social_links?.twitter,
+            website_url: editingInfluencer.social_links?.website,
+          }}
+          onSave={(data) => {
+            const updatedInfluencer = {
+              ...editingInfluencer,
+              name: data.name,
+              description: data.description,
+              claimed_status: data.claimed_status,
+              controversial: data.controversial,
+              height: data.height,
+              weight: data.weight,
+              years_training: data.years_training,
+              image: data.image || editingInfluencer.image,
+              social_links: {
+                instagram: data.instagram_url,
+                youtube: data.youtube_url,
+                tiktok: data.tiktok_url,
+                twitter: data.twitter_url,
+                website: data.website_url,
+              }
+            };
+            setEditingInfluencer(updatedInfluencer);
+            handleUpdateInfluencer();
+          }}
+          isLoading={updateInfluencerMutation.isPending}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteConfirmation} onOpenChange={() => setDeleteConfirmation(null)}>
