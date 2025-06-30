@@ -173,7 +173,7 @@ function AddPhotoCard({
     )}>
       <CardContent className="p-0">
         {/* Upload Area */}
-        <div className="h-48 flex flex-col items-center justify-center bg-muted/30 border-2 border-dashed border-muted-foreground/25">
+        <div className="h-48 md:h-64 lg:h-72 flex flex-col items-center justify-center bg-muted/30 border-2 border-dashed border-muted-foreground/25">
           {newPhotoUrl ? (
             <div className="relative w-full h-full">
               <img 
@@ -270,16 +270,16 @@ export function EnhancedPhotoManager({
   const canAddMore = photos.length < maxPhotos;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-none">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Photo Gallery</h3>
-          <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex-1">
+          <h3 className="text-lg md:text-xl font-semibold">Photo Gallery</h3>
+          <p className="text-sm md:text-base text-muted-foreground">
             Manage up to {maxPhotos} photos for this influencer
           </p>
         </div>
-        <Badge variant="outline">
+        <Badge variant="outline" className="self-start sm:self-center text-base px-3 py-1">
           {photos.length} / {maxPhotos}
         </Badge>
       </div>
