@@ -19,13 +19,27 @@ async function testModalUXImprovement() {
     console.log('📍 Navigating to influencer profile...');
     await page.goto('https://nattyorjuicy.com', { waitUntil: 'networkidle' });
     
-    // Click on first influencer
-    const influencerLinks = await page.$$('a[href*="/influencer"]');
+    // Look for influencer links with multiple selectors
+    await page.waitForTimeout(3000); // Give page time to load
+    
+    let influencerLinks = await page.$$('a[href*="/influencer"]');
     if (influencerLinks.length === 0) {
-      throw new Error('No influencer links found');
+      // Try alternative selectors
+      influencerLinks = await page.$$('a[href*="profile"], [data-testid*="influencer"], [class*="card"] a, [class*="influencer"] a');
     }
     
-    await influencerLinks[0].click();
+    if (influencerLinks.length === 0) {
+      // Try clicking any image that might be an influencer
+      const images = await page.$$('img:not([alt*="logo"]):not([alt*="icon"])');
+      if (images.length > 0) {
+        console.log('🔄 No direct links found, trying image click...');
+        await images[0].click();
+      } else {
+        throw new Error('No influencer links or images found');
+      }
+    } else {
+      await influencerLinks[0].click();
+    }
     await page.waitForLoadState('networkidle');
     console.log('✅ Navigated to influencer profile');
     
