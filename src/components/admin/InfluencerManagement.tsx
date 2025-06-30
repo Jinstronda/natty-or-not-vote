@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import SecureImageUpload from "@/components/SecureImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchFilter } from './SearchFilter';
+import { QuickToggle, ControversialBadge } from './QuickToggle';
+import { StatusSelect, StatusBadge } from './StatusSelect';
 
 interface SocialLinks {
   instagram?: string;
@@ -156,6 +159,11 @@ const InfluencerManagement = () => {
   const [updatedInfluencersLog, setUpdatedInfluencersLog] = useState<string[]>([]);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{id: string, name: string} | null>(null);
 
+  // Search and filter state for improved UX
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [controversialFilter, setControversialFilter] = useState('all');
+
   const addInfluencerMutation = useMutation({
     mutationFn: async (influencer: Omit<Influencer, 'id'>) => {
       const { error } = await supabase
@@ -232,6 +240,23 @@ const InfluencerManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
       // Use predicate-based invalidation to catch all influencer queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === 'influencers'
+      });
+    }
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from('influencers')
+        .update({ claimed_status: status } as any)
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
       queryClient.invalidateQueries({ 
         predicate: (query) => query.queryKey[0] === 'influencers'
       });
@@ -337,6 +362,29 @@ const InfluencerManagement = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleStatusChange = async (id: string, newStatus: string, name: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id, status: newStatus });
+      toast({
+        title: "Success",
+        description: `${name} status updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setControversialFilter('all');
   };
 
   const updateSocialLink = (platform: keyof SocialLinks, value: string, isEditing = false) => {
@@ -701,14 +749,51 @@ const InfluencerManagement = () => {
 
   const influencerIds = influencers.map(i => i.id);
   const { data: voteCounts } = useInfluencerVoteCounts(influencerIds);
-  let sortedInfluencers = influencers;
-  if (voteCounts && influencerIds.length > 0) {
-    sortedInfluencers = [...influencers].sort((a, b) => {
-      const votesA = voteCounts[a.id] || 0;
-      const votesB = voteCounts[b.id] || 0;
-      return votesB - votesA;
-    });
-  }
+  
+  // Apply search and filters with improved UX
+  const filteredAndSortedInfluencers = useMemo(() => {
+    let result = influencers;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      result = result.filter(influencer =>
+        influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        influencer.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(influencer =>
+        (influencer.claimed_status || 'unclaimed').toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    // Apply controversial filter
+    if (controversialFilter !== 'all') {
+      if (controversialFilter === 'controversial') {
+        result = result.filter(influencer => influencer.controversial);
+      } else {
+        result = result.filter(influencer => !influencer.controversial);
+      }
+    }
+
+    // Sort by vote counts (controversial first, then by votes)
+    if (voteCounts && influencerIds.length > 0) {
+      result = [...result].sort((a, b) => {
+        // First sort by controversial status
+        if (a.controversial && !b.controversial) return -1;
+        if (!a.controversial && b.controversial) return 1;
+        
+        // Then by vote count
+        const votesA = voteCounts[a.id] || 0;
+        const votesB = voteCounts[b.id] || 0;
+        return votesB - votesA;
+      });
+    }
+
+    return result;
+  }, [influencers, searchTerm, statusFilter, controversialFilter, voteCounts, influencerIds]);
 
   return (
     <div className="space-y-6">
@@ -841,12 +926,23 @@ const InfluencerManagement = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Manage Influencers ({sortedInfluencers.length})
+            Manage Influencers ({filteredAndSortedInfluencers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {sortedInfluencers.map((influencer) => (
+          <SearchFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            controversialFilter={controversialFilter}
+            onControversialFilterChange={setControversialFilter}
+            totalCount={influencers.length}
+            filteredCount={filteredAndSortedInfluencers.length}
+            onClearFilters={handleClearFilters}
+          />
+          <div className="space-y-4 mt-6">
+            {filteredAndSortedInfluencers.map((influencer) => (
               <div key={influencer.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <img 
@@ -855,20 +951,27 @@ const InfluencerManagement = () => {
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold">{influencer.name}</h3>
-                      <Badge className={getClaimedStatusColor(influencer.claimed_status || 'unclaimed')}>
-                        {influencer.claimed_status || 'unclaimed'}
-                      </Badge>
-                      {influencer.controversial && (
-                        <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3" />
-                          Controversial
-                        </Badge>
-                      )}
+                      <StatusSelect
+                        currentStatus={influencer.claimed_status || 'unclaimed'}
+                        isLoading={updateStatusMutation.isPending}
+                        onStatusChange={(newStatus) => handleStatusChange(influencer.id, newStatus, influencer.name)}
+                        influencerName={influencer.name}
+                        size="sm"
+                      />
+                      <ControversialBadge 
+                        isControversial={influencer.controversial || false}
+                        size="sm"
+                      />
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{influencer.description}</p>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      {voteCounts && voteCounts[influencer.id] && (
+                        <Badge variant="outline" className="text-xs">
+                          {voteCounts[influencer.id]} votes
+                        </Badge>
+                      )}
                       {influencer.height && <span>H: {influencer.height}</span>}
                       {influencer.weight && <span>W: {influencer.weight}</span>}
                       {influencer.years_training && <span>Training: {influencer.years_training}</span>}
@@ -885,15 +988,14 @@ const InfluencerManagement = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    variant={influencer.controversial ? "default" : "outline"}
+                  <QuickToggle
+                    isControversial={influencer.controversial || false}
+                    isLoading={toggleControversialMutation.isPending}
+                    onToggle={() => handleToggleControversial(influencer.id, influencer.controversial || false, influencer.name)}
+                    influencerName={influencer.name}
                     size="sm"
-                    onClick={() => handleToggleControversial(influencer.id, influencer.controversial || false, influencer.name)}
-                    disabled={toggleControversialMutation.isPending}
-                    title={influencer.controversial ? "Remove from controversial" : "Mark as controversial"}
-                  >
-                    <TrendingUp className="h-4 w-4" />
-                  </Button>
+                    showLabel={false}
+                  />
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button 
@@ -1025,9 +1127,14 @@ const InfluencerManagement = () => {
               </div>
             ))}
             
-            {sortedInfluencers.length === 0 && (
+            {filteredAndSortedInfluencers.length === 0 && influencers.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No influencers yet. Add your first influencer above!
+              </div>
+            )}
+            {filteredAndSortedInfluencers.length === 0 && influencers.length > 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No influencers match your current filters. Try adjusting your search or filters.
               </div>
             )}
           </div>
