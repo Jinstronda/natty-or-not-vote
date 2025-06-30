@@ -147,7 +147,7 @@ const InfluencerManagement = () => {
     years_training: '',
     claimed_status: 'unclaimed',
     description: '',
-    trending: false,
+    controversial: false,
     social_links: {}
   });
 
