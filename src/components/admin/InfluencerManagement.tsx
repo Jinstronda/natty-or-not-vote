@@ -931,6 +931,20 @@ const InfluencerManagement = () => {
                                 </SelectContent>
                               </Select>
                             </div>
+
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="edit-trending"
+                                checked={editingInfluencer.trending || false}
+                                onCheckedChange={(checked) => 
+                                  setEditingInfluencer({...editingInfluencer, trending: checked as boolean})
+                                }
+                              />
+                              <Label htmlFor="edit-trending" className="flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4" />
+                                Mark as Trending
+                              </Label>
+                            </div>
                             <div className="space-y-2">
                               <Label className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4" />
