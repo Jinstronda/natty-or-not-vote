@@ -36,6 +36,7 @@ export interface Influencer {
   years_training: string;
   claimed_status: string;
   description: string;
+  trending?: boolean;
   social_links: {
     instagram?: string;
     youtube?: string;
