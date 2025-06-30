@@ -231,9 +231,10 @@ const InfluencerManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
-      queryClient.invalidateQueries({ queryKey: ['influencers'] });
-      // Force invalidation of infinite queries specifically used by homepage
-      queryClient.invalidateQueries({ queryKey: ['influencers', 'infinite'] });
+      // Use predicate-based invalidation to catch all influencer queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === 'influencers'
+      });
     }
   });
 
