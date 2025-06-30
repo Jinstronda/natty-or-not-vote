@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
-import InfluencerPhotoGallery from './InfluencerPhotoGallery';
+import { EnhancedPhotoManager } from './EnhancedPhotoManager';
 import { InfluencerPhoto } from '@/types/vote';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -29,43 +29,7 @@ interface AdminInfluencerEditorProps {
   influencer: Influencer;
 }
 
-// Remove SortablePhotoCard and use a regular PhotoCard
-function PhotoCard({ photo, idx, photosLength, onUpdateDesc, onDeletePhoto, onMovePhoto }: any) {
-  return (
-    <div className="relative rounded-lg overflow-hidden border bg-secondary shadow-sm flex flex-col">
-      <img src={photo.image_url} alt="" className="w-full h-40 object-cover select-none" draggable={false} />
-      <input
-        className="absolute bottom-2 left-2 right-10 bg-black/60 text-white text-xs rounded px-2 py-1"
-        value={photo.description}
-        onChange={e => onUpdateDesc(photo.id, e.target.value)}
-        placeholder="Description"
-        style={{ minWidth: 0 }}
-      />
-      <button
-        className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 shadow"
-        onClick={() => onDeletePhoto(photo.id)}
-        type="button"
-        title="Delete photo"
-      >
-        ×
-      </button>
-      <div className="absolute bottom-2 right-2 flex gap-1">
-        <button
-          className="bg-black/40 text-white rounded-full px-2 py-0.5 text-xs shadow"
-          onClick={() => onMovePhoto(idx, idx - 1)}
-          disabled={idx === 0}
-          type="button"
-        >↑</button>
-        <button
-          className="bg-black/40 text-white rounded-full px-2 py-0.5 text-xs shadow"
-          onClick={() => onMovePhoto(idx, idx + 1)}
-          disabled={idx === photosLength - 1}
-          type="button"
-        >↓</button>
-      </div>
-    </div>
-  );
-}
+
 
 const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -267,43 +231,21 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           </div>
         </div>
 
-        {/* Photo Gallery Section */}
-        <div>
-          <h3 className="text-xl font-semibold mb-2 mt-8">Photo Gallery <span className="text-xs text-muted-foreground">(up to 3 images)</span></h3>
-          <p className="text-muted-foreground mb-4 text-sm">These images appear in the influencer's photo gallery on their profile page. The main profile picture is separate and not automatically linked to these images.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            {photos.map((photo, idx) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                idx={idx}
-                photosLength={photos.length}
-                onUpdateDesc={handleUpdateDesc}
-                onDeletePhoto={handleDeletePhoto}
-                onMovePhoto={handleMovePhoto}
-              />
-            ))}
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 items-end">
-            <SecureImageUpload
-              onImageUploaded={setNewPhotoUrl}
-              currentImage={newPhotoUrl || undefined}
-              onImageRemoved={() => setNewPhotoUrl('')}
-            />
-            <input
-              className="flex-1 border rounded px-2 py-1 text-xs"
-              value={newPhotoDesc}
-              onChange={e => setNewPhotoDesc(e.target.value)}
-              placeholder="Description (optional)"
-            />
-            <Button onClick={handleAddPhoto} disabled={!newPhotoUrl || uploadingPhoto || photos.length >= 3}>
-              Add Photo
-            </Button>
-          </div>
-          {photos.length >= 3 && (
-            <p className="text-xs text-red-500 mt-2">Maximum of 3 gallery images allowed.</p>
-          )}
-        </div>
+        {/* Enhanced Photo Gallery Section */}
+        <EnhancedPhotoManager
+          photos={photos}
+          onUpdateDescription={handleUpdateDesc}
+          onDeletePhoto={handleDeletePhoto}
+          onMovePhoto={handleMovePhoto}
+          onAddPhoto={handleAddPhoto}
+          newPhotoUrl={newPhotoUrl}
+          newPhotoDescription={newPhotoDesc}
+          onNewPhotoUrlChange={setNewPhotoUrl}
+          onNewPhotoDescriptionChange={setNewPhotoDesc}
+          onImageRemoved={() => setNewPhotoUrl('')}
+          isUploading={uploadingPhoto}
+          maxPhotos={3}
+        />
 
         {/* Other influencer fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
