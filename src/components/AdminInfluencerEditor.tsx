@@ -184,19 +184,21 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
         <div>
           <h3 className="text-xl font-semibold mb-2">Main Profile Picture</h3>
           <p className="text-muted-foreground mb-4 text-sm">This image is shown as the influencer's main profile picture on the main page and profile cards.</p>
-          <div className="flex flex-col md:flex-row gap-6 items-center">
-            <img
-              src={formData.image || '/placeholder.svg'}
-              alt="Main profile"
-              className="w-40 h-40 object-cover rounded-xl border shadow"
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-center">
+              <img
+                src={formData.image || '/placeholder.svg'}
+                alt="Main profile"
+                className="w-32 h-32 object-cover rounded-xl border shadow"
+              />
+            </div>
             <div className="flex flex-col gap-2">
               <SecureImageUpload
                 onImageUploaded={(url) => setFormData(prev => ({ ...prev, image: url }))}
                 currentImage={formData.image}
                 onImageRemoved={() => setFormData(prev => ({ ...prev, image: "" }))}
               />
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 <Button
                   onClick={async () => {
                     const { error } = await supabase
@@ -211,6 +213,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
                     }
                   }}
                   disabled={!formData.image || formData.image === influencer.image}
+                  className="w-full"
                 >
                   Save Main Image
                 </Button>
@@ -223,6 +226,7 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
                     queryClient.invalidateQueries({ queryKey: ['influencer', influencer.id] });
                   }}
                   disabled={!formData.image}
+                  className="w-full"
                 >
                   Remove Main Image
                 </Button>
