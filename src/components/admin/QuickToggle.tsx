@@ -1,0 +1,124 @@
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Flame, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface QuickToggleProps {
+  isControversial: boolean;
+  isLoading: boolean;
+  onToggle: () => void;
+  influencerName: string;
+  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
+}
+
+export function QuickToggle({
+  isControversial,
+  isLoading,
+  onToggle,
+  influencerName,
+  size = 'sm',
+  showLabel = true
+}: QuickToggleProps) {
+  const buttonSizes = {
+    sm: 'h-8 px-3 text-xs',
+    md: 'h-9 px-4 text-sm',
+    lg: 'h-10 px-6 text-base'
+  };
+
+  const iconSizes = {
+    sm: 'h-3 w-3',
+    md: 'h-4 w-4', 
+    lg: 'h-5 w-5'
+  };
+
+  if (isControversial) {
+    return (
+      <Button
+        variant="default"
+        size="sm"
+        onClick={onToggle}
+        disabled={isLoading}
+        className={cn(
+          buttonSizes[size],
+          "bg-orange-600 hover:bg-orange-700 text-white",
+          "transition-all duration-200 transform hover:scale-105"
+        )}
+        title={`Remove ${influencerName} from controversial`}
+      >
+        {isLoading ? (
+          <Loader2 className={cn(iconSizes[size], "animate-spin")} />
+        ) : (
+          <Flame className={iconSizes[size]} />
+        )}
+        {showLabel && (
+          <span className="ml-1">
+            Controversial
+          </span>
+        )}
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={onToggle}
+      disabled={isLoading}
+      className={cn(
+        buttonSizes[size],
+        "border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300",
+        "transition-all duration-200 transform hover:scale-105"
+      )}
+      title={`Mark ${influencerName} as controversial`}
+    >
+      {isLoading ? (
+        <Loader2 className={cn(iconSizes[size], "animate-spin")} />
+      ) : (
+        <Flame className={iconSizes[size]} />
+      )}
+      {showLabel && (
+        <span className="ml-1">
+          Mark Controversial
+        </span>
+      )}
+    </Button>
+  );
+}
+
+interface ControversialBadgeProps {
+  isControversial: boolean;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function ControversialBadge({ isControversial, size = 'sm' }: ControversialBadgeProps) {
+  if (!isControversial) return null;
+
+  const badgeSizes = {
+    sm: 'text-xs px-2 py-1',
+    md: 'text-sm px-3 py-1',
+    lg: 'text-base px-4 py-2'
+  };
+
+  const iconSizes = {
+    sm: 'h-3 w-3',
+    md: 'h-4 w-4',
+    lg: 'h-5 w-5'
+  };
+
+  return (
+    <Badge 
+      variant="secondary"
+      className={cn(
+        badgeSizes[size],
+        "bg-orange-100 text-orange-800 border-orange-200",
+        "inline-flex items-center gap-1"
+      )}
+    >
+      <Flame className={iconSizes[size]} />
+      Controversial
+    </Badge>
+  );
+} 
