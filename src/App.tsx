@@ -27,6 +27,7 @@ const UserProfile = lazy(() => import("./pages/UserProfile"));
 const Terms = lazy(() => import("./pages/Terms"));
 const ExpertsDirectory = lazy(() => import('./pages/experts/index'));
 const ExpertProfilePage = lazy(() => import('./pages/experts/[expertId]'));
+const Merch = lazy(() => import("./pages/Merch"));
 
 // Error Boundary Component for better error handling
 const ErrorFallback = ({ error }: { error: Error }) => (
@@ -52,6 +53,7 @@ const App = () => (
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/merch" element={<Merch />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/influencer/:id" element={<InfluencerProfile />} />
               <Route path="/user/:id" element={<UserProfile />} />
