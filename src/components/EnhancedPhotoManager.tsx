@@ -55,7 +55,7 @@ function EnhancedPhotoCard({
           <img 
             src={photo.image_url} 
             alt={photo.description || 'Gallery photo'} 
-            className="w-full h-48 object-cover"
+            className="w-full h-48 md:h-64 lg:h-72 object-cover"
           />
           {/* Photo Order Badge */}
           <Badge 
@@ -284,8 +284,8 @@ export function EnhancedPhotoManager({
         </Badge>
       </div>
 
-      {/* Photo Grid */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* Photo Grid - Responsive layout for better desktop coverage */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {photos.map((photo, index) => (
           <EnhancedPhotoCard
             key={photo.id}
