@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Camera, X } from 'lucide-react';
-import { EnhancedPhotoManager } from './EnhancedPhotoManager';
+import SecureImageUpload from '@/components/SecureImageUpload';
 import { InfluencerPhoto } from '@/types/vote';
 
 interface PhotoManagerModalProps {
@@ -177,15 +177,12 @@ export function PhotoManagerModal({
                     )}
                   </div>
 
-                  <div className="p-4 space-y-3">
-                    <Button 
-                      variant="outline" 
-                      className="w-full h-12 border-dashed"
-                      onClick={() => {/* SecureImageUpload trigger */}}
-                    >
-                      <Camera className="h-4 w-4 mr-2" />
-                      Choose File or Drag & Drop
-                    </Button>
+                                     <div className="p-4 space-y-3">
+                     <SecureImageUpload
+                       onImageUploaded={onNewPhotoUrlChange}
+                       currentImage={newPhotoUrl || undefined}
+                       onImageRemoved={onImageRemoved}
+                     />
                     
                     <textarea 
                       value={newPhotoDescription}

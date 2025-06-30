@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload } from "lucide-react";
 import SecureImageUpload from "@/components/SecureImageUpload";
-import { EnhancedPhotoManager } from './EnhancedPhotoManager';
+import { PhotoManagerModal } from './PhotoManagerModal';
 import { InfluencerPhoto } from '@/types/vote';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -231,8 +231,8 @@ const AdminInfluencerEditor = ({ influencer }: AdminInfluencerEditorProps) => {
           </div>
         </div>
 
-        {/* Enhanced Photo Gallery Section */}
-        <EnhancedPhotoManager
+        {/* Photo Gallery Section - Now with proper UX modal */}
+        <PhotoManagerModal
           photos={photos}
           onUpdateDescription={handleUpdateDesc}
           onDeletePhoto={handleDeletePhoto}
