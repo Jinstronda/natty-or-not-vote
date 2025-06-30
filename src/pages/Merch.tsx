@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import '../types/shopify-web-components';
 
 const Merch = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,12 +98,7 @@ const Merch = () => {
         z-index: 10;
       }
 
-      .lightning-effect {
-        background: linear-gradient(45deg, #ffd700, #ffed4e);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-      }
+
 
       .add-to-cart-btn {
         width: 100%;
@@ -199,7 +193,12 @@ const Merch = () => {
         {/* Promotional Banner */}
         <div className="bg-gradient-to-r from-natty/10 to-juicy/10 border border-primary/20 rounded-lg p-6 mb-8 text-center">
           <h2 className="text-2xl font-bold mb-2">
-            <span className="lightning-effect">⚡ THE JUICY LIGHTNING™ ⚡</span>
+            <span style={{
+              background: 'linear-gradient(45deg, #ffd700, #ffed4e)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 800
+            }}>⚡ THE JUICY LIGHTNING™ ⚡</span>
           </h2>
           <p className="text-muted-foreground">
             The secret weapon every "natural" influencer doesn't want you to know about
@@ -223,88 +222,82 @@ const Merch = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <shopify-list-context 
               type="product" 
-              query={searchQuery ? `products(first: 12, query: "${searchQuery}")` : "products"} 
+              query="products" 
               first="12"
             >
-              <template>
-                <div className="product-card">
-                  {/* Sale Badge */}
-                  <div className="sale-badge">🔥 HOT</div>
-                  
-                  <shopify-media 
-                    query="product.featuredImage" 
-                    width="300" 
-                    height="300"
-                    style={{
-                      width: '100%',
-                      height: '250px',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      marginBottom: '1rem'
-                    }}
-                  ></shopify-media>
-                  
-                  <div>
-                    <h3 style={{
-                      fontSize: '1.25rem',
-                      fontWeight: 600,
-                      marginBottom: '0.5rem',
-                      color: '#1f2937',
-                      lineHeight: '1.3'
-                    }}>
-                      <shopify-data query="product.title"></shopify-data>
-                    </h3>
+              <div slot="item" className="product-card">
+                <div className="sale-badge">🔥 HOT</div>
+                
+                <shopify-media 
+                  query="product.featuredImage" 
+                  width="300" 
+                  height="300"
+                  style={{
+                    width: '100%',
+                    height: '250px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    marginBottom: '1rem'
+                  }}
+                ></shopify-media>
+                
+                <div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    marginBottom: '0.5rem',
+                    color: '#1f2937',
+                    lineHeight: '1.3'
+                  }}>
+                    <shopify-data query="product.title"></shopify-data>
+                  </h3>
 
-                    {/* Product Description */}
-                    <p style={{
-                      fontSize: '0.875rem',
-                      color: '#6b7280',
-                      marginBottom: '1rem',
-                      lineHeight: '1.4'
-                    }}>
-                      <shopify-data query="product.description"></shopify-data>
-                    </p>
-                    
-                    {/* Price Display */}
+                  <p style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280',
+                    marginBottom: '1rem',
+                    lineHeight: '1.4'
+                  }}>
+                    <shopify-data query="product.description"></shopify-data>
+                  </p>
+                  
+                  <div style={{
+                    marginBottom: '1rem'
+                  }}>
                     <div style={{
-                      marginBottom: '1rem'
+                      fontSize: '1.125rem',
+                      fontWeight: 700,
+                      color: 'hsl(var(--primary))',
+                      marginBottom: '0.25rem'
                     }}>
-                      <div style={{
-                        fontSize: '1.125rem',
-                        fontWeight: 700,
-                        color: 'hsl(var(--primary))',
-                        marginBottom: '0.25rem'
-                      }}>
-                        <shopify-money 
-                          query="product.selectedOrFirstAvailableVariant.price"
-                          format="money_with_currency"
-                        ></shopify-money>
-                      </div>
-                      
-                      {/* Compare at price (if on sale) */}
-                      <div style={{
-                        fontSize: '0.875rem',
-                        color: '#9ca3af',
-                        textDecoration: 'line-through'
-                      }}>
-                        <shopify-money 
-                          query="product.selectedOrFirstAvailableVariant.compareAtPrice"
-                          format="money_with_currency"
-                        ></shopify-money>
-                      </div>
+                      <shopify-money 
+                        query="product.selectedOrFirstAvailableVariant.price"
+                        format="money_with_currency"
+                      ></shopify-money>
                     </div>
                     
-                    <shopify-variant-selector></shopify-variant-selector>
-                    
-                    <button 
-                      className="add-to-cart-btn"
-                      onClick={handleAddToCart}
-                    >
-                      🔥 Get Secret Weapon
-                    </button>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: '#9ca3af',
+                      textDecoration: 'line-through'
+                    }}>
+                      <shopify-money 
+                        query="product.selectedOrFirstAvailableVariant.compareAtPrice"
+                        format="money_with_currency"
+                      ></shopify-money>
+                    </div>
                   </div>
+                  
+                  <shopify-variant-selector></shopify-variant-selector>
+                  
+                  <button 
+                    className="add-to-cart-btn"
+                    onClick={handleAddToCart}
+                  >
+                    🔥 Get Secret Weapon
+                  </button>
                 </div>
-              </template>
+              </div>
             </shopify-list-context>
           </div>
 
