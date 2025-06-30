@@ -8,7 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music, Loader2 } from "lucide-react";
+import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music, Loader2, TrendingUp, Star } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import SecureImageUpload from "@/components/SecureImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ interface Influencer {
   years_training?: string;
   claimed_status?: string;
   description?: string;
+  trending?: boolean;
   social_links?: SocialLinks;
 }
 
@@ -130,6 +132,7 @@ const InfluencerManagement = () => {
         years_training: item.years_training || undefined,
         claimed_status: item.claimed_status || undefined,
         description: item.description || undefined,
+        trending: (item as any).trending || false,
         social_links: (item.social_links as SocialLinks) || {}
       }));
     }
@@ -143,6 +146,7 @@ const InfluencerManagement = () => {
     years_training: '',
     claimed_status: 'unclaimed',
     description: '',
+    trending: false,
     social_links: {}
   });
 
@@ -162,6 +166,7 @@ const InfluencerManagement = () => {
           years_training: influencer.years_training || null,
           claimed_status: influencer.claimed_status || null,
           description: influencer.description || null,
+          trending: influencer.trending || false,
           social_links: influencer.social_links as any
         });
       
@@ -185,6 +190,7 @@ const InfluencerManagement = () => {
           years_training: influencer.years_training || null,
           claimed_status: influencer.claimed_status || null,
           description: influencer.description || null,
+          trending: influencer.trending || false,
           social_links: influencer.social_links as any
         })
         .eq('id', influencer.id);
@@ -202,6 +208,21 @@ const InfluencerManagement = () => {
       const { error } = await supabase
         .from('influencers')
         .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+      queryClient.invalidateQueries({ queryKey: ['influencers'] });
+    }
+  });
+
+  const toggleTrendingMutation = useMutation({
+    mutationFn: async ({ id, trending }: { id: string; trending: boolean }) => {
+      const { error } = await supabase
+        .from('influencers')
+        .update({ trending } as any)
         .eq('id', id);
       
       if (error) throw error;
@@ -232,6 +253,7 @@ const InfluencerManagement = () => {
         years_training: '',
         claimed_status: 'unclaimed',
         description: '',
+        trending: false,
         social_links: {}
       });
       
@@ -284,6 +306,23 @@ const InfluencerManagement = () => {
       toast({
         title: "Error",
         description: "Failed to update influencer.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleTrending = async (id: string, currentTrending: boolean, name: string) => {
+    try {
+      await toggleTrendingMutation.mutateAsync({ id, trending: !currentTrending });
+      toast({
+        title: "Success",
+        description: `${name} ${!currentTrending ? 'marked as trending' : 'removed from trending'}.`,
+      });
+    } catch (error) {
+      console.error('Error toggling trending:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update trending status.",
         variant: "destructive",
       });
     }
@@ -719,6 +758,20 @@ const InfluencerManagement = () => {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Trending Status
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="trending"
+                  checked={newInfluencer.trending || false}
+                  onCheckedChange={(checked) => setNewInfluencer({...newInfluencer, trending: !!checked})}
+                />
+                <Label htmlFor="trending" className="text-sm">Mark as trending (appears at top of homepage)</Label>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="height">Height</Label>
             <Input
                 id="height"
@@ -796,6 +849,12 @@ const InfluencerManagement = () => {
                       <Badge className={getClaimedStatusColor(influencer.claimed_status || 'unclaimed')}>
                         {influencer.claimed_status || 'unclaimed'}
                       </Badge>
+                      {influencer.trending && (
+                        <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1">
+                          <TrendingUp className="h-3 w-3" />
+                          Trending
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{influencer.description}</p>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
@@ -815,6 +874,15 @@ const InfluencerManagement = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    variant={influencer.trending ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleToggleTrending(influencer.id, influencer.trending || false, influencer.name)}
+                    disabled={toggleTrendingMutation.isPending}
+                    title={influencer.trending ? "Remove from trending" : "Mark as trending"}
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                  </Button>
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button 
@@ -862,6 +930,20 @@ const InfluencerManagement = () => {
                                   <SelectItem value="verified">Verified</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4" />
+                                Trending Status
+                              </Label>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="edit-trending"
+                                  checked={editingInfluencer.trending || false}
+                                  onCheckedChange={(checked) => setEditingInfluencer({...editingInfluencer, trending: !!checked})}
+                                />
+                                <Label htmlFor="edit-trending" className="text-sm">Mark as trending (appears at top of homepage)</Label>
+                              </div>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="edit-height">Height</Label>
