@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Photo Manager - Desktop Coverage Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles to simulate the component layout */
+    .photo-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      border: 1px solid rgb(229 231 235);
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    
+    .photo-card:hover {
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    
+    .upload-area {
+      background: rgb(249 250 251);
+      border: 2px dashed rgb(156 163 175);
+      border-radius: 8px;
+    }
+    
+    .mock-image {
+      background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgb(107 114 128);
+      font-size: 14px;
+    }
+
+    /* Responsive breakpoint indicators */
+    .breakpoint-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 p-4">
+  <div class="breakpoint-indicator">
+    <span class="sm:hidden">Mobile (< 640px)</span>
+    <span class="hidden sm:block md:hidden">SM (640px+)</span>
+    <span class="hidden md:block lg:hidden">MD (768px+)</span>
+    <span class="hidden lg:block xl:hidden">LG (1024px+)</span>
+    <span class="hidden xl:block 2xl:hidden">XL (1280px+)</span>
+    <span class="hidden 2xl:block">2XL (1536px+)</span>
+  </div>
+
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8">Enhanced Photo Manager - Desktop Coverage Test</h1>
+    
+    <!-- Before/After Comparison -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Comparison: Before vs After</h2>
+      
+      <!-- Before (Old Layout) -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium mb-4 text-red-600">❌ Before: Single Column Layout</h3>
+        <div class="bg-white p-6 rounded-lg border">
+          <div class="space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold">Photo Gallery</h3>
+                <p class="text-sm text-gray-600">Manage up to 3 photos for this influencer</p>
+              </div>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">2 / 3</span>
+            </div>
+            
+            <!-- Old single column grid -->
+            <div class="grid grid-cols-1 gap-4">
+              <div class="photo-card">
+                <div class="mock-image w-full h-48">Photo 1 (Fixed 192px height)</div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-600">Photo description here...</p>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div class="mock-image w-full h-48">Photo 2 (Fixed 192px height)</div>
+                <div class="p-4">
+                  <p class="text-sm text-gray-600">Another photo description...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- After (New Layout) -->
+      <div>
+        <h3 class="text-lg font-medium mb-4 text-green-600">✅ After: Responsive Multi-Column Layout</h3>
+        <div class="bg-white p-6 rounded-lg border">
+          <!-- Enhanced Photo Manager Component Layout -->
+          <div class="space-y-6 w-full max-w-none">
+            <!-- Improved Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex-1">
+                <h3 class="text-lg md:text-xl font-semibold">Photo Gallery</h3>
+                <p class="text-sm md:text-base text-gray-600">
+                  Manage up to 3 photos for this influencer
+                </p>
+              </div>
+              <span class="self-start sm:self-center text-base px-3 py-1 inline-flex items-center rounded-md bg-gray-100 text-gray-800">
+                2 / 3
+              </span>
+            </div>
+
+            <!-- Responsive Photo Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+              <!-- Photo Card 1 -->
+              <div class="photo-card">
+                <div class="relative">
+                  <div class="mock-image w-full h-48 md:h-64 lg:h-72">
+                    Responsive Height<br/>
+                    Mobile: 192px<br/>
+                    MD: 256px<br/>
+                    LG: 288px
+                  </div>
+                  <span class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">1</span>
+                </div>
+                <div class="p-4 space-y-3">
+                  <div class="min-h-[60px] p-2 border rounded-md">
+                    <p class="text-sm text-gray-600">Photo description with better spacing...</p>
+                  </div>
+                  <div class="flex items-center justify-between pt-2 border-t">
+                    <div class="flex items-center gap-1">
+                      <span class="text-xs text-gray-500">Reorder</span>
+                    </div>
+                    <div class="flex gap-1">
+                      <button class="p-1 border rounded text-xs">↑</button>
+                      <button class="p-1 border rounded text-xs">↓</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Photo Card 2 -->
+              <div class="photo-card">
+                <div class="relative">
+                  <div class="mock-image w-full h-48 md:h-64 lg:h-72">
+                    Better Desktop<br/>
+                    Coverage with<br/>
+                    Responsive Grid
+                  </div>
+                  <span class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">2</span>
+                </div>
+                <div class="p-4 space-y-3">
+                  <div class="min-h-[60px] p-2 border rounded-md">
+                    <p class="text-sm text-gray-600">Another photo with improved layout...</p>
+                  </div>
+                  <div class="flex items-center justify-between pt-2 border-t">
+                    <div class="flex items-center gap-1">
+                      <span class="text-xs text-gray-500">Reorder</span>
+                    </div>
+                    <div class="flex gap-1">
+                      <button class="p-1 border rounded text-xs">↑</button>
+                      <button class="p-1 border rounded text-xs">↓</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Photo Card -->
+              <div class="photo-card">
+                <div class="upload-area h-48 md:h-64 lg:h-72 flex flex-col items-center justify-center">
+                  <div class="text-center">
+                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    </div>
+                    <p class="text-sm text-gray-600">Upload a photo</p>
+                  </div>
+                </div>
+                <div class="p-4 space-y-3">
+                  <button class="w-full p-2 border border-dashed rounded text-sm text-gray-600 hover:bg-gray-50">
+                    Choose File or Drag & Drop
+                  </button>
+                  <textarea class="w-full min-h-[60px] p-2 border rounded text-sm resize-none" placeholder="Description (optional)"></textarea>
+                  <button class="w-full bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700">
+                    Add Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Improvements -->
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-green-800 mb-4">✅ Key Improvements Made</h3>
+      <ul class="space-y-2 text-green-700">
+        <li><strong>Responsive Grid:</strong> `grid-cols-1 md:grid-cols-2 xl:grid-cols-3` - Adapts to screen size</li>
+        <li><strong>Better Heights:</strong> `h-48 md:h-64 lg:h-72` - Larger photos on bigger screens</li>
+        <li><strong>Full Width:</strong> `w-full max-w-none` - Uses available container space</li>
+        <li><strong>Responsive Typography:</strong> Larger text on desktop screens</li>
+        <li><strong>Improved Spacing:</strong> `gap-4 md:gap-6` - More space between items on desktop</li>
+        <li><strong>Better Header Layout:</strong> Stacks on mobile, side-by-side on desktop</li>
+      </ul>
+    </div>
+
+    <!-- Instructions -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-blue-800 mb-4">🔍 Testing Instructions</h3>
+      <ol class="space-y-2 text-blue-700 list-decimal list-inside">
+        <li>Resize your browser window to see responsive behavior</li>
+        <li>On mobile (< 768px): Single column layout</li>
+        <li>On tablet (768px+): Two column layout</li>
+        <li>On desktop (1280px+): Three column layout</li>
+        <li>Notice how photo heights increase on larger screens</li>
+        <li>Check the breakpoint indicator in the top-right corner</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html> 
