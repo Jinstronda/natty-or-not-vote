@@ -196,6 +196,19 @@ const Merch = () => {
           </div>
         </div>
 
+        {/* Promotional Banner */}
+        <div className="bg-gradient-to-r from-natty/10 to-juicy/10 border border-primary/20 rounded-lg p-6 mb-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">
+            <span className="lightning-effect">⚡ THE JUICY LIGHTNING™ ⚡</span>
+          </h2>
+          <p className="text-muted-foreground">
+            The secret weapon every "natural" influencer doesn't want you to know about
+          </p>
+          <p className="text-sm font-semibold text-primary mt-2">
+            Limited Time: Save 50% on all secret weapons!
+          </p>
+        </div>
+
         {/* Shopify Store Container - Connected to your live store */}
         <shopify-store 
           store-domain="606ejf-hf.myshopify.com"
@@ -215,6 +228,9 @@ const Merch = () => {
             >
               <template>
                 <div className="product-card">
+                  {/* Sale Badge */}
+                  <div className="sale-badge">🔥 HOT</div>
+                  
                   <shopify-media 
                     query="product.featuredImage" 
                     width="300" 
@@ -233,21 +249,49 @@ const Merch = () => {
                       fontSize: '1.25rem',
                       fontWeight: 600,
                       marginBottom: '0.5rem',
-                      color: '#1f2937'
+                      color: '#1f2937',
+                      lineHeight: '1.3'
                     }}>
                       <shopify-data query="product.title"></shopify-data>
                     </h3>
+
+                    {/* Product Description */}
+                    <p style={{
+                      fontSize: '0.875rem',
+                      color: '#6b7280',
+                      marginBottom: '1rem',
+                      lineHeight: '1.4'
+                    }}>
+                      <shopify-data query="product.description"></shopify-data>
+                    </p>
                     
+                    {/* Price Display */}
                     <div style={{
-                      fontSize: '1.125rem',
-                      fontWeight: 700,
-                      color: 'hsl(var(--primary))',
                       marginBottom: '1rem'
                     }}>
-                      <shopify-money 
-                        query="product.selectedOrFirstAvailableVariant.price"
-                        format="money_with_currency"
-                      ></shopify-money>
+                      <div style={{
+                        fontSize: '1.125rem',
+                        fontWeight: 700,
+                        color: 'hsl(var(--primary))',
+                        marginBottom: '0.25rem'
+                      }}>
+                        <shopify-money 
+                          query="product.selectedOrFirstAvailableVariant.price"
+                          format="money_with_currency"
+                        ></shopify-money>
+                      </div>
+                      
+                      {/* Compare at price (if on sale) */}
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: '#9ca3af',
+                        textDecoration: 'line-through'
+                      }}>
+                        <shopify-money 
+                          query="product.selectedOrFirstAvailableVariant.compareAtPrice"
+                          format="money_with_currency"
+                        ></shopify-money>
+                      </div>
                     </div>
                     
                     <shopify-variant-selector></shopify-variant-selector>
@@ -256,7 +300,7 @@ const Merch = () => {
                       className="add-to-cart-btn"
                       onClick={handleAddToCart}
                     >
-                      Add to Cart
+                      🔥 Get Secret Weapon
                     </button>
                   </div>
                 </div>
@@ -269,7 +313,7 @@ const Merch = () => {
             className="cart-button"
             onClick={openCart}
           >
-            🛒 Cart (<shopify-data query="cart.totalQuantity">0</shopify-data>)
+            ⚡ Arsenal (<shopify-data query="cart.totalQuantity">0</shopify-data>)
           </button>
         </shopify-store>
 
