@@ -1,8 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from "@/components/Layout";
+import { Input } from "@/components/ui/input";
 import '../types/shopify-web-components';
 
 const Merch = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Hide loading state after components load
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     // Add custom styles for Shopify components
     const style = document.createElement('style');
@@ -64,11 +77,33 @@ const Merch = () => {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         transition: all 0.2s;
         height: fit-content;
+        position: relative;
+        overflow: hidden;
       }
 
       .product-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .sale-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #ef4444;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+      }
+
+      .lightning-effect {
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
       }
 
       .add-to-cart-btn {
@@ -142,17 +177,28 @@ const Merch = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
-            <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Merch
+            <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Rep your team with our exclusive fitness apparel and accessories. 
-            Show the world whether you're Team Natty or Team Juicy!
+            Get the secret weapons and gear that every influencer doesn't want you to know about. 
+            Discover the truth behind the gains! ⚡
           </p>
+          
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto mt-8">
+            <Input
+              type="text"
+              placeholder="Search for secret weapons..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-center"
+            />
+          </div>
         </div>
 
-        {/* Shopify Store Container - REPLACE "YOUR_STORE_NAME" with your actual Shopify store name */}
+        {/* Shopify Store Container - Connected to your live store */}
         <shopify-store 
-          store-domain="YOUR_STORE_NAME.myshopify.com"
+          store-domain="606ejf-hf.myshopify.com"
           public-access-token="abe5bbfdabf81963d9104f5dfc4ba552"
           country="US" 
           language="en"
@@ -162,7 +208,11 @@ const Merch = () => {
           
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <shopify-list-context type="product" query="products" first="12">
+            <shopify-list-context 
+              type="product" 
+              query={searchQuery ? `products(first: 12, query: "${searchQuery}")` : "products"} 
+              first="12"
+            >
               <template>
                 <div className="product-card">
                   <shopify-media 
@@ -224,10 +274,21 @@ const Merch = () => {
         </shopify-store>
 
         {/* Loading State */}
-        <div className="text-center py-12" id="loading-placeholder">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading our awesome merch...</p>
-        </div>
+        {isLoading && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading secret weapons...</p>
+            <p className="text-sm text-muted-foreground mt-2">Connecting to store...</p>
+          </div>
+        )}
+
+        {/* No Results State */}
+        {searchQuery && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No secret weapons found for "{searchQuery}"</p>
+            <p className="text-sm text-muted-foreground mt-2">Try a different search term</p>
+          </div>
+        )}
       </div>
     </Layout>
   );
