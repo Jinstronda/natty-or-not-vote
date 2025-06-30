@@ -232,6 +232,8 @@ const InfluencerManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
       queryClient.invalidateQueries({ queryKey: ['influencers'] });
+      // Force invalidation of infinite queries specifically used by homepage
+      queryClient.invalidateQueries({ queryKey: ['influencers', 'infinite'] });
     }
   });
 
@@ -887,9 +889,7 @@ const InfluencerManagement = () => {
                     size="sm"
                     onClick={() => handleToggleControversial(influencer.id, influencer.controversial || false, influencer.name)}
                     disabled={toggleControversialMutation.isPending}
-                    onClick={() => handleToggleTrending(influencer.id, influencer.trending || false, influencer.name)}
-                    disabled={toggleTrendingMutation.isPending}
-                    title={influencer.trending ? "Remove from trending" : "Mark as trending"}
+                    title={influencer.controversial ? "Remove from controversial" : "Mark as controversial"}
                   >
                     <TrendingUp className="h-4 w-4" />
                   </Button>
@@ -942,31 +942,18 @@ const InfluencerManagement = () => {
                               </Select>
                             </div>
 
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="edit-trending"
-                                checked={editingInfluencer.trending || false}
-                                onCheckedChange={(checked) => 
-                                  setEditingInfluencer({...editingInfluencer, trending: checked as boolean})
-                                }
-                              />
-                              <Label htmlFor="edit-trending" className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4" />
-                                Mark as Trending
-                              </Label>
-                            </div>
                             <div className="space-y-2">
                               <Label className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4" />
-                                Trending Status
+                                Controversial Status
                               </Label>
                               <div className="flex items-center space-x-2">
                                 <Checkbox
-                                  id="edit-trending"
-                                  checked={editingInfluencer.trending || false}
-                                  onCheckedChange={(checked) => setEditingInfluencer({...editingInfluencer, trending: !!checked})}
+                                  id="edit-controversial"
+                                  checked={editingInfluencer.controversial || false}
+                                  onCheckedChange={(checked) => setEditingInfluencer({...editingInfluencer, controversial: !!checked})}
                                 />
-                                <Label htmlFor="edit-trending" className="text-sm">Mark as trending (appears at top of homepage)</Label>
+                                <Label htmlFor="edit-controversial" className="text-sm">Mark as controversial (appears at top of homepage)</Label>
                               </div>
                             </div>
                             <div className="space-y-2">
