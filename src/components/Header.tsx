@@ -19,6 +19,9 @@ const Header = () => {
               <Link to="/">Trending</Link>
             </Button>
             <Button asChild variant="ghost">
+              <Link to="/merch">Merch</Link>
+            </Button>
+            <Button asChild variant="ghost">
               <Link to="/how-it-works">How It Works</Link>
             </Button>
             {user && <SuggestInfluencer />}
