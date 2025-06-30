@@ -284,8 +284,8 @@ export function EnhancedPhotoManager({
         </Badge>
       </div>
 
-      {/* Photo Grid - Responsive layout for better desktop coverage */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+      {/* Photo Grid - Optimized for both full-width and sidebar contexts */}
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2 2xl:gap-6">
         {photos.map((photo, index) => (
           <EnhancedPhotoCard
             key={photo.id}
