@@ -9,6 +9,7 @@ export interface Influencer {
   image: string;
   claimed_status: string;
   total_votes: number;
+  trending?: boolean;
 }
 
 export interface InfluencerPage {
@@ -38,6 +39,7 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
     image: row.image,
     claimed_status: row.claimed_status,
     total_votes: row.total_votes || 0,
+    trending: row.trending || false,
   }));
 
   return {
