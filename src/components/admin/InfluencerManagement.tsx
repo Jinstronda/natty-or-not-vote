@@ -168,7 +168,7 @@ const InfluencerManagement = () => {
           years_training: influencer.years_training || null,
           claimed_status: influencer.claimed_status || null,
           description: influencer.description || null,
-          trending: influencer.trending || false,
+          controversial: influencer.controversial || false,
           social_links: influencer.social_links as any
         });
       
@@ -192,7 +192,7 @@ const InfluencerManagement = () => {
           years_training: influencer.years_training || null,
           claimed_status: influencer.claimed_status || null,
           description: influencer.description || null,
-          trending: influencer.trending || false,
+          controversial: influencer.controversial || false,
           social_links: influencer.social_links as any
         })
         .eq('id', influencer.id);
@@ -220,11 +220,11 @@ const InfluencerManagement = () => {
     }
   });
 
-  const toggleTrendingMutation = useMutation({
-    mutationFn: async ({ id, trending }: { id: string; trending: boolean }) => {
+  const toggleControversialMutation = useMutation({
+    mutationFn: async ({ id, controversial }: { id: string; controversial: boolean }) => {
       const { error } = await supabase
         .from('influencers')
-        .update({ trending } as any)
+        .update({ controversial } as any)
         .eq('id', id);
       
       if (error) throw error;
@@ -255,7 +255,7 @@ const InfluencerManagement = () => {
         years_training: '',
         claimed_status: 'unclaimed',
         description: '',
-        trending: false,
+        controversial: false,
         social_links: {}
       });
       
@@ -319,18 +319,18 @@ const InfluencerManagement = () => {
     }
   };
 
-  const handleToggleTrending = async (id: string, currentTrending: boolean, name: string) => {
+  const handleToggleControversial = async (id: string, currentControversial: boolean, name: string) => {
     try {
-      await toggleTrendingMutation.mutateAsync({ id, trending: !currentTrending });
+      await toggleControversialMutation.mutateAsync({ id, controversial: !currentControversial });
       toast({
         title: "Success",
-        description: `${name} ${!currentTrending ? 'marked as trending' : 'removed from trending'}.`,
+        description: `${name} ${!currentControversial ? 'marked as controversial' : 'removed from controversial'}.`,
       });
     } catch (error) {
-      console.error('Error toggling trending:', error);
+      console.error('Error toggling controversial:', error);
       toast({
         title: "Error",
-        description: "Failed to update trending status.",
+        description: "Failed to update controversial status.",
         variant: "destructive",
       });
     }
@@ -768,15 +768,15 @@ const InfluencerManagement = () => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Trending Status
+                Controversial Status
               </Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="trending"
-                  checked={newInfluencer.trending || false}
-                  onCheckedChange={(checked) => setNewInfluencer({...newInfluencer, trending: !!checked})}
+                  id="controversial"
+                  checked={newInfluencer.controversial || false}
+                  onCheckedChange={(checked) => setNewInfluencer({...newInfluencer, controversial: !!checked})}
                 />
-                <Label htmlFor="trending" className="text-sm">Mark as trending (appears at top of homepage)</Label>
+                <Label htmlFor="controversial" className="text-sm">Mark as controversial (appears at top of homepage)</Label>
               </div>
             </div>
             <div className="space-y-2">
@@ -857,10 +857,10 @@ const InfluencerManagement = () => {
                       <Badge className={getClaimedStatusColor(influencer.claimed_status || 'unclaimed')}>
                         {influencer.claimed_status || 'unclaimed'}
                       </Badge>
-                      {influencer.trending && (
+                      {influencer.controversial && (
                         <Badge className="bg-orange-100 text-orange-800 flex items-center gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          Trending
+                          Controversial
                         </Badge>
                       )}
                     </div>
@@ -883,8 +883,10 @@ const InfluencerManagement = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant={influencer.trending ? "default" : "outline"}
+                    variant={influencer.controversial ? "default" : "outline"}
                     size="sm"
+                    onClick={() => handleToggleControversial(influencer.id, influencer.controversial || false, influencer.name)}
+                    disabled={toggleControversialMutation.isPending}
                     onClick={() => handleToggleTrending(influencer.id, influencer.trending || false, influencer.name)}
                     disabled={toggleTrendingMutation.isPending}
                     title={influencer.trending ? "Remove from trending" : "Mark as trending"}
