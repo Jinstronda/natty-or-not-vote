@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, Edit, Plus, Users, Link, Instagram, Youtube, Music, Loader2, TrendingUp, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import SecureImageUpload from "@/components/SecureImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -153,6 +154,7 @@ const InfluencerManagement = () => {
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
   const [fetchingImages, setFetchingImages] = useState(false);
   const [updatedInfluencersLog, setUpdatedInfluencersLog] = useState<string[]>([]);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{id: string, name: string} | null>(null);
 
   const addInfluencerMutation = useMutation({
     mutationFn: async (influencer: Omit<Influencer, 'id'>) => {
@@ -272,21 +274,27 @@ const InfluencerManagement = () => {
   };
 
   const handleDeleteInfluencer = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete ${name}? This will also delete all associated votes and reviews.`)) {
-      try {
-        await deleteInfluencerMutation.mutateAsync(id);
-        toast({
-          title: "Deleted",
-          description: `${name} has been removed.`,
-        });
-      } catch (error) {
-        console.error('Error deleting influencer:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete influencer.",
-          variant: "destructive",
-        });
-      }
+    setDeleteConfirmation({ id, name });
+  };
+
+  const confirmDeleteInfluencer = async () => {
+    if (!deleteConfirmation) return;
+    
+    try {
+      await deleteInfluencerMutation.mutateAsync(deleteConfirmation.id);
+      toast({
+        title: "Deleted",
+        description: `${deleteConfirmation.name} has been removed.`,
+      });
+      setDeleteConfirmation(null);
+    } catch (error) {
+      console.error('Error deleting influencer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete influencer.",
+        variant: "destructive",
+      });
+      setDeleteConfirmation(null);
     }
   };
 
@@ -1035,6 +1043,27 @@ const InfluencerManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmation} onOpenChange={() => setDeleteConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Influencer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deleteConfirmation?.name}? This will also delete all associated votes and reviews. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteInfluencer}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
