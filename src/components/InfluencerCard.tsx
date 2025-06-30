@@ -16,6 +16,7 @@ export interface InfluencerCardProps {
     name: string;
     image: string;
     claimed_status: string;
+    trending?: boolean;
     photos?: { image_url: string }[];
   };
 }
@@ -75,6 +76,11 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             {influencer.claimed_status === 'claimed' && (
               <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
                 Claimed
+              </div>
+            )}
+            {influencer.trending && (
+              <div className="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg">
+                🔥 Trending
               </div>
             )}
           </div>

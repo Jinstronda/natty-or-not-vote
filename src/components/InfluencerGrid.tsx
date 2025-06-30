@@ -5,36 +5,9 @@ import InfluencerCard from "./InfluencerCard";
 import { useInfluencers, type InfluencerPage } from "@/hooks/api/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
 interface InfluencerGridProps {
   searchTerm?: string;
 }
-
-// Utility: fetch vote counts for a list of influencer IDs with enhanced caching
-const useInfluencerVoteCounts = (influencerIds: string[]) => {
-  return useQuery({
-    queryKey: ['influencer-vote-counts', influencerIds],
-    queryFn: async () => {
-      if (influencerIds.length === 0) return {};
-      // Use the materialized view for performance
-      const { data, error } = await supabase
-        .from('influencer_vote_counts')
-        .select('influencer_id, total_votes')
-        .in('influencer_id', influencerIds);
-      if (error) throw error;
-      const map: Record<string, number> = {};
-      data?.forEach((row: any) => {
-        map[row.influencer_id] = row.total_votes;
-      });
-      return map;
-    },
-    enabled: influencerIds.length > 0,
-    staleTime: 60000, // 1 minute cache for vote counts
-    gcTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
 
 const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
   const { user, loading: authLoading } = useAuth();
@@ -66,19 +39,9 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
     return hasData ? data.pages.flatMap(page => page.data) : [];
   }, [data?.pages, hasData]);
   
-  // Sort influencers by most voted (descending) with memoization
-  const influencerIds = useMemo(() => allInfluencers.map(i => i.id), [allInfluencers]);
-  const { data: voteCounts, isLoading: voteCountsLoading } = useInfluencerVoteCounts(influencerIds);
-  
-  const sortedInfluencers = useMemo(() => {
-    if (!voteCounts || influencerIds.length === 0) return allInfluencers;
-    
-    return [...allInfluencers].sort((a, b) => {
-      const votesA = voteCounts[a.id] || 0;
-      const votesB = voteCounts[b.id] || 0;
-      return votesB - votesA;
-    });
-  }, [allInfluencers, voteCounts, influencerIds.length]);
+  // Use the database view's ordering (trending first, then by votes, then by creation date)
+  // No frontend sorting needed since the database view handles this correctly
+  const sortedInfluencers = allInfluencers;
 
   // Intersection observer for infinite scroll with better performance
   useEffect(() => {
