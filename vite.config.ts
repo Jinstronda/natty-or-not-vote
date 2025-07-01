@@ -110,14 +110,15 @@ export default defineConfig(({ mode }) => ({
     holdUntilCrawlEnd: false,
   },
   build: {
-    // Use legacy JavaScript to avoid ES module MIME type issues
-    target: ['es2015', 'safari11'],
-    // Disable ES modules to fix MIME type issues on hosting platforms
+    // Target modern browsers for smaller bundles
+    target: 'es2020',
+    // Enable CSS code splitting for better caching
+    cssCodeSplit: true,
+    // Optimize chunk size warnings
+    chunkSizeWarningLimit: 1000,
+    // Advanced bundle optimization
     rollupOptions: {
-      external: [],
       output: {
-        // Use IIFE format instead of ES modules to avoid MIME type issues
-        format: 'iife',
         // Optimize chunk splitting for better caching
         manualChunks: {
           // Vendor chunk for React and core dependencies
@@ -131,16 +132,12 @@ export default defineConfig(({ mode }) => ({
           // UI chunk for component library
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
         },
-        // Use traditional script loading instead of module loading
+        // Optimize chunk naming for better caching
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    // Enable CSS code splitting for better caching
-    cssCodeSplit: true,
-    // Optimize chunk size warnings
-    chunkSizeWarningLimit: 1000,
     // Optimize assets inlining threshold
     assetsInlineLimit: 2048, // 2KB
     // Report compressed sizes for monitoring
@@ -152,8 +149,6 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     // Remove console logs in production
     drop: mode === 'production' ? ['console', 'debugger'] : [],
-    // Target legacy browsers to avoid module loading issues
-    target: 'es2015'
   },
   test: {
     globals: true,
