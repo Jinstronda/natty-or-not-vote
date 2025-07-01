@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
+import { initializeSEOMonitoring } from "./utils/seoPerformanceMonitor";
 import "./utils/emergencyDebug"; // Import emergency debug utilities
 
 // Loading component for better UX
@@ -43,33 +44,59 @@ const ErrorFallback = ({ error }: { error: Error }) => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/merch" element={<Merch />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/influencer/:id" element={<InfluencerProfile />} />
-              <Route path="/user/:id" element={<UserProfile />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/experts" element={<ExpertsDirectory />} />
-              <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Initialize SEO monitoring for Core Web Vitals tracking
+  useEffect(() => {
+    const monitor = initializeSEOMonitoring();
+    
+    // Add conversion tracking for ecommerce
+    const trackConversion = (event: string, value?: number) => {
+      // Google Analytics 4 conversion tracking
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'conversion', {
+          event_name: event,
+          value: value,
+          currency: 'USD'
+        });
+      }
+    };
+
+    // Make tracking available globally for components
+    (window as any).trackConversion = trackConversion;
+
+    return () => {
+      if (monitor) monitor.destroy();
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/merch" element={<Merch />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/influencer/:id" element={<InfluencerProfile />} />
+                <Route path="/user/:id" element={<UserProfile />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/experts" element={<ExpertsDirectory />} />
+                <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
