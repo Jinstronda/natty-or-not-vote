@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { InfluencerPhoto } from '@/types/vote';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
+import { userInteractionTracker } from '@/utils/userInteractionHelper';
 
 interface InfluencerPhotoGalleryProps {
   photos: InfluencerPhoto[];
@@ -15,11 +16,11 @@ const InfluencerPhotoGallery: React.FC<InfluencerPhotoGalleryProps> = ({ photos,
 
   const prev = () => {
     setIndex(i => (i === 0 ? photos.length - 1 : i - 1));
-    if ('vibrate' in navigator) navigator.vibrate(5);
+    userInteractionTracker.safeVibrate(5);
   };
   const next = () => {
     setIndex(i => (i === photos.length - 1 ? 0 : i + 1));
-    if ('vibrate' in navigator) navigator.vibrate(5);
+    userInteractionTracker.safeVibrate(5);
   };
 
   const current = photos[index];
@@ -74,7 +75,7 @@ const InfluencerPhotoGallery: React.FC<InfluencerPhotoGalleryProps> = ({ photos,
               }`}
               onClick={() => {
                 setIndex(i);
-                if ('vibrate' in navigator) navigator.vibrate(3);
+                userInteractionTracker.safeVibrate(3);
               }}
             />
           ))}

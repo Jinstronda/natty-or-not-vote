@@ -9,6 +9,7 @@ import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { Lock } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { OptimizedImage } from "./OptimizedImage";
+import { userInteractionTracker } from "@/utils/userInteractionHelper";
 
 export interface InfluencerCardProps {
   influencer: {
@@ -54,9 +55,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
       `}
       onMouseEnter={() => {
         // Subtle haptic feedback on card hover
-        if ('vibrate' in navigator) {
-          navigator.vibrate(3);
-        }
+        userInteractionTracker.safeVibrate(3);
       }}
       >
         {/* Subtle glow effect on hover */}
@@ -127,9 +126,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                   `}
                   onMouseEnter={(e) => {
                     // Add subtle haptic feedback on mobile
-                    if ('vibrate' in navigator) {
-                      navigator.vibrate(5);
-                    }
+                    userInteractionTracker.safeVibrate(5);
                   }}
                 >
                   {/* Subtle shimmer effect on hover */}
