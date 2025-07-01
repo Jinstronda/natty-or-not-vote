@@ -5,14 +5,11 @@ import BreadcrumbSchema from "@/components/BreadcrumbSchema";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { addFAQSchemaToPage, merchFAQs } from "@/utils/faqSchema";
-import { useFlashSaleCountdown, getFlashSaleEndTime } from "@/utils/flashSaleTimer";
 
 const Merch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Real countdown timer that resets daily at midnight
-  const timeLeft = useFlashSaleCountdown();
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 47, seconds: 33 });
 
   useEffect(() => {
     // Hide loading state after components load
@@ -20,11 +17,26 @@ const Merch = () => {
       setIsLoading(false);
     }, 2000);
 
+    // Countdown timer for urgency
+    const countdown = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
+
     // Add FAQ schema for better SEO
     addFAQSchemaToPage(merchFAQs);
 
     return () => {
       clearTimeout(timer);
+      clearInterval(countdown);
     };
   }, []);
 
@@ -120,8 +132,7 @@ const Merch = () => {
 
           {/* Countdown Timer for Urgency */}
           <div className="bg-gradient-to-r from-destructive/90 to-destructive rounded-xl p-6 text-center text-white">
-            <div className="text-lg font-bold mb-2 uppercase tracking-wider">⚡ FLASH SALE ENDS IN ⚡</div>
-            <div className="text-sm opacity-80 mb-4">Sale ends at {getFlashSaleEndTime()}</div>
+            <div className="text-lg font-bold mb-4 uppercase tracking-wider">⚡ FLASH SALE ENDS IN ⚡</div>
             <div className="flex justify-center gap-4">
               <div className="bg-white/20 backdrop-blur-sm px-4 py-3 rounded-lg">
                 <span className="block text-2xl font-bold">{timeLeft.hours.toString().padStart(2, '0')}</span>
@@ -136,7 +147,6 @@ const Merch = () => {
                 <span className="text-xs uppercase opacity-90">Seconds</span>
               </div>
             </div>
-            <div className="text-xs opacity-70 mt-3">🔄 Sale automatically renews daily</div>
           </div>
 
           {/* Search & Filter */}
