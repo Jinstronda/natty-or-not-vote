@@ -100,11 +100,18 @@
     <!-- Font Loading with display=swap for better Core Web Vitals -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Resource Hints for Critical Assets -->
-    <link rel="modulepreload" href="/src/main.tsx">
-    
-    <!-- Shopify Web Components Script -->
-    <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
+    <!-- Shopify Web Components Script - Load with fallback for MIME type issues -->
+    <script>
+      // Load Shopify components with error handling for MIME type issues
+      (function() {
+        var script = document.createElement('script');
+        script.src = 'https://cdn.shopify.com/storefront/web-components.js';
+        script.onerror = function() {
+          console.warn('Shopify Web Components failed to load due to hosting limitations');
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
     
     <!-- Google Analytics 4 for conversion tracking and Core Web Vitals -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
@@ -156,6 +163,7 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Load main script without ES module syntax to avoid MIME type issues -->
+    <script src="/src/main.tsx"></script>
   </body>
 </html>
