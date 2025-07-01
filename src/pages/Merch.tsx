@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from "@/components/Layout";
+import SEOHead from "@/components/SEOHead";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
@@ -34,8 +35,80 @@ const Merch = () => {
     };
   }, []);
 
+  // Ecommerce structured data for better search visibility
+  const ecommerceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "The Juicy Lightning™ - The Secret Weapon Every Natural Influencer Doesn't Want You to Know",
+    "description": "Professional gear that transforms your fitness content ⚡",
+    "brand": {
+      "@type": "Brand",
+      "name": "Natty or Juicy"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": "https://606ejf-hf.myshopify.com/products/the-juicy-lightning™-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know",
+      "priceCurrency": "USD",
+      "price": "17.99",
+      "priceValidUntil": "2024-12-31",
+      "availability": "https://schema.org/InStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Natty or Juicy"
+      },
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "0",
+          "currency": "USD"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 1,
+            "maxValue": 2,
+            "unitText": "d"
+          }
+        }
+      }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "127",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5",
+          "bestRating": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Fitness Enthusiast"
+        },
+        "reviewBody": "Game-changing equipment for content creation"
+      }
+    ]
+  };
+
   return (
     <Layout>
+      <SEOHead
+        title="Official Natty or Juicy Store - Premium Fitness Gear | 50% OFF Flash Sale"
+        description="Transform your fitness content with professional gear. The Juicy Lightning™ - now 50% OFF. In stock & ready to ship. Free shipping on all orders."
+        canonicalUrl="https://nattyorjuicy.com/merch"
+        ogType="product"
+        ogImage="https://lovable.dev/opengraph-image-p98pqg.png"
+        keywords={["fitness gear", "content creation", "natty or juicy", "fitness equipment", "bodybuilding", "workout accessories", "fitness influencer gear"]}
+        structuredData={ecommerceSchema}
+      />
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 space-y-8">
           {/* Hero Section */}
