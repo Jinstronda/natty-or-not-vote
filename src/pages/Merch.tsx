@@ -167,8 +167,7 @@ const Merch = () => {
               country="US" 
               language="en"
             >
-              {/* Shopping Cart */}
-              <shopify-cart id="main-cart"></shopify-cart>
+
               
               {/* Products Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -274,24 +273,7 @@ const Merch = () => {
             </shopify-store>
           </div>
 
-          {/* Floating Cart Button */}
-          <div className="fixed bottom-6 right-6 z-50">
-            <button 
-              onClick={() => {
-                const cart = document.getElementById('main-cart') as any;
-                if (cart) cart.showModal();
-              }}
-              className="bg-gradient-to-r from-natty to-juicy hover:from-juicy hover:to-natty text-white px-6 py-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 flex items-center gap-3 font-bold"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l-2.5-5m0 0L17 8m0 0l2.5-5M12 3v6m0 0l3-3m-3 3l-3-3" />
-              </svg>
-              <span>Cart</span>
-              <span className="bg-destructive text-white px-2 py-1 rounded-full text-sm min-w-[1.5rem] text-center font-bold">
-                0
-              </span>
-            </button>
-          </div>
+
 
           {/* Error State for when Shopify fails */}
           <div id="shopify-error" className="hidden text-center py-12">
