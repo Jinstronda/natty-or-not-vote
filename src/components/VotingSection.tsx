@@ -13,6 +13,7 @@ import ReviewPromptDialog from "@/components/ReviewPromptDialog";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 import { DynamicPercentageButton } from "@/components/DynamicPercentageButton";
+import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
 
 interface VotingSectionProps {
   influencerId: string;
@@ -25,6 +26,7 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
   const { data: userVote, isLoading: voteLoading, refetch: refetchUserVote } = useUserVote(influencerId);
   const { mutate: castVote, isPending: isVoting } = useVoting(influencerId);
   const { getUserReviews } = useSupabaseReviews();
+  const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
   const [lastVote, setLastVote] = useState<'natty' | 'juicy' | null>(null);
   
@@ -169,10 +171,23 @@ const VotingSection = ({ influencerId, onReviewSubmitted }: VotingSectionProps) 
     );
   }
 
-  // Calculate proper percentages that add up to 100%
-  const totalVotes = voteStats?.total_votes || 0;
-  const nattyCount = voteStats?.natty_count || 0;
-  const juicyCount = totalVotes - nattyCount;
+  // Get expert reviews for this influencer
+  const expertReviews = getInfluencerExpertReviews(influencerId);
+  
+  // Calculate expert review counts using same logic as VotingResults.tsx and InfluencerCard.tsx
+  const expertNattyCount = expertReviews.filter(review => 
+    (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty')
+  ).length;
+  const expertJuicyCount = expertReviews.length - expertNattyCount;
+  
+  // Calculate combined percentages (user votes + expert reviews)
+  const userNattyCount = voteStats?.natty_count || 0;
+  const userTotalVotes = voteStats?.total_votes || 0;
+  const userJuicyCount = userTotalVotes - userNattyCount;
+  
+  const totalVotes = userTotalVotes + expertReviews.length;
+  const nattyCount = userNattyCount + expertNattyCount;
+  const juicyCount = userJuicyCount + expertJuicyCount;
   
   const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
   const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
