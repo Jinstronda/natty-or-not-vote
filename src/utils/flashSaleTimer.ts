@@ -115,31 +115,36 @@ export class FlashSaleTimerService {
     try {
       // Fetch from database if we don't have cached data
       if (!this.currentTimer) {
+        console.log('🕒 Fetching flash sale timer from database...');
         this.currentTimer = await this.fetchTimerFromDatabase();
       }
 
       // Fallback if no timer found
       if (!this.currentTimer) {
-        console.warn('No flash sale timer found, creating fallback');
+        console.warn('⚠️ No flash sale timer found, using fallback values');
         return { hours: 23, minutes: 59, seconds: 59, isExpired: false };
       }
 
       // Calculate time remaining
       const timeRemaining = this.calculateTimeRemaining(this.currentTimer.sale_end_time);
+      console.log(`⏰ Flash sale timer: ${timeRemaining.hours}h ${timeRemaining.minutes}m ${timeRemaining.seconds}s remaining (from DB: ${this.currentTimer.sale_end_time})`);
 
       // If expired and auto-reset is enabled, reset the timer
       if (timeRemaining.isExpired && this.currentTimer.auto_reset) {
-        console.log('Timer expired, resetting...');
+        console.log('🔄 Timer expired, resetting for next 24 hours...');
         this.currentTimer = await this.resetTimer(this.currentTimer);
         
         if (this.currentTimer) {
-          return this.calculateTimeRemaining(this.currentTimer.sale_end_time);
+          const newTimeRemaining = this.calculateTimeRemaining(this.currentTimer.sale_end_time);
+          console.log(`✅ Timer reset complete: ${newTimeRemaining.hours}h ${newTimeRemaining.minutes}m ${newTimeRemaining.seconds}s remaining`);
+          return newTimeRemaining;
         }
       }
 
       return timeRemaining;
     } catch (error) {
-      console.error('Error in getCurrentTimer:', error);
+      console.error('❌ Error in getCurrentTimer:', error);
+      console.warn('⚠️ Using fallback timer due to error');
       // Return fallback timer
       return { hours: 23, minutes: 59, seconds: 59, isExpired: false };
     }
