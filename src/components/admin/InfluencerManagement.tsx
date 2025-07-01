@@ -54,9 +54,23 @@ interface DatabaseInfluencer {
   updated_at: string;
 }
 
-// Google Custom Search API integration
-const GOOGLE_CX = '8633be9a799b543bf';
-const GOOGLE_API_KEY = 'AIzaSyBzCiMQVvwRjhXuV3UWeLVPKbzcSMXmutI';
+// Google Custom Search API integration with fallback
+const GOOGLE_APIS = [
+  {
+    key: 'AIzaSyBzCiMQVvwRjhXuV3UWeLVPKbzcSMXmutI',
+    cx: '8633be9a799b543bf',
+    name: 'Primary Google API'
+  },
+  {
+    key: 'AIzaSyAJDLTa3LKQZGNkd6UejcooS7UAu4shpQ4',
+    cx: 'c7a7a402e64904fcd',
+    name: 'Fallback Google API'
+  }
+];
+
+// Keep legacy constants for backward compatibility
+const GOOGLE_CX = GOOGLE_APIS[0].cx;
+const GOOGLE_API_KEY = GOOGLE_APIS[0].key;
 
 // Advanced image validation - actually loads and analyzes image content
 const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
@@ -173,25 +187,120 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
   });
 };
 
-async function fetchImagesForInfluencer(name: string): Promise<string[]> {
-  try {
-    const params = new URLSearchParams({
-      key: GOOGLE_API_KEY,
-      cx: GOOGLE_CX,
-      q: name,
-      searchType: 'image',
-      num: '3',
-      safe: 'active',
-    });
-    const res = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
-    if (!res.ok) throw new Error('Google API error');
-    const data = await res.json();
-    if (!data.items || !Array.isArray(data.items)) throw new Error('No images found');
-    return data.items.map((item: any) => item.link).slice(0, 3);
-  } catch (err) {
-    // Fallback to placeholder images
-    return [1, 2, 3].map(i => `https://via.placeholder.com/400x400?text=${encodeURIComponent(name)}+${i}`);
+// Enhanced function with fallback APIs and progress notifications
+async function fetchImagesForInfluencer(name: string, showProgress = false): Promise<string[]> {
+  let lastError = '';
+  
+  // Try Google APIs in sequence
+  for (let i = 0; i < GOOGLE_APIS.length; i++) {
+    const api = GOOGLE_APIS[i];
+    try {
+      if (showProgress) {
+        toast({
+          title: `🔍 Searching for ${name}`,
+          description: `Using ${api.name}...`,
+          duration: 2000,
+        });
+      }
+      
+      const params = new URLSearchParams({
+        key: api.key,
+        cx: api.cx,
+        q: name,
+        searchType: 'image',
+        num: '3',
+        safe: 'active',
+      });
+      
+      const res = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+      
+      if (res.status === 429) {
+        const errorMsg = `${api.name} quota exceeded (429)`;
+        console.warn(errorMsg);
+        lastError = errorMsg;
+        
+        if (showProgress) {
+          toast({
+            title: "⚠️ API Quota Exceeded",
+            description: `${api.name} hit rate limit, trying next API...`,
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+        continue; // Try next API
+      }
+      
+      if (!res.ok) {
+        const errorMsg = `${api.name} error: ${res.status} ${res.statusText}`;
+        console.warn(errorMsg);
+        lastError = errorMsg;
+        continue;
+      }
+      
+      const data = await res.json();
+      if (!data.items || !Array.isArray(data.items)) {
+        lastError = `${api.name} returned no images`;
+        continue;
+      }
+      
+      const images = data.items.map((item: any) => item.link).slice(0, 3);
+      
+      if (showProgress) {
+        toast({
+          title: "✅ Images Found",
+          description: `Found ${images.length} images using ${api.name}`,
+          duration: 2000,
+        });
+      }
+      
+      return images;
+      
+    } catch (err) {
+      const errorMsg = `${api.name} exception: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      console.error(errorMsg);
+      lastError = errorMsg;
+      continue;
+    }
   }
+  
+  // Fallback to SerpAPI if all Google APIs failed
+  try {
+    if (showProgress) {
+      toast({
+        title: `🔄 Fallback Search`,
+        description: `Google APIs failed, trying SerpAPI for ${name}...`,
+        duration: 3000,
+      });
+    }
+    
+    const serpImages = await fetchImagesFromSerpAPI(name);
+    if (serpImages.length > 0) {
+      if (showProgress) {
+        toast({
+          title: "✅ Fallback Success",
+          description: `Found ${serpImages.length} images using SerpAPI`,
+          duration: 2000,
+        });
+      }
+      return serpImages;
+    }
+  } catch (err) {
+    console.error('SerpAPI fallback failed:', err);
+    lastError += '; SerpAPI also failed';
+  }
+  
+  // Final fallback to placeholder images
+  if (showProgress) {
+    toast({
+      title: "❌ All APIs Failed",
+      description: `Using placeholder images for ${name}. Last error: ${lastError}`,
+      variant: "destructive",
+      duration: 5000,
+    });
+  }
+  
+  console.warn(`All image APIs failed for ${name}. Last error: ${lastError}`);
+  return [1, 2, 3].map(i => `https://via.placeholder.com/400x400?text=${encodeURIComponent(name)}+${i}`);
 }
 
 // SerpAPI integration (Google Images via SerpAPI)
@@ -595,6 +704,14 @@ const InfluencerManagement = () => {
   const handleFetchImagesWithVisualValidation = async () => {
     setFetchingImages(true);
     setUpdatedInfluencersLog([]);
+    
+    // Show initial progress notification
+    toast({
+      title: "🚀 Starting Smart Image Validation",
+      description: "Analyzing all influencer images and fixing broken ones with fallback APIs...",
+      duration: 4000,
+    });
+    
     try {
       const { data: allInfluencers, error: infError } = await supabase
         .from('influencers')
@@ -603,6 +720,7 @@ const InfluencerManagement = () => {
 
       let updatedCount = 0;
       const processedInfluencers: string[] = [];
+      let apiFailures = 0;
 
       for (const inf of allInfluencers) {
         console.log(`🔍 Checking ${inf.name}...`);
@@ -619,8 +737,8 @@ const InfluencerManagement = () => {
             .delete()
             .eq('influencer_id', inf.id);
           
-          // Fetch new images from Google
-          const newImages = await fetchImagesForInfluencer(inf.name);
+          // Fetch new images from Google with progress notifications
+          const newImages = await fetchImagesForInfluencer(inf.name, true);
           const validImages: string[] = [];
           
           // Validate each new image visually
@@ -656,24 +774,34 @@ const InfluencerManagement = () => {
             console.log(`✅ Updated ${inf.name} with ${validImages.length} valid images`);
           } else {
             console.log(`⚠️ No valid images found for ${inf.name}`);
+            apiFailures++;
           }
         } else {
           console.log(`✅ ${inf.name} already has a valid image`);
         }
+        
+        // Small delay to avoid overwhelming APIs
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       setUpdatedInfluencersLog(processedInfluencers);
+      
+      // Final completion notification with detailed stats
+      const successRate = allInfluencers.length > 0 ? ((allInfluencers.length - apiFailures) / allInfluencers.length * 100).toFixed(1) : 100;
       toast({
-        title: 'Visual Validation Complete',
-        description: `Updated images for ${updatedCount} influencer(s) with visually broken/white images.`,
+        title: '✅ Smart Image Validation Complete!',
+        description: `Updated ${updatedCount} influencers • ${apiFailures} API failures • ${successRate}% success rate`,
+        duration: 5000,
       });
+      
       queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
     } catch (error) {
       console.error('Error in visual validation:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch or validate images visually.',
+        title: '❌ Image Validation Failed',
+        description: `System error during image validation: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive',
+        duration: 6000,
       });
     } finally {
       setFetchingImages(false);
@@ -730,8 +858,8 @@ const InfluencerManagement = () => {
             updatedCount++;
             continue; // No need to fetch new images
           } else {
-            // Fetch new images
-            const images = await fetchImagesForInfluencer(inf.name);
+            // Fetch new images with progress notifications
+            const images = await fetchImagesForInfluencer(inf.name, true);
             const filteredImages = images.filter(isValidImageUrl);
             if (filteredImages[0]) {
               await supabase.from('influencers').update({ image: filteredImages[0] }).eq('id', inf.id);
@@ -1010,7 +1138,7 @@ const InfluencerManagement = () => {
           variant="default"
           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
         >
-          🔍 Smart Fix: Remove White/Broken Images & Replace with Google
+          🔍 Smart Fix: Auto-Fallback API System (Google → SerpAPI → Placeholder)
         </Button>
         <Button onClick={handleFetchImagesForMissing} disabled={fetchingImages} variant="outline">
           Fetch Images from Google
