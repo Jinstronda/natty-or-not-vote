@@ -1,14 +1,54 @@
+# Natty or Juicy - SEO Optimized Robots.txt
+
+# Allow all major search engines full access
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Social media crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+# AI Search Engines - 2024 Optimization
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OpenAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# General bot access
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+
+# Sitemaps
+Sitemap: https://nattyorjuicy.com/sitemap.xml
+
+# Host directive
+Host: nattyorjuicy.com
