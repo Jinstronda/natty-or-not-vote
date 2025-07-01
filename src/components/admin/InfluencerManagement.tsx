@@ -57,6 +57,122 @@ interface DatabaseInfluencer {
 // Google Custom Search API integration
 const GOOGLE_CX = '8633be9a799b543bf';
 const GOOGLE_API_KEY = 'AIzaSyBzCiMQVvwRjhXuV3UWeLVPKbzcSMXmutI';
+
+// Advanced image validation - actually loads and analyzes image content
+const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      resolve(false);
+      return;
+    }
+
+    // Basic URL pattern checks first
+    const lower = imageUrl.trim().toLowerCase();
+    if (
+      lower === '' ||
+      lower.endsWith('.svg') ||
+      lower.includes('placeholder') ||
+      lower.includes('no-image') ||
+      lower.includes('default') ||
+      lower.includes('broken') ||
+      lower.includes('/image/') ||
+      lower.includes('/photo/') ||
+      lower.includes('/missing/') ||
+      lower.startsWith('http://') ||
+      !(/\.(jpg|jpeg|png|webp)$/i.test(lower))
+    ) {
+      resolve(false);
+      return;
+    }
+
+    // Create image element to test actual loading
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    const timeout = setTimeout(() => {
+      resolve(false);
+    }, 10000); // 10 second timeout
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      
+      try {
+        // Check image dimensions
+        if (img.width < 50 || img.height < 50) {
+          resolve(false);
+          return;
+        }
+
+        // Create canvas to analyze image content
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(false);
+          return;
+        }
+
+        canvas.width = Math.min(img.width, 100);
+        canvas.height = Math.min(img.height, 100);
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Get image data to analyze colors
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        let totalBrightness = 0;
+        let whitePixels = 0;
+        let transparentPixels = 0;
+        
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+          
+          // Check for transparency
+          if (a < 10) {
+            transparentPixels++;
+            continue;
+          }
+          
+          // Calculate brightness
+          const brightness = (r + g + b) / 3;
+          totalBrightness += brightness;
+          
+          // Check for white/near-white pixels
+          if (r > 240 && g > 240 && b > 240) {
+            whitePixels++;
+          }
+        }
+        
+        const totalPixels = data.length / 4;
+        const whiteRatio = whitePixels / totalPixels;
+        const transparentRatio = transparentPixels / totalPixels;
+        const averageBrightness = totalBrightness / (totalPixels - transparentPixels);
+        
+        // Reject if image is mostly white, transparent, or too bright
+        if (whiteRatio > 0.85 || transparentRatio > 0.7 || averageBrightness > 230) {
+          resolve(false);
+          return;
+        }
+        
+        resolve(true);
+      } catch (error) {
+        console.error('Error analyzing image:', error);
+        resolve(false);
+      }
+    };
+
+    img.onerror = () => {
+      clearTimeout(timeout);
+      resolve(false);
+    };
+
+    img.src = imageUrl;
+  });
+};
+
 async function fetchImagesForInfluencer(name: string): Promise<string[]> {
   try {
     const params = new URLSearchParams({
@@ -475,6 +591,95 @@ const InfluencerManagement = () => {
     }
   };
 
+  // NEW: Enhanced Google fetch with visual validation
+  const handleFetchImagesWithVisualValidation = async () => {
+    setFetchingImages(true);
+    setUpdatedInfluencersLog([]);
+    try {
+      const { data: allInfluencers, error: infError } = await supabase
+        .from('influencers')
+        .select('id, name, image');
+      if (infError) throw infError;
+
+      let updatedCount = 0;
+      const processedInfluencers: string[] = [];
+
+      for (const inf of allInfluencers) {
+        console.log(`🔍 Checking ${inf.name}...`);
+        
+        // Check if current image is visually valid
+        const isCurrentImageValid = inf.image ? await validateImageVisually(inf.image) : false;
+        
+        if (!isCurrentImageValid) {
+          console.log(`❌ ${inf.name} has broken/invalid image, fetching new ones...`);
+          
+          // Remove broken images from influencer_photos table
+          await supabase
+            .from('influencer_photos')
+            .delete()
+            .eq('influencer_id', inf.id);
+          
+          // Fetch new images from Google
+          const newImages = await fetchImagesForInfluencer(inf.name);
+          const validImages: string[] = [];
+          
+          // Validate each new image visually
+          for (const imgUrl of newImages) {
+            const isValid = await validateImageVisually(imgUrl);
+            if (isValid) {
+              validImages.push(imgUrl);
+              console.log(`✅ Found valid image for ${inf.name}`);
+            } else {
+              console.log(`❌ Rejected invalid image for ${inf.name}`);
+            }
+          }
+          
+          if (validImages.length > 0) {
+            // Update main image with first valid image
+            await supabase
+              .from('influencers')
+              .update({ image: validImages[0] })
+              .eq('id', inf.id);
+            
+            // Add all valid images to photos table
+            for (let i = 0; i < validImages.length; i++) {
+              await supabase.from('influencer_photos').insert({
+                influencer_id: inf.id,
+                image_url: validImages[i],
+                description: `Visual-validated Google image for ${inf.name}`,
+                order: i
+              });
+            }
+            
+            processedInfluencers.push(inf.name);
+            updatedCount++;
+            console.log(`✅ Updated ${inf.name} with ${validImages.length} valid images`);
+          } else {
+            console.log(`⚠️ No valid images found for ${inf.name}`);
+          }
+        } else {
+          console.log(`✅ ${inf.name} already has a valid image`);
+        }
+      }
+
+      setUpdatedInfluencersLog(processedInfluencers);
+      toast({
+        title: 'Visual Validation Complete',
+        description: `Updated images for ${updatedCount} influencer(s) with visually broken/white images.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+    } catch (error) {
+      console.error('Error in visual validation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch or validate images visually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
   // Fetch and add images for influencers without photos
   const handleFetchImagesForMissing = async () => {
     setFetchingImages(true);
@@ -799,6 +1004,14 @@ const InfluencerManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 mb-4">
+        <Button 
+          onClick={handleFetchImagesWithVisualValidation} 
+          disabled={fetchingImages} 
+          variant="default"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+        >
+          🔍 Smart Fix: Remove White/Broken Images & Replace with Google
+        </Button>
         <Button onClick={handleFetchImagesForMissing} disabled={fetchingImages} variant="outline">
           Fetch Images from Google
         </Button>
