@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, ExternalLink, ThumbsUp, Trash2, Edit, User, MoreVertical } from "lucide-react";
+import { Star, ExternalLink, ThumbsUp, Trash2, Edit, User, MoreVertical, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExpertReviewForm from "@/components/ExpertReviewForm";
 import EditExpertReviewDialog from "@/components/EditExpertReviewDialog";
 import { useSupabaseExpertReviews } from '@/hooks/useSupabaseExpertReviews';
@@ -18,7 +19,7 @@ interface ExpertReviewsProps {
 
 const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
   const { user } = useAuth();
-  const { expertReviews, loading, refetch } = useSupabaseExpertReviews();
+  const { expertReviews, loading, refetch, updateExpertReview } = useSupabaseExpertReviews();
   let filteredReviews: typeof expertReviews = [];
   if (expertId) {
     filteredReviews = expertReviews.filter(r => r.expert_id === expertId);
@@ -26,7 +27,10 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
     filteredReviews = expertReviews.filter(r => r.influencer_id === influencerId);
   }
   const [experts, setExperts] = useState<Record<string, any>>({});
+  const [influencers, setInfluencers] = useState<Record<string, any>>({});
   const [editingReview, setEditingReview] = useState<ExpertReview | null>(null);
+  const [editingInfluencerFor, setEditingInfluencerFor] = useState<string | null>(null);
+  const [allInfluencers, setAllInfluencers] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchExperts = async () => {
@@ -41,6 +45,31 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
     };
     fetchExperts();
   }, [filteredReviews]);
+
+  useEffect(() => {
+    const fetchInfluencers = async () => {
+      const ids = Array.from(new Set(filteredReviews.map(r => r.influencer_id).filter(Boolean)));
+      if (ids.length === 0) return;
+      const { data } = await supabase.from('influencers').select('*').in('id', ids);
+      if (data) {
+        const map: Record<string, any> = {};
+        data.forEach((i: any) => { map[i.id] = i; });
+        setInfluencers(map);
+      }
+    };
+    fetchInfluencers();
+  }, [filteredReviews]);
+
+  useEffect(() => {
+    const fetchAllInfluencers = async () => {
+      if (user?.role !== 'admin') return;
+      const { data } = await supabase.from('influencers').select('id, name').order('name');
+      if (data) {
+        setAllInfluencers(data);
+      }
+    };
+    fetchAllInfluencers();
+  }, [user?.role]);
 
   const handleDeleteExpertReview = async (reviewId: string, expertName: string) => {
     if (user?.role !== 'admin') return;
@@ -63,6 +92,29 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
       toast({
         title: "Error",
         description: "Failed to delete expert review. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleInfluencerChange = async (reviewId: string, newInfluencerId: string) => {
+    if (user?.role !== 'admin') return;
+
+    try {
+      await updateExpertReview(reviewId, { influencer_id: newInfluencerId });
+      
+      const influencerName = allInfluencers.find(i => i.id === newInfluencerId)?.name || 'Unknown';
+      
+      toast({
+        title: "Review updated",
+        description: `Review has been reassigned to ${influencerName}.`,
+      });
+
+      setEditingInfluencerFor(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to update review. Please try again.",
         variant: "destructive",
       });
     }
@@ -93,7 +145,9 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
         <div className="space-y-6">
           {filteredReviews.map((review) => {
             const expert = review.expert_id ? experts[review.expert_id] : null;
+            const influencer = influencers[review.influencer_id];
             const expertName = expert?.name || review.author || 'Unknown Expert';
+            const influencerName = influencer?.name || 'Unknown Influencer';
             const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
             const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
             
@@ -120,6 +174,13 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
                           <span>Edit Review</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem 
+                          onClick={() => setEditingInfluencerFor(review.id)}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <UserCheck className="h-4 w-4 text-green-600" />
+                          <span>Change Influencer</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
                           onClick={() => handleDeleteExpertReview(review.id, expertName)}
                           className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
                         >
@@ -142,7 +203,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
                 
                 {/* Content */}
                 <div className="flex-1 min-w-0 pr-8">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     {expert?.id ? (
                       <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
                         {expertName}
@@ -150,8 +211,39 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
                     ) : (
                       <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
                     )}
-                    <span className="text-muted-foreground text-base">said:</span>
+                    <span className="text-muted-foreground text-base">said about</span>
+                    <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-lg text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded">
+                      {influencerName}
+                    </a>
+                    <span className="text-muted-foreground text-base">:</span>
                   </div>
+                  
+                  {/* Admin influencer change interface */}
+                  {user?.role === 'admin' && editingInfluencerFor === review.id && (
+                    <div className="mb-3 p-3 bg-white/10 rounded border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <UserCheck className="h-4 w-4" />
+                        <span className="font-medium text-sm">Change Review Target:</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select value={review.influencer_id} onValueChange={(value) => handleInfluencerChange(review.id, value)}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select influencer" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allInfluencers.map((inf) => (
+                              <SelectItem key={inf.id} value={inf.id}>
+                                {inf.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="sm" onClick={() => setEditingInfluencerFor(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   
                   {review.link_url && (
                     <div className="mb-1">
