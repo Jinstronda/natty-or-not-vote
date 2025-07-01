@@ -124,6 +124,36 @@ export type Database = {
           },
         ]
       }
+      flash_sale_timer: {
+        Row: {
+          active: boolean
+          auto_reset: boolean
+          created_at: string
+          duration_hours: number
+          id: string
+          sale_end_time: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          auto_reset?: boolean
+          created_at?: string
+          duration_hours?: number
+          id?: string
+          sale_end_time: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          auto_reset?: boolean
+          created_at?: string
+          duration_hours?: number
+          id?: string
+          sale_end_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       influencer_photos: {
         Row: {
           created_at: string | null
@@ -207,6 +237,7 @@ export type Database = {
       influencers: {
         Row: {
           claimed_status: string | null
+          controversial: boolean | null
           created_at: string
           description: string | null
           height: string | null
@@ -222,6 +253,7 @@ export type Database = {
         }
         Insert: {
           claimed_status?: string | null
+          controversial?: boolean | null
           created_at?: string
           description?: string | null
           height?: string | null
@@ -237,6 +269,7 @@ export type Database = {
         }
         Update: {
           claimed_status?: string | null
+          controversial?: boolean | null
           created_at?: string
           description?: string | null
           height?: string | null
@@ -491,6 +524,7 @@ export type Database = {
       influencers_sorted_by_votes: {
         Row: {
           claimed_status: string | null
+          controversial: boolean | null
           created_at: string | null
           description: string | null
           height: string | null
@@ -499,11 +533,9 @@ export type Database = {
           name: string | null
           social_links: Json | null
           total_votes: number | null
-          trending: boolean | null
           updated_at: string | null
           weight: string | null
           years_training: string | null
-          youtube: string | null
         }
         Relationships: []
       }
