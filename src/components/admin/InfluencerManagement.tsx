@@ -65,6 +65,16 @@ const GOOGLE_APIS = [
     key: 'AIzaSyAJDLTa3LKQZGNkd6UejcooS7UAu4shpQ4',
     cx: 'c7a7a402e64904fcd',
     name: 'Fallback Google API'
+  },
+  {
+    key: 'AIzaSyB3zrE1hiL64b3XzwvDjH41POgSWpmh8S4',
+    cx: '70707d5d4764b4e0e',
+    name: 'Secondary Fallback Google API'
+  },
+  {
+    key: 'AIzaSyDQKjERXpTaVyE79is8m2XqvFPLVv2AVoc',
+    cx: '2408f845dc3174767',
+    name: 'Tertiary Fallback Google API'
   }
 ];
 
