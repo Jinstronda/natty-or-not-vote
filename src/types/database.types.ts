@@ -70,6 +70,45 @@ export type Database = {
           },
         ]
       }
+      expert_reviews_backup: {
+        Row: {
+          author: string | null
+          content: string | null
+          created_at: string | null
+          expert_id: string | null
+          id: string | null
+          influencer_id: string | null
+          likes: number | null
+          link_url: string | null
+          rating: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          author?: string | null
+          content?: string | null
+          created_at?: string | null
+          expert_id?: string | null
+          id?: string | null
+          influencer_id?: string | null
+          likes?: number | null
+          link_url?: string | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string | null
+          content?: string | null
+          created_at?: string | null
+          expert_id?: string | null
+          id?: string | null
+          influencer_id?: string | null
+          likes?: number | null
+          link_url?: string | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       experts: {
         Row: {
           bio: string | null
@@ -153,6 +192,76 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      influencer_info_suggestions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          influencer_id: string
+          reason: string | null
+          status: string
+          submitted_by: string
+          suggested_description: string | null
+          suggested_height: string | null
+          suggested_images: Json | null
+          suggested_training: string | null
+          suggested_weight: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          influencer_id: string
+          reason?: string | null
+          status?: string
+          submitted_by: string
+          suggested_description?: string | null
+          suggested_height?: string | null
+          suggested_images?: Json | null
+          suggested_training?: string | null
+          suggested_weight?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          influencer_id?: string
+          reason?: string | null
+          status?: string
+          submitted_by?: string
+          suggested_description?: string | null
+          suggested_height?: string | null
+          suggested_images?: Json | null
+          suggested_training?: string | null
+          suggested_weight?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_info_suggestions_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_info_suggestions_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers_sorted_by_votes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_info_suggestions_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       influencer_photos: {
         Row: {
@@ -530,12 +639,18 @@ export type Database = {
           height: string | null
           id: string | null
           image: string | null
+          juicy_percentage: number | null
+          juicy_votes: number | null
           name: string | null
+          natty_percentage: number | null
+          natty_votes: number | null
           social_links: Json | null
           total_votes: number | null
+          trending: boolean | null
           updated_at: string | null
           weight: string | null
           years_training: string | null
+          youtube: string | null
         }
         Relationships: []
       }
@@ -558,7 +673,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin_safe: {
-        Args: { user_id: string }
+        Args: Record<PropertyKey, never> | { user_id: string }
         Returns: boolean
       }
       refresh_vote_counts: {

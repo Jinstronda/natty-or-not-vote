@@ -59,16 +59,13 @@ const InfluencerInfoSuggestions = () => {
 
   const approveAndApplySuggestionMutation = useMutation({
     mutationFn: async ({ suggestion, adminNotes }: { suggestion: any, adminNotes?: string }) => {
-      // First, update the influencer record with approved changes
+      // First, update the influencer record with approved changes (excluding images)
       const updateData: any = {};
       
       if (suggestion.suggested_height) updateData.height = suggestion.suggested_height;
       if (suggestion.suggested_weight) updateData.weight = suggestion.suggested_weight;
       if (suggestion.suggested_training) updateData.years_training = suggestion.suggested_training;
       if (suggestion.suggested_description) updateData.description = suggestion.suggested_description;
-      if (suggestion.suggested_images && suggestion.suggested_images.length > 0) {
-        updateData.image = suggestion.suggested_images[0]; // Use first suggested image
-      }
 
       if (Object.keys(updateData).length > 0) {
         const { error: influencerError } = await supabase
@@ -77,6 +74,47 @@ const InfluencerInfoSuggestions = () => {
           .eq('id', suggestion.influencer_id);
         
         if (influencerError) throw influencerError;
+      }
+
+      // Handle suggested images - add them to influencer_photos table
+      if (suggestion.suggested_images && suggestion.suggested_images.length > 0) {
+        // First, check current image count to enforce 40-image limit
+        const { count: currentImageCount, error: countError } = await supabase
+          .from('influencer_photos')
+          .select('*', { count: 'exact', head: true })
+          .eq('influencer_id', suggestion.influencer_id);
+
+        if (countError) throw countError;
+
+        const newImageCount = (currentImageCount || 0) + suggestion.suggested_images.length;
+        
+        if (newImageCount > 40) {
+          throw new Error(`Cannot add ${suggestion.suggested_images.length} images. Would exceed limit of 40 images per influencer (currently has ${currentImageCount || 0}).`);
+        }
+
+        // Get the current highest order to maintain proper ordering
+        const { data: lastPhoto } = await supabase
+          .from('influencer_photos')
+          .select('order')
+          .eq('influencer_id', suggestion.influencer_id)
+          .order('order', { ascending: false })
+          .limit(1);
+
+        const startOrder = lastPhoto && lastPhoto.length > 0 ? (lastPhoto[0].order || 0) + 1 : 1;
+
+        // Insert all suggested images into influencer_photos table
+        const photosToInsert = suggestion.suggested_images.map((imageUrl: string, index: number) => ({
+          influencer_id: suggestion.influencer_id,
+          image_url: imageUrl,
+          description: `Image suggested by user`,
+          order: startOrder + index
+        }));
+
+        const { error: photosError } = await supabase
+          .from('influencer_photos')
+          .insert(photosToInsert);
+
+        if (photosError) throw photosError;
       }
 
       // Then update the suggestion status
@@ -93,6 +131,7 @@ const InfluencerInfoSuggestions = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-info-suggestions'] });
       queryClient.invalidateQueries({ queryKey: ['influencers'] });
+      queryClient.invalidateQueries({ queryKey: ['influencer-photos'] });
     }
   });
 
@@ -125,11 +164,12 @@ const InfluencerInfoSuggestions = () => {
         title: "Approved & Applied",
         description: `Info updates for ${suggestion.influencer?.name} have been applied.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving suggestion:', error);
+      const errorMessage = error.message || "Failed to approve and apply suggestion.";
       toast({
         title: "Error",
-        description: "Failed to approve and apply suggestion.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -151,11 +191,12 @@ const InfluencerInfoSuggestions = () => {
 
       setEditingSuggestion(null);
       setAdminNotes("");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error with approval:', error);
+      const errorMessage = error.message || "Failed to approve suggestion.";
       toast({
         title: "Error",
-        description: "Failed to approve suggestion.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
