@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(.*)",
@@ -22,7 +24,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)\\.js",
+      "source": "/(.*)\\.js$",
       "headers": [
         {
           "key": "Content-Type",
@@ -31,7 +33,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)\\.mjs",
+      "source": "/(.*)\\.mjs$",
       "headers": [
         {
           "key": "Content-Type",
@@ -40,7 +42,7 @@
       ]
     },
     {
-      "source": "/src/(.*)\\.tsx?",
+      "source": "/(.*)\\.jsx$",
       "headers": [
         {
           "key": "Content-Type",
@@ -49,7 +51,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.js",
+      "source": "/(.*)\\.ts$",
       "headers": [
         {
           "key": "Content-Type",
@@ -58,7 +60,16 @@
       ]
     },
     {
-      "source": "/(.*)\\.mjs",
+      "source": "/(.*)\\.tsx$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
       "headers": [
         {
           "key": "Content-Type",
@@ -81,5 +92,6 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "trailingSlash": false
 } 
