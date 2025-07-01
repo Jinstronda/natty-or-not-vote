@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Influencer } from "@/types/vote";
 import InfluencerPhotoGallery from './InfluencerPhotoGallery';
+import SuggestInfluencerInfo from './SuggestInfluencerInfo';
 import { Instagram, Youtube, Music, Link } from "lucide-react";
 
 interface InfluencerInfoProps {
@@ -122,6 +123,11 @@ const InfluencerInfo = ({ influencer }: InfluencerInfoProps) => {
               {displayStatus(influencer.claimed_status)}
             </Badge>
           </div>
+        </div>
+        
+        {/* Suggest Info Button */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <SuggestInfluencerInfo influencer={influencer} />
         </div>
       </CardContent>
     </Card>
