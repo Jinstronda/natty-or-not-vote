@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const Merch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 47, seconds: 33 });
 
   useEffect(() => {
     // Hide loading state after components load
@@ -12,321 +14,248 @@ const Merch = () => {
       setIsLoading(false);
     }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Add custom styles for Shopify components
-    const style = document.createElement('style');
-    style.textContent = `
-      /* Style the Shopify cart */
-      shopify-cart::part(dialog) {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-      }
-
-      shopify-cart::part(primary-button) {
-        background: hsl(var(--primary));
-        border-radius: 8px;
-        font-weight: 600;
-        font-family: inherit;
-        border: none;
-        color: white;
-      }
-
-      shopify-cart::part(secondary-button) {
-        background: transparent;
-        border: 2px solid hsl(var(--primary));
-        border-radius: 8px;
-        color: hsl(var(--primary));
-        font-weight: 500;
-      }
-
-      /* Style the variant selector */
-      shopify-variant-selector::part(form) {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 1rem;
-      }
-
-      shopify-variant-selector::part(radio) {
-        border: 2px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 8px 12px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 14px;
-      }
-
-      shopify-variant-selector::part(radio-selected) {
-        border-color: hsl(var(--primary));
-        background: hsl(var(--primary) / 0.1);
-        color: hsl(var(--primary));
-      }
-
-      /* Style product cards */
-      .product-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s;
-        height: fit-content;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .product-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
-      }
-
-      .sale-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: #ef4444;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-        z-index: 10;
-      }
-
-
-
-      .add-to-cart-btn {
-        width: 100%;
-        background: hsl(var(--primary));
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-top: 1rem;
-      }
-
-      .add-to-cart-btn:hover {
-        background: hsl(var(--primary) / 0.9);
-        transform: translateY(-1px);
-      }
-
-      /* Shopping cart button */
-      .cart-button {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        background: hsl(var(--primary));
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 16px 24px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 50;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-      }
-
-      .cart-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      }
-    `;
-    document.head.appendChild(style);
+    // Countdown timer for urgency
+    const countdown = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
 
     return () => {
-      document.head.removeChild(style);
+      clearTimeout(timer);
+      clearInterval(countdown);
     };
   }, []);
 
-  const handleAddToCart = (event: any) => {
-    const cart = document.getElementById('main-cart') as any;
-    if (cart) {
-      cart.addLine(event).then(() => {
-        cart.showModal();
-      });
-    }
-  };
-
-  const openCart = () => {
-    const cart = document.getElementById('main-cart') as any;
-    if (cart) {
-      cart.showModal();
-    }
-  };
-
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
-            <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get the secret weapons and gear that every influencer doesn't want you to know about. 
-            Discover the truth behind the gains! ⚡
-          </p>
-          
-          {/* Search Bar */}
-          <div className="max-w-md mx-auto mt-8">
-            <Input
-              type="text"
-              placeholder="Search for secret weapons..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-center"
-            />
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8 space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-6 bg-gradient-to-r from-natty/20 to-juicy/20 rounded-2xl p-8 border border-border">
+            <h1 className="text-4xl md:text-6xl font-bold">
+              Official <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Professional gear that transforms your fitness content ⚡
+            </p>
           </div>
-        </div>
 
-        {/* Promotional Banner */}
-        <div className="bg-gradient-to-r from-natty/10 to-juicy/10 border border-primary/20 rounded-lg p-6 mb-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">
-            <span style={{
-              background: 'linear-gradient(45deg, #ffd700, #ffed4e)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 800
-            }}>⚡ THE JUICY LIGHTNING™ ⚡</span>
-          </h2>
-          <p className="text-muted-foreground">
-            The secret weapon every "natural" influencer doesn't want you to know about
-          </p>
-          <p className="text-sm font-semibold text-primary mt-2">
-            Limited Time: Save 50% on all secret weapons!
-          </p>
-        </div>
-
-        {/* Shopify Store Container - Connected to your live store */}
-        <shopify-store 
-          store-domain="606ejf-hf.myshopify.com"
-          public-access-token="abe5bbfdabf81963d9104f5dfc4ba552"
-          country="US" 
-          language="en"
-        >
-          {/* Shopping Cart */}
-          <shopify-cart id="main-cart"></shopify-cart>
-          
-          {/* Products Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <shopify-list-context 
-              type="product" 
-              query="products" 
-              first="12"
-            >
-              <div slot="item" className="product-card">
-                <div className="sale-badge">🔥 HOT</div>
-                
-                <shopify-media 
-                  query="product.featuredImage" 
-                  width="300" 
-                  height="300"
-                  style={{
-                    width: '100%',
-                    height: '250px',
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                    marginBottom: '1rem'
-                  }}
-                ></shopify-media>
-                
-                <div>
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    marginBottom: '0.5rem',
-                    color: '#1f2937',
-                    lineHeight: '1.3'
-                  }}>
-                    <shopify-data query="product.title"></shopify-data>
-                  </h3>
-
-                  <p style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280',
-                    marginBottom: '1rem',
-                    lineHeight: '1.4'
-                  }}>
-                    <shopify-data query="product.description"></shopify-data>
-                  </p>
-                  
-                  <div style={{
-                    marginBottom: '1rem'
-                  }}>
-                    <div style={{
-                      fontSize: '1.125rem',
-                      fontWeight: 700,
-                      color: 'hsl(var(--primary))',
-                      marginBottom: '0.25rem'
-                    }}>
-                      <shopify-money 
-                        query="product.selectedOrFirstAvailableVariant.price"
-                        format="money_with_currency"
-                      ></shopify-money>
-                    </div>
-                    
-                    <div style={{
-                      fontSize: '0.875rem',
-                      color: '#9ca3af',
-                      textDecoration: 'line-through'
-                    }}>
-                      <shopify-money 
-                        query="product.selectedOrFirstAvailableVariant.compareAtPrice"
-                        format="money_with_currency"
-                      ></shopify-money>
-                    </div>
-                  </div>
-                  
-                  <shopify-variant-selector></shopify-variant-selector>
-                  
-                  <button 
-                    className="add-to-cart-btn"
-                    onClick={handleAddToCart}
-                  >
-                    🔥 Get Secret Weapon
-                  </button>
-                </div>
+          {/* Countdown Timer for Urgency */}
+          <div className="bg-gradient-to-r from-destructive/90 to-destructive rounded-xl p-6 text-center text-white">
+            <div className="text-lg font-bold mb-4 uppercase tracking-wider">⚡ FLASH SALE ENDS IN ⚡</div>
+            <div className="flex justify-center gap-4">
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="block text-2xl font-bold">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className="text-xs uppercase opacity-90">Hours</span>
               </div>
-            </shopify-list-context>
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="block text-2xl font-bold">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className="text-xs uppercase opacity-90">Minutes</span>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-3 rounded-lg">
+                <span className="block text-2xl font-bold">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                <span className="text-xs uppercase opacity-90">Seconds</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter */}
+          <div className="max-w-lg mx-auto">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {isLoading && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+              <p className="text-muted-foreground">Loading your secret weapons...</p>
+            </div>
+          )}
+
+          {/* Shopify Store Container */}
+          <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+            <shopify-store 
+              store-domain="606ejf-hf.myshopify.com"
+              public-access-token="abe5bbfdabf81963d9104f5dfc4ba552"
+              country="US" 
+              language="en"
+            >
+              {/* Shopping Cart */}
+              <shopify-cart id="main-cart"></shopify-cart>
+              
+              {/* Products Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <shopify-list-context 
+                  type="product" 
+                  query="products" 
+                  first="12"
+                >
+                  <template dangerouslySetInnerHTML={{
+                    __html: `
+                      <div class="bg-card/95 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 group hover:border-natty/30 relative">
+                        <!-- Product Image -->
+                        <div class="relative group overflow-hidden">
+                          <div class="aspect-square bg-gradient-to-br from-muted/50 to-muted">
+                            <shopify-media 
+                              query="product.featuredImage" 
+                              width="500" 
+                              height="500"
+                              style="width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 0;"
+                              class="transition-transform duration-500 group-hover:scale-105"
+                            ></shopify-media>
+                          </div>
+                          
+                          <!-- Hot Badge -->
+                          <div class="absolute top-3 left-3 z-10">
+                            <div class="bg-gradient-to-r from-destructive to-destructive/90 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase backdrop-blur-sm shadow-lg">
+                              🔥 BESTSELLER
+                            </div>
+                          </div>
+                          
+                          <!-- Sale Badge -->
+                          <div class="absolute top-3 right-3 z-10">
+                            <div class="bg-gradient-to-r from-natty to-natty/90 text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-lg">
+                              50% OFF
+                            </div>
+                          </div>
+                          
+                          <!-- Hover Overlay -->
+                          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                        </div>
+                        
+                        <!-- Product Info -->
+                        <div class="p-6 space-y-5">
+                          <!-- Product Title -->
+                          <div class="space-y-2">
+                            <shopify-data query="product.title" tag="h3" class="font-bold text-xl leading-tight text-foreground group-hover:text-natty transition-colors line-clamp-2"></shopify-data>
+                            <shopify-data query="product.vendor" class="text-sm text-muted-foreground font-medium"></shopify-data>
+                          </div>
+                          
+                          <!-- Key Features -->
+                          <div class="grid grid-cols-2 gap-2">
+                            <span class="bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">✨ Premium Quality</span>
+                            <span class="bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🔋 Long Lasting</span>
+                            <span class="bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🧲 Ergonomic</span>
+                            <span class="bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">⚡ Fast Delivery</span>
+                          </div>
+                          
+                          <!-- Stock Warning -->
+                          <div class="bg-gradient-to-r from-destructive/15 to-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl text-sm font-bold text-center relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-destructive/5 to-transparent"></div>
+                            <div class="relative">⚠️ Only 7 left in stock - Order now!</div>
+                          </div>
+                          
+                          <!-- Pricing -->
+                          <div class="space-y-4">
+                            <div class="flex items-center justify-center gap-3">
+                              <shopify-data query="product.priceRange.minVariantPrice.amount" class="text-4xl font-black text-natty"></shopify-data>
+                              <span class="text-xl text-muted-foreground line-through opacity-75">34.99</span>
+                              <div class="bg-gradient-to-r from-juicy to-juicy/90 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                                Save 50%
+                              </div>
+                            </div>
+                            
+                            <!-- Availability Status -->
+                            <div class="flex items-center justify-center gap-2 py-2">
+                              <div class="w-3 h-3 bg-natty rounded-full animate-pulse"></div>
+                              <span class="text-sm text-natty font-semibold tracking-wide">In Stock & Ready to Ship</span>
+                            </div>
+                          </div>
+                          
+                          <!-- Single Buy Now Button -->
+                          <div class="pt-2">
+                            <button 
+                              onclick="window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
+                              class="w-full bg-gradient-to-r from-natty via-natty to-juicy hover:from-juicy hover:via-juicy hover:to-natty text-white px-8 py-5 rounded-2xl font-black text-lg transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-natty/25 transform uppercase tracking-wider relative overflow-hidden group"
+                            >
+                              <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                              <div class="relative flex items-center justify-center gap-3">
+                                <span class="text-2xl">🚀</span>
+                                <span>Buy Now - $17.99</span>
+                                <span class="text-sm opacity-90">→</span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    `
+                  }} />
+                </shopify-list-context>
+              </div>
+            </shopify-store>
           </div>
 
           {/* Floating Cart Button */}
-          <button 
-            className="cart-button"
-            onClick={openCart}
-          >
-            ⚡ Arsenal (<shopify-data query="cart.totalQuantity">0</shopify-data>)
-          </button>
-        </shopify-store>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading secret weapons...</p>
-            <p className="text-sm text-muted-foreground mt-2">Connecting to store...</p>
+          <div className="fixed bottom-6 right-6 z-50">
+            <button 
+              onClick={() => {
+                const cart = document.getElementById('main-cart') as any;
+                if (cart) cart.showModal();
+              }}
+              className="bg-gradient-to-r from-natty to-juicy hover:from-juicy hover:to-natty text-white px-6 py-4 rounded-full shadow-2xl hover:scale-110 transform transition-all duration-300 flex items-center gap-3 font-bold"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l-2.5-5m0 0L17 8m0 0l2.5-5M12 3v6m0 0l3-3m-3 3l-3-3" />
+              </svg>
+              <span>Cart</span>
+              <span className="bg-destructive text-white px-2 py-1 rounded-full text-sm min-w-[1.5rem] text-center font-bold">
+                0
+              </span>
+            </button>
           </div>
-        )}
 
-        {/* No Results State */}
-        {searchQuery && !isLoading && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No secret weapons found for "{searchQuery}"</p>
-            <p className="text-sm text-muted-foreground mt-2">Try a different search term</p>
+          {/* Error State for when Shopify fails */}
+          <div id="shopify-error" className="hidden text-center py-12">
+            <div className="bg-card border border-border rounded-xl p-8 max-w-md mx-auto">
+              <div className="text-destructive mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-lg mb-2">Store Temporarily Unavailable</h3>
+              <p className="text-muted-foreground mb-4">We're working on getting our store back online. Please check back later.</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Retry
+              </button>
+            </div>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Script to handle Shopify loading errors */}
+      {/* @ts-ignore */}
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          setTimeout(() => {
+            const products = document.querySelectorAll('shopify-list-context');
+            if (products.length === 0 || document.querySelector('.shopify-error')) {
+              document.getElementById('shopify-error').classList.remove('hidden');
+            }
+          }, 5000);
+        `
+      }} />
     </Layout>
   );
 };
