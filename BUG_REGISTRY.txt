@@ -1,0 +1,370 @@
+===============================================================================
+                          NATTY OR JUICY - BUG REGISTRY
+                        Comprehensive Issue Documentation
+===============================================================================
+
+PROJECT: nattyorjuicy.com (Fitness Influencer Community Platform)
+STACK: React + TypeScript + Vite + Supabase + Lovable Hosting
+LAST UPDATED: July 1, 2025
+
+===============================================================================
+                               CRITICAL BUGS RESOLVED
+===============================================================================
+
+BUG #001: 422 AUTHENTICATION SIGNUP ERRORS
+═══════════════════════════════════════════════════════════════════════════════
+SEVERITY: CRITICAL (Blocking all new user registrations)
+DATE DISCOVERED: June-July 2025
+DATE RESOLVED: July 1, 2025
+
+SYMPTOMS:
+- Users unable to create new accounts
+- 422 "Unprocessable Entity" errors during signup
+- Error message: "There was an issue creating your account"
+- Auth logs showing validation failures
+
+ROOT CAUSE ANALYSIS:
+1. Data Integrity Issue: Orphaned user in auth.users without corresponding profile
+   - User ID: e653b199-5b3b-452c-becd-d8382f647621 (bechepecheemir@gmail.com)
+   - 18 users in auth.users vs 17 profiles in public.profiles
+   - Created constraint violations during new user profile creation
+
+2. Insufficient Database Trigger Logic:
+   - handle_new_user() function lacked robust username uniqueness handling
+   - No proper conflict resolution for duplicate usernames
+   - Missing error handling for edge cases
+
+DIAGNOSTIC METHODOLOGY:
+1. Sequential Thinking Framework applied
+2. Supabase MCP tools for database analysis
+3. Web search for 422 error patterns in Supabase
+4. Systematic database integrity verification
+5. Playwright browser automation for live testing
+6. Auth log analysis for error tracking
+
+SOLUTION IMPLEMENTED:
+1. Database Integrity Fix:
+   ```sql
+   INSERT INTO public.profiles (id, username, email, role, created_at, updated_at)
+   VALUES (
+       'e653b199-5b3b-452c-becd-d8382f647621',
+       'bechepecheemir',
+       'bechepecheemir@gmail.com', 
+       'user',
+       '2025-06-10 22:06:17.400646+00',
+       now()
+   );
+   ```
+
+2. Enhanced Trigger Function:
+   ```sql
+   CREATE OR REPLACE FUNCTION public.handle_new_user() 
+   RETURNS TRIGGER AS $$
+   DECLARE
+     base_username TEXT;
+     final_username TEXT;
+     counter INTEGER := 0;
+   BEGIN
+     -- Generate base username from metadata or email
+     base_username := COALESCE(NEW.raw_user_meta_data->>'username', SPLIT_PART(NEW.email, '@', 1));
+     
+     -- Clean username (remove spaces, special chars, make lowercase)
+     base_username := REGEXP_REPLACE(LOWER(base_username), '[^a-z0-9]', '', 'g');
+     
+     -- Ensure minimum length
+     IF LENGTH(base_username) < 3 THEN
+       base_username := 'user' || base_username;
+     END IF;
+     
+     -- Check for uniqueness and add suffix if needed
+     final_username := base_username;
+     WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = final_username) LOOP
+       counter := counter + 1;
+       final_username := base_username || counter::TEXT;
+     END LOOP;
+
+     -- Create profile with admin detection
+     INSERT INTO public.profiles (id, username, email, role, created_at, updated_at)
+     VALUES (
+       NEW.id,
+       final_username,
+       NEW.email,
+       CASE 
+         WHEN NEW.email IN ('joao@nattyorjuicy.com', 'admin@nattyorjuicy.com') THEN 'admin'
+         ELSE 'user'
+       END,
+       now(),
+       now()
+     );
+     
+     RETURN NEW;
+   END;
+   $$ LANGUAGE plpgsql SECURITY DEFINER;
+   ```
+
+VERIFICATION RESULTS:
+✅ Successful signup with uniquetest99999@example.com
+✅ Auth logs showing 200 SUCCESS instead of 422 errors
+✅ Automatic profile creation via database trigger
+✅ Username uniqueness conflicts resolved
+✅ Data integrity: 18 auth.users = 18 profiles (0 orphaned users)
+
+LESSONS LEARNED:
+- Always verify database integrity between related tables
+- Implement robust conflict resolution in database triggers
+- Use comprehensive testing with unique test data
+- Sequential thinking framework effective for complex debugging
+- Supabase MCP tools invaluable for database analysis
+
+═══════════════════════════════════════════════════════════════════════════════
+
+BUG #002: CONTROVERSIAL INFLUENCER SORTING
+═══════════════════════════════════════════════════════════════════════════════
+SEVERITY: HIGH (User Experience Impact)
+DATE DISCOVERED: June 2025
+DATE RESOLVED: July 1, 2025
+
+SYMPTOMS:
+- Farhat Hussein (controversial influencer) appearing 3rd instead of 1st
+- Controversial badge present but sorting logic not prioritizing
+- User expectation: controversial influencers should appear first
+
+ROOT CAUSE:
+- Missing client-side sorting logic for controversial influencers
+- Default sorting by creation date/name not considering controversial flag
+
+SOLUTION:
+Enhanced src/hooks/api/useInfluencers.ts with priority sorting:
+```typescript
+// Add controversial-first sorting while maintaining existing order within groups
+const sortedInfluencers = data.sort((a, b) => {
+  // Controversial influencers first
+  if (a.controversial && !b.controversial) return -1;
+  if (!a.controversial && b.controversial) return 1;
+  
+  // Maintain existing sort order within groups
+  return 0;
+});
+```
+
+VERIFICATION:
+✅ Farhat Hussein now appears FIRST with "🔥 Controversial" badge
+✅ Other influencers maintain their relative order
+✅ No impact on non-controversial influencer sorting
+
+═══════════════════════════════════════════════════════════════════════════════
+
+BUG #003: AUTHENTICATION HANGING ("Checking authentication...")
+═══════════════════════════════════════════════════════════════════════════════
+SEVERITY: CRITICAL (Blocking user access)
+DATE DISCOVERED: June 2025
+DATE RESOLVED: June 2025
+
+SYMPTOMS:
+- Authentication stuck on "Checking authentication..." after cache clearing
+- Users unable to access authenticated features
+- No error messages, just infinite loading
+
+ROOT CAUSE:
+1. Service worker registering immediately and intercepting Supabase requests
+2. Missing timeout handling in AuthContext
+3. "No API key found in request" errors from premature initialization
+
+SOLUTION:
+1. Delayed service worker registration in main.tsx:
+   ```typescript
+   // Delay service worker registration in production
+   if (import.meta.env.PROD) {
+     setTimeout(() => {
+       navigator.serviceWorker.register('/sw.js');
+     }, 2000);
+   }
+   ```
+
+2. Added timeout and retry logic to AuthContext:
+   ```typescript
+   const withTimeout = (promise, timeoutMs) => {
+     return Promise.race([
+       promise,
+       new Promise((_, reject) => 
+         setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+       )
+     ]);
+   };
+   ```
+
+VERIFICATION:
+✅ Authentication completes within expected timeframe
+✅ No hanging on "Checking authentication..."
+✅ Proper error handling for timeout scenarios
+
+═══════════════════════════════════════════════════════════════════════════════
+
+BUG #004: MIME TYPE CONFIGURATION ERRORS
+═══════════════════════════════════════════════════════════════════════════════
+SEVERITY: MEDIUM (Deployment Issues)
+DATE DISCOVERED: June 2025
+DATE RESOLVED: June 2025
+
+SYMPTOMS:
+- JavaScript modules served with "application/octet-stream" MIME type
+- Module loading failures in production
+- "Expected a JavaScript module script" errors
+
+ROOT CAUSE:
+- Hosting platform (Lovable) MIME type configuration mismatch
+- Missing or incorrect vercel.json configuration
+
+SOLUTION:
+Restored proper vercel.json configuration:
+```json
+{
+  "routes": [
+    {"handle": "filesystem"},
+    {"src": "/.*", "dest": "/index.html"}
+  ],
+  "headers": [
+    {
+      "source": "**/*.js",
+      "headers": [{"key": "Content-Type", "value": "application/javascript"}]
+    },
+    {
+      "source": "**/*.mjs", 
+      "headers": [{"key": "Content-Type", "value": "application/javascript"}]
+    }
+  ]
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+                            DEBUGGING METHODOLOGIES USED
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SEQUENTIAL THINKING FRAMEWORK
+   - Systematic problem breakdown into logical steps
+   - Hypothesis generation and testing
+   - Root cause analysis before implementing fixes
+   - Iterative refinement based on new information
+
+2. TOOL-DRIVEN DIAGNOSIS
+   - Supabase MCP tools for database analysis
+   - Playwright browser automation for live testing
+   - Web search for known issue patterns
+   - Context7 for documentation lookup
+   - Git analysis for change history
+
+3. COMPREHENSIVE TESTING APPROACH
+   - Dev server testing before production deployment
+   - Multiple test scenarios with unique data
+   - Console log analysis for error patterns
+   - Auth log verification for success/failure confirmation
+
+4. DATA INTEGRITY VERIFICATION
+   - Cross-table relationship validation
+   - Orphaned record detection
+   - Constraint violation analysis
+   - Trigger function testing
+
+5. INCREMENTAL FIX VALIDATION
+   - Single issue focus to avoid complexity
+   - Immediate testing after each fix
+   - Rollback capability maintenance
+   - Progressive enhancement approach
+
+═══════════════════════════════════════════════════════════════════════════════
+                                 BEST PRACTICES ESTABLISHED
+═══════════════════════════════════════════════════════════════════════════════
+
+1. DATABASE MANAGEMENT
+   - Always verify data integrity between related tables
+   - Implement robust error handling in triggers
+   - Use proper conflict resolution for unique constraints
+   - Regular verification of user/profile relationships
+
+2. AUTHENTICATION SYSTEMS  
+   - Implement timeout mechanisms for all auth operations
+   - Add retry logic for transient failures
+   - Proper service worker timing in production
+   - Comprehensive error messaging for user guidance
+
+3. DEBUGGING WORKFLOW
+   - Apply sequential thinking framework for complex issues
+   - Use systematic tool-driven diagnosis
+   - Verify fixes with comprehensive testing
+   - Document root causes and solutions thoroughly
+
+4. DEPLOYMENT CONSIDERATIONS
+   - Maintain proper MIME type configurations
+   - Test configuration changes in dev environment first
+   - Keep backup configurations (vercel.json.backup)
+   - Validate hosting platform compatibility
+
+═══════════════════════════════════════════════════════════════════════════════
+                                TECHNICAL STACK INSIGHTS
+═══════════════════════════════════════════════════════════════════════════════
+
+SUPABASE DATABASE:
+- Project: nutgdqowaqjnxtedascw.supabase.co
+- PostgreSQL 17.4.1 with Row Level Security
+- Automatic profile creation via database triggers
+- Critical tables: auth.users, public.profiles, influencers, votes
+
+FRONTEND ARCHITECTURE:
+- React 18 + TypeScript + Vite
+- Supabase Auth for user management
+- React Query for data caching and synchronization
+- Shadcn/ui component library
+
+HOSTING & DEPLOYMENT:
+- Primary: Lovable platform with custom domain
+- Configuration: vercel.json for routing and headers
+- Dev environment: Vite dev server on localhost
+
+AUTHENTICATION FLOW:
+- Supabase Auth with email/password and Google OAuth
+- Automatic profile creation via handle_new_user() trigger
+- Role-based access control (user/admin)
+- Session management with automatic refresh
+
+═══════════════════════════════════════════════════════════════════════════════
+                                    FUTURE CONSIDERATIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. MONITORING & ALERTING
+   - Implement database integrity monitoring
+   - Set up auth error rate alerts
+   - Add performance monitoring for critical paths
+
+2. TESTING AUTOMATION
+   - Expand Playwright test coverage for auth flows
+   - Add database integrity tests to CI/CD
+   - Implement regression testing for critical bugs
+
+3. DOCUMENTATION MAINTENANCE
+   - Keep bug registry updated with new issues
+   - Document all configuration changes
+   - Maintain troubleshooting guides for common problems
+
+4. PROACTIVE MEASURES
+   - Regular database health checks
+   - Periodic auth flow validation
+   - Configuration backup verification
+
+═══════════════════════════════════════════════════════════════════════════════
+                                    CHANGE LOG
+═══════════════════════════════════════════════════════════════════════════════
+
+2025-07-01: Created comprehensive bug registry
+2025-07-01: Resolved BUG #001 (422 Authentication Errors) - CRITICAL
+2025-07-01: Resolved BUG #002 (Controversial Influencer Sorting) - HIGH
+2025-06-XX: Resolved BUG #003 (Authentication Hanging) - CRITICAL  
+2025-06-XX: Resolved BUG #004 (MIME Type Configuration) - MEDIUM
+
+===============================================================================
+                                END OF REGISTRY
+===============================================================================
+
+This registry serves as a comprehensive reference for debugging methodologies,
+root cause analysis techniques, and solution implementations used in the
+nattyorjuicy.com project. It should be updated with each new bug discovered
+and resolved to maintain institutional knowledge and improve debugging efficiency. 
