@@ -42,8 +42,19 @@ const fetchInfluencers = async ({ pageParam = 0, searchTerm = '' }: { pageParam?
     controversial: row.controversial || false,
   }));
 
+  // Sort to prioritize controversial influencers first, then by existing order
+  const sortedInfluencers = influencers.sort((a, b) => {
+    // Controversial influencers always come first
+    if (a.controversial && !b.controversial) return -1;
+    if (!a.controversial && b.controversial) return 1;
+    
+    // Within each group (controversial/non-controversial), maintain original order
+    // The original data from the view is already sorted by trending DESC, total_votes DESC, created_at DESC
+    return 0;
+  });
+
   return {
-    data: influencers,
+    data: sortedInfluencers,
     nextPage: data && data.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
   };
 };
