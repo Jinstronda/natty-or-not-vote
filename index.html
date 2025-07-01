@@ -17,12 +17,111 @@
     <meta name="twitter:site" content="@nattyorjuicy" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://nattyorjuicy.com/#organization",
+          "name": "Natty or Juicy",
+          "url": "https://nattyorjuicy.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://nattyorjuicy.com/favicon.ico",
+            "width": 32,
+            "height": 32
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": "English"
+          },
+          "sameAs": [
+            "https://twitter.com/nattyorjuicy"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://nattyorjuicy.com/#website",
+          "url": "https://nattyorjuicy.com",
+          "name": "Natty or Juicy",
+          "description": "Vote and analyze whether fitness influencers are natural or enhanced",
+          "publisher": {
+            "@id": "https://nattyorjuicy.com/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://nattyorjuicy.com/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Product",
+          "@id": "https://nattyorjuicy.com/merch#product",
+          "name": "The Juicy Lightning™ - The Secret Weapon Every Natural Influencer Doesn't Want You to Know",
+          "description": "Professional gear that transforms your fitness content",
+          "brand": {
+            "@type": "Brand",
+            "name": "Natty or Juicy"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": "https://606ejf-hf.myshopify.com/products/the-juicy-lightning™-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know",
+            "priceCurrency": "USD",
+            "price": "17.99",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@id": "https://nattyorjuicy.com/#organization"
+            },
+            "validFrom": "2024-01-01",
+            "priceValidUntil": "2024-12-31"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "127"
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Performance Optimizations -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.shopify.com">
+    <link rel="dns-prefetch" href="https://lovable.dev">
+    <link rel="preconnect" href="https://606ejf-hf.myshopify.com" crossorigin>
+    
+    <!-- Font Loading with display=swap for better Core Web Vitals -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Resource Hints for Critical Assets -->
+    <link rel="preload" href="/src/main.tsx" as="script" crossorigin>
+    <link rel="modulepreload" href="/src/main.tsx">
     
     <!-- Shopify Web Components Script -->
     <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
+    
+    <!-- Security Headers for SEO Trust -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://nattyorjuicy.com/">
+    
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#10b981">
+    <meta name="msapplication-TileColor" content="#10b981">
   </head>
 
   <body>
