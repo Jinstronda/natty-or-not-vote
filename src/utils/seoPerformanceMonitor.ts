@@ -1,11 +1,12 @@
-// SEO Performance Monitor - Track Core Web Vitals and SEO metrics
+// SEO Performance Monitor - Track Core Web Vitals and SEO metrics using Google's web-vitals library
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
+
 export interface PerformanceMetrics {
   LCP?: number; // Largest Contentful Paint
-  FID?: number; // First Input Delay  
+  INP?: number; // Interaction to Next Paint (replaced FID)
   CLS?: number; // Cumulative Layout Shift
   TTFB?: number; // Time to First Byte
   FCP?: number; // First Contentful Paint
-  TTI?: number; // Time to Interactive
 }
 
 export class SEOPerformanceMonitor {
@@ -17,53 +18,37 @@ export class SEOPerformanceMonitor {
   }
 
   private initializeObservers() {
-    // Largest Contentful Paint
-    if ('PerformanceObserver' in window) {
-      try {
-        const lcpObserver = new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          const lastEntry = entries[entries.length - 1];
-          this.metrics.LCP = lastEntry.startTime;
-          this.reportMetric('LCP', lastEntry.startTime);
-        });
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-        this.observers.push(lcpObserver);
-      } catch (e) {
-        console.warn('LCP observer not supported');
-      }
+    // Using Google's official web-vitals library for accurate Core Web Vitals tracking
+    if (typeof window !== 'undefined') {
+      // Largest Contentful Paint
+      onLCP((metric) => {
+        this.metrics.LCP = metric.value;
+        this.reportMetric('LCP', metric.value, metric.rating);
+      });
 
-      // First Input Delay
-      try {
-        const fidObserver = new PerformanceObserver((entryList) => {
-          const entries = entryList.getEntries();
-          entries.forEach((entry: any) => {
-            this.metrics.FID = entry.processingStart - entry.startTime;
-            this.reportMetric('FID', this.metrics.FID);
-          });
-        });
-        fidObserver.observe({ entryTypes: ['first-input'] });
-        this.observers.push(fidObserver);
-      } catch (e) {
-        console.warn('FID observer not supported');
-      }
+      // Interaction to Next Paint (replaces FID)
+      onINP((metric) => {
+        this.metrics.INP = metric.value;
+        this.reportMetric('INP', metric.value, metric.rating);
+      });
 
       // Cumulative Layout Shift
-      try {
-        const clsObserver = new PerformanceObserver((entryList) => {
-          let clsValue = 0;
-          entryList.getEntries().forEach((entry: any) => {
-            if (!entry.hadRecentInput) {
-              clsValue += entry.value;
-            }
-          });
-          this.metrics.CLS = clsValue;
-          this.reportMetric('CLS', clsValue);
-        });
-        clsObserver.observe({ entryTypes: ['layout-shift'] });
-        this.observers.push(clsObserver);
-      } catch (e) {
-        console.warn('CLS observer not supported');
-      }
+      onCLS((metric) => {
+        this.metrics.CLS = metric.value;
+        this.reportMetric('CLS', metric.value, metric.rating);
+      });
+
+      // First Contentful Paint
+      onFCP((metric) => {
+        this.metrics.FCP = metric.value;
+        this.reportMetric('FCP', metric.value, metric.rating);
+      });
+
+      // Time to First Byte
+      onTTFB((metric) => {
+        this.metrics.TTFB = metric.value;
+        this.reportMetric('TTFB', metric.value, metric.rating);
+      });
     }
 
     // Navigation timing metrics
@@ -84,25 +69,26 @@ export class SEOPerformanceMonitor {
     }
   }
 
-  private reportMetric(name: string, value: number) {
+  private reportMetric(name: string, value: number, rating?: string) {
     // Only log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[SEO Performance] ${name}: ${value.toFixed(2)}ms`);
+      const unit = name === 'CLS' ? '' : 'ms';
+      console.log(`[SEO Performance] ${name}: ${value.toFixed(2)}${unit} (${rating || 'unknown'})`);
     }
 
     // In production, send to analytics
     if (process.env.NODE_ENV === 'production') {
-      this.sendToAnalytics(name, value);
+      this.sendToAnalytics(name, value, rating);
     }
   }
 
-  private sendToAnalytics(metric: string, value: number) {
+  private sendToAnalytics(metric: string, value: number, rating?: string) {
     // Google Analytics 4 Event
     if (typeof gtag !== 'undefined') {
       gtag('event', 'web_vitals', {
         metric_name: metric,
         metric_value: value,
-        metric_rating: this.getRating(metric, value)
+        metric_rating: rating || this.getRating(metric, value)
       });
     }
 
@@ -111,6 +97,7 @@ export class SEOPerformanceMonitor {
       navigator.sendBeacon('/api/metrics', JSON.stringify({
         metric,
         value,
+        rating: rating || this.getRating(metric, value),
         timestamp: Date.now(),
         url: window.location.href
       }));
