@@ -108,6 +108,30 @@
     <!-- Shopify Web Components Script -->
     <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
     
+    <!-- Google Analytics 4 for conversion tracking and Core Web Vitals -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID', {
+        // Enable enhanced ecommerce
+        enhanced_ecommerce: true,
+        // Track Core Web Vitals automatically
+        custom_map: {
+          'metric_name': 'metric_name',
+          'metric_value': 'metric_value', 
+          'metric_rating': 'metric_rating'
+        }
+      });
+      
+      // Enhanced ecommerce tracking for Shopify integration
+      gtag('config', 'GA_MEASUREMENT_ID', {
+        enhanced_conversions: true,
+        conversion_linker: true
+      });
+    </script>
+    
     <!-- Security Headers for SEO Trust -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">

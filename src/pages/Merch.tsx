@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import Layout from "@/components/Layout";
 import SEOHead from "@/components/SEOHead";
+import BreadcrumbSchema from "@/components/BreadcrumbSchema";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { addFAQSchemaToPage, merchFAQs } from "@/utils/faqSchema";
 
 const Merch = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +30,9 @@ const Merch = () => {
         return prev;
       });
     }, 1000);
+
+    // Add FAQ schema for better SEO
+    addFAQSchemaToPage(merchFAQs);
 
     return () => {
       clearTimeout(timer);
@@ -109,6 +114,10 @@ const Merch = () => {
         keywords={["fitness gear", "content creation", "natty or juicy", "fitness equipment", "bodybuilding", "workout accessories", "fitness influencer gear"]}
         structuredData={ecommerceSchema}
       />
+      <BreadcrumbSchema customBreadcrumbs={[
+        { name: 'Home', url: 'https://nattyorjuicy.com/' },
+        { name: 'Store', url: 'https://nattyorjuicy.com/merch' }
+      ]} />
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 space-y-8">
           {/* Hero Section */}
