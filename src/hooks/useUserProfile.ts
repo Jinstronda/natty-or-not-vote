@@ -16,6 +16,14 @@ export const useUserProfile = () => {
 
       if (error) {
         console.error('❌ UserProfile: Profile fetch error:', error);
+        
+        // Handle specific API key errors
+        if (error.message?.includes('No API key found') || 
+            error.message?.includes('Invalid API key')) {
+          console.error('🚨 UserProfile: API key issue detected');
+          throw new Error('Authentication service temporarily unavailable. Please refresh the page.');
+        }
+        
         throw error;
       }
 
@@ -55,11 +63,24 @@ export const useUserProfile = () => {
           
           if (insertError) {
             console.log('⚠️ UserProfile: Profile insert failed (might already exist):', insertError);
+            
+            // Handle API key errors during insert
+            if (insertError.message?.includes('No API key found') || 
+                insertError.message?.includes('Invalid API key')) {
+              console.error('🚨 UserProfile: API key issue during profile creation');
+              throw new Error('Authentication service temporarily unavailable. Please refresh the page.');
+            }
           } else {
             console.log('✅ UserProfile: Profile created for OAuth user');
           }
-        } catch (insertError) {
+        } catch (insertError: any) {
           console.log('⚠️ UserProfile: Profile creation error:', insertError);
+          
+          // Don't throw on profile creation errors unless it's an API key issue
+          if (insertError.message?.includes('No API key found') || 
+              insertError.message?.includes('Invalid API key')) {
+            throw insertError;
+          }
         }
 
         return {
@@ -72,8 +93,15 @@ export const useUserProfile = () => {
           created_at: supabaseUser.created_at || ''
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ UserProfile: Exception:', error);
+      
+      // Provide user-friendly error messages
+      if (error.message?.includes('No API key found') || 
+          error.message?.includes('Invalid API key')) {
+        throw new Error('Authentication service temporarily unavailable. Please refresh the page.');
+      }
+      
       throw error;
     }
   }, []);
