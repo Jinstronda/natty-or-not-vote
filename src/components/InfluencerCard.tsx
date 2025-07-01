@@ -10,6 +10,7 @@ import { Lock } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { OptimizedImage } from "./OptimizedImage";
 import { userInteractionTracker } from "@/utils/userInteractionHelper";
+import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
 
 export interface InfluencerCardProps {
   influencer: {
@@ -26,16 +27,30 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: voteStats, isLoading } = useVoteStats(influencer.id);
+  const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
 
   const handleClaim = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(`/claim/${influencer.id}`);
   };
 
-  // Calculate proper percentages that add up to 100%
-  const totalVotes = voteStats?.total_votes || 0;
-  const nattyCount = voteStats?.natty_count || 0;
-  const juicyCount = totalVotes - nattyCount;
+  // Get expert reviews for this influencer
+  const expertReviews = getInfluencerExpertReviews(influencer.id);
+  
+  // Calculate expert review counts using same logic as VotingResults.tsx
+  const expertNattyCount = expertReviews.filter(review => 
+    (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty')
+  ).length;
+  const expertJuicyCount = expertReviews.length - expertNattyCount;
+  
+  // Calculate combined percentages (user votes + expert reviews)
+  const userNattyCount = voteStats?.natty_count || 0;
+  const userTotalVotes = voteStats?.total_votes || 0;
+  const userJuicyCount = userTotalVotes - userNattyCount;
+  
+  const totalVotes = userTotalVotes + expertReviews.length;
+  const nattyCount = userNattyCount + expertNattyCount;
+  const juicyCount = userJuicyCount + expertJuicyCount;
   
   const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
   const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
