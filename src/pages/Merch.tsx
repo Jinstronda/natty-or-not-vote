@@ -111,7 +111,9 @@ const Merch = () => {
                 >
                   <template dangerouslySetInnerHTML={{
                     __html: `
-                      <div class="bg-card/95 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 group hover:border-natty/30 relative">
+                      <div 
+                        onclick="window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
+                        class="bg-card/95 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 group hover:border-natty/30 relative cursor-pointer">
                         <!-- Product Image -->
                         <div class="relative group overflow-hidden">
                           <div class="aspect-square bg-gradient-to-br from-muted/50 to-muted">
@@ -184,7 +186,7 @@ const Merch = () => {
                           <!-- Single Buy Now Button -->
                           <div class="pt-2">
                             <button 
-                              onclick="window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
+                              onclick="event.stopPropagation(); window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
                               class="w-full bg-gradient-to-r from-natty via-natty to-juicy hover:from-juicy hover:via-juicy hover:to-natty text-white px-8 py-5 rounded-2xl font-black text-lg transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-natty/25 transform uppercase tracking-wider relative overflow-hidden group"
                             >
                               <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
