@@ -39,14 +39,7 @@ const Header = () => {
 
   return (
     <header 
-      className="border-b border-border bg-background/95 sticky top-0 z-50 shadow-sm"
-      style={{
-        // Mobile-optimized header background without backdrop-blur for better performance
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        WebkitBackfaceVisibility: 'hidden',
-        backfaceVisibility: 'hidden',
-        transform: 'translateZ(0)', // Force GPU acceleration without blur
-      }}
+      className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm"
       role="banner"
     >
       <div className="container mx-auto px-3 sm:px-4 py-3">
@@ -122,7 +115,7 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation Menu - Enhanced with better UX patterns and mobile-optimized animations */}
+        {/* Mobile Navigation Menu - Enhanced with better UX patterns */}
         <div 
           id="mobile-navigation"
           className={`
@@ -132,11 +125,6 @@ const Header = () => {
               : 'max-h-0 opacity-0 mt-0'
             }
           `}
-          style={{
-            // Mobile-optimized animation without expensive transforms
-            willChange: isMobileMenuOpen ? 'max-height, opacity' : 'auto',
-            transform: 'translateZ(0)', // Force GPU layer without blur
-          }}
           role="navigation" 
           aria-label="Mobile navigation"
         >
@@ -229,10 +217,10 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Enhanced Mobile Menu Backdrop - Mobile-optimized without backdrop-blur */}
+      {/* Enhanced Mobile Menu Backdrop with better accessibility */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40"
+          className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
           onClick={closeMobileMenu}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
@@ -241,14 +229,6 @@ const Header = () => {
           }}
           aria-hidden="true"
           role="presentation"
-          style={{
-            // Mobile-optimized backdrop without expensive blur effects
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            WebkitBackfaceVisibility: 'hidden',
-            backfaceVisibility: 'hidden',
-            transform: 'translateZ(0)',
-            willChange: 'opacity',
-          }}
         />
       )}
     </header>
