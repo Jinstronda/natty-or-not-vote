@@ -3,7 +3,7 @@
   "short_name": "Natty or Juicy",
   "description": "Vote and analyze whether fitness influencers are natural or enhanced",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#0f172a",
   "theme_color": "#10b981",
   "orientation": "portrait-primary",
