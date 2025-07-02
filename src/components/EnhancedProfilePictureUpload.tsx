@@ -87,6 +87,37 @@ const EnhancedProfilePictureUpload = () => {
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
+      // Clean up old profile pictures for this user to prevent storage bloat
+      console.log('[EnhancedProfilePictureUpload] Cleaning up old profile pictures...');
+      try {
+        const { data: existingFiles } = await supabase.storage
+          .from('profile-pictures')
+          .list('', {
+            search: user.id
+          });
+
+        if (existingFiles && existingFiles.length > 0) {
+          const filesToDelete = existingFiles
+            .filter(file => file.name.startsWith(user.id))
+            .map(file => file.name);
+          
+          if (filesToDelete.length > 0) {
+            console.log('[EnhancedProfilePictureUpload] Deleting old files:', filesToDelete);
+            const { error: deleteError } = await supabase.storage
+              .from('profile-pictures')
+              .remove(filesToDelete);
+            
+            if (deleteError) {
+              console.warn('[EnhancedProfilePictureUpload] Warning: Could not delete old files:', deleteError);
+              // Don't throw - continue with upload even if cleanup fails
+            }
+          }
+        }
+      } catch (cleanupError) {
+        console.warn('[EnhancedProfilePictureUpload] Warning: Cleanup failed:', cleanupError);
+        // Don't throw - continue with upload even if cleanup fails
+      }
+
       // Upload to Supabase storage with timeout protection
       const fileName = `${user.id}_${Date.now()}`;
       
@@ -119,7 +150,7 @@ const EnhancedProfilePictureUpload = () => {
 
       console.log('[EnhancedProfilePictureUpload] Public URL obtained:', publicUrl);
 
-      // Update profile in database with timeout protection
+      // Update profile in database
       console.log('[EnhancedProfilePictureUpload] Updating profile in database...');
       
       const { error: updateError } = await supabase
@@ -171,6 +202,36 @@ const EnhancedProfilePictureUpload = () => {
     try {
       console.log('[EnhancedProfilePictureUpload] Removing profile picture...');
       
+      // Remove all profile picture files for this user from storage
+      try {
+        const { data: existingFiles } = await supabase.storage
+          .from('profile-pictures')
+          .list('', {
+            search: user.id
+          });
+
+        if (existingFiles && existingFiles.length > 0) {
+          const filesToDelete = existingFiles
+            .filter(file => file.name.startsWith(user.id))
+            .map(file => file.name);
+          
+          if (filesToDelete.length > 0) {
+            console.log('[EnhancedProfilePictureUpload] Deleting user files:', filesToDelete);
+            const { error: deleteError } = await supabase.storage
+              .from('profile-pictures')
+              .remove(filesToDelete);
+            
+            if (deleteError) {
+              console.warn('[EnhancedProfilePictureUpload] Warning: Could not delete files:', deleteError);
+              // Don't throw - continue to update database even if file deletion fails
+            }
+          }
+        }
+      } catch (deleteError) {
+        console.warn('[EnhancedProfilePictureUpload] Warning: File deletion failed:', deleteError);
+        // Don't throw - continue to update database even if file deletion fails
+      }
+
       // Update profile in database
       const { error } = await supabase
         .from('profiles')

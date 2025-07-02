@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +46,7 @@ const ProfilePictureUpload = () => {
       setPreviewUrl(preview);
 
       // Upload to Supabase storage
-      const fileName = user.id; // Just use user ID as filename
+      const fileName = user.id; // Use user ID as filename (will overwrite existing)
       
       console.log('[ProfilePictureUpload] Uploading file to storage...');
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -63,18 +62,22 @@ const ProfilePictureUpload = () => {
 
       console.log('[ProfilePictureUpload] Upload successful, getting public URL...');
 
-      // Get public URL
+      // Get public URL with cache-busting timestamp to prevent browser caching issues
+      const timestamp = Date.now();
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      console.log('[ProfilePictureUpload] Public URL obtained:', publicUrl);
+      // Add cache-busting parameter to ensure browser fetches the new image
+      const cacheBustedUrl = `${publicUrl}?v=${timestamp}`;
 
-      // Update profile in database
+      console.log('[ProfilePictureUpload] Public URL with cache-busting obtained:', cacheBustedUrl);
+
+      // Update profile in database with cache-busted URL
       console.log('[ProfilePictureUpload] Updating profile in database...');
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ profile_picture_url: publicUrl })
+        .update({ profile_picture_url: cacheBustedUrl })
         .eq('id', user.id);
 
       if (updateError) {
@@ -115,6 +118,17 @@ const ProfilePictureUpload = () => {
     try {
       console.log('[ProfilePictureUpload] Removing profile picture...');
       
+      // Remove the actual file from storage
+      const fileName = user.id;
+      const { error: deleteError } = await supabase.storage
+        .from('profile-pictures')
+        .remove([fileName]);
+
+      if (deleteError) {
+        console.error('[ProfilePictureUpload] File deletion error:', deleteError);
+        // Don't throw here - continue to update database even if file deletion fails
+      }
+
       // Update profile in database
       const { error } = await supabase
         .from('profiles')
