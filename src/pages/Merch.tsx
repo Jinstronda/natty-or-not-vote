@@ -94,16 +94,12 @@ const Merch = () => {
       <SEOHead
         title="Official Natty or Juicy Store - Premium Fitness Gear | 50% OFF Flash Sale"
         description="Transform your fitness content with professional gear. The Juicy Lightning™ - now 50% OFF. In stock & ready to ship. Free shipping on all orders."
-        canonicalUrl="https://nattyorjuicy.com/merch"
         ogType="product"
         ogImage="https://lovable.dev/opengraph-image-p98pqg.png"
         keywords={["fitness gear", "content creation", "natty or juicy", "fitness equipment", "bodybuilding", "workout accessories", "fitness influencer gear"]}
         structuredData={ecommerceSchema}
       />
-      <BreadcrumbSchema customBreadcrumbs={[
-        { name: 'Home', url: 'https://nattyorjuicy.com/' },
-        { name: 'Store', url: 'https://nattyorjuicy.com/merch' }
-      ]} />
+      <BreadcrumbSchema />
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8">
           {/* Hero Section - Mobile Optimized */}

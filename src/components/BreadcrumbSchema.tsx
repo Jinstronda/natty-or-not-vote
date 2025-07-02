@@ -17,9 +17,10 @@ const BreadcrumbSchema = ({ customBreadcrumbs, showVisual = false }: BreadcrumbS
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     if (customBreadcrumbs) return customBreadcrumbs;
 
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [
-      { name: 'Home', url: 'https://nattyorjuicy.com/' }
+      { name: 'Home', url: `${baseUrl}/` }
     ];
 
     let currentPath = '';
@@ -28,7 +29,7 @@ const BreadcrumbSchema = ({ customBreadcrumbs, showVisual = false }: BreadcrumbS
       const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' ');
       breadcrumbs.push({
         name,
-        url: `https://nattyorjuicy.com${currentPath}`
+        url: `${baseUrl}${currentPath}`
       });
     });
 
