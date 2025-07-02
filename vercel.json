@@ -1,3 +1,4 @@
+
 {
   "routes": [
     {
@@ -10,11 +11,20 @@
   ],
   "headers": [
     {
-      "source": "**/*.js",
+      "source": "/assets/(.*)\\.js",
+      "headers": [
+        {
+          "key": "Content-Type", 
+          "value": "text/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/src/(.*)\\.tsx?",
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/javascript"
+          "value": "text/javascript; charset=utf-8"
         }
       ]
     },
@@ -23,7 +33,28 @@
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/javascript"
+          "value": "text/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options", 
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         }
       ]
     }
@@ -32,5 +63,5 @@
     "api/metrics.js": {
       "maxDuration": 10
     }
-    }
-} 
+  }
+}
