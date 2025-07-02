@@ -18,21 +18,37 @@ const ExpertProfilePage = () => {
   useEffect(() => {
     if (!expertId) return;
     const fetchExpert = async () => {
-      const { data } = await supabase.from('experts').select('*').eq('id', expertId).single();
-      setExpert({
-        ...data,
-        influencer_id: data?.influencer_id ?? undefined,
-        bio: data?.bio ?? undefined,
-        twitter: data?.twitter ?? undefined,
-        instagram: data?.instagram ?? undefined,
-      });
-      if (data?.influencer_id) {
-        const { data: inf } = await supabase.from('influencers').select('*').eq('id', data.influencer_id).single();
-        setInfluencer(inf);
-      } else if (data?.name) {
-        // Fallback: try to match influencer by name
-        const { data: inf } = await supabase.from('influencers').select('*').eq('name', data.name).single();
-        setInfluencer(inf);
+      try {
+        const { data, error } = await supabase.from('experts').select('*').eq('id', expertId).single();
+        if (error) {
+          console.error('Error fetching expert:', error);
+          return;
+        }
+        
+        setExpert({
+          ...data,
+          influencer_id: data?.influencer_id ?? undefined,
+          bio: data?.bio ?? undefined,
+          twitter: data?.twitter ?? undefined,
+          instagram: data?.instagram ?? undefined,
+        });
+        
+        if (data?.influencer_id) {
+          // Try to find influencer by ID
+          const { data: inf, error: infError } = await supabase.from('influencers').select('*').eq('id', data.influencer_id).maybeSingle();
+          if (!infError && inf) {
+            setInfluencer(inf);
+          }
+        } else if (data?.name) {
+          // Fallback: try to match influencer by name (gracefully handle no results)
+          const { data: inf, error: infError } = await supabase.from('influencers').select('*').eq('name', data.name).maybeSingle();
+          if (!infError && inf) {
+            setInfluencer(inf);
+          }
+          // If no influencer found by name, that's okay - just don't set any influencer data
+        }
+      } catch (error) {
+        console.error('Error in fetchExpert:', error);
       }
     };
     const fetchReviews = async () => {
@@ -59,7 +75,7 @@ const ExpertProfilePage = () => {
                 expert.name?.[0] || <User className="w-10 h-10" />
               )}
             </div>
-            <h1 className="font-heading font-bold text-2xl mb-1 text-center">{expert.name}</h1>
+            <h1 className="font-heading font-bold text-2xl mb-1 text-center">{expert.name || 'Unknown Expert'}</h1>
             {expert.bio && <p className="mb-3 text-muted-foreground text-center">{expert.bio}</p>}
             <div className="flex flex-wrap gap-3 justify-center mb-3">
               {expert.email && (
