@@ -1,0 +1,19 @@
+# Browsers that we support for iOS Safari compatibility
+# Based on web research for fixing "Failed to load module script" errors
+
+# Desktop browsers
+last 3 Chrome versions
+last 3 Firefox versions
+last 3 Edge major versions
+last 3 Safari major versions
+
+# Mobile browsers - Critical for iOS Safari compatibility
+iOS >= 14
+last 3 iOS major versions
+last 3 Android major versions
+
+# Additional coverage
+Firefox ESR
+not dead
+> 0.2%
+not op_mini all 

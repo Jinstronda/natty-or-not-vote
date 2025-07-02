@@ -32,56 +32,8 @@ export default defineConfig(({ mode }) => ({
       gzipSize: true,
       brotliSize: true
     }),
-    // PWA support with modern caching strategies
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
-              }
-            }
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          }
-        ]
-      },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      manifest: {
-        name: 'Natty or Not',
-        short_name: 'NattyOrNot',
-        description: 'Vote on whether fitness influencers are natty or not',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    })
+    // PWA support with modern caching strategies - TEMPORARILY DISABLED for iOS debugging
+    // VitePWA({
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -110,8 +62,8 @@ export default defineConfig(({ mode }) => ({
     holdUntilCrawlEnd: false,
   },
   build: {
-    // Target modern browsers for smaller bundles
-    target: 'es2020',
+    // Target browsers for iOS Safari compatibility - changed from es2020 to es2018
+    target: ['es2018', 'safari14'],
     // Enable CSS code splitting for better caching
     cssCodeSplit: true,
     // Optimize chunk size warnings
