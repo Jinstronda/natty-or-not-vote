@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,19 +40,19 @@ export class FlashSaleTimerService {
   private async fetchTimerFromDatabase(): Promise<FlashSaleRecord | null> {
     try {
       const { data, error } = await supabase
-        .from('flash_sale_timer' as any)
+        .from('flash_sale_timer')
         .select('*')
         .eq('active', true)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching flash sale timer:', error);
         return null;
       }
 
-      return data as FlashSaleRecord;
+      return data;
     } catch (error) {
       console.error('Error in fetchTimerFromDatabase:', error);
       return null;
@@ -67,14 +68,14 @@ export class FlashSaleTimerService {
       newEndTime.setHours(newEndTime.getHours() + currentRecord.duration_hours);
 
       const { data, error } = await supabase
-        .from('flash_sale_timer' as any)
+        .from('flash_sale_timer')
         .update({
           sale_end_time: newEndTime.toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', currentRecord.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error resetting timer:', error);
@@ -82,7 +83,7 @@ export class FlashSaleTimerService {
       }
 
       console.log('Timer reset successfully:', data);
-      return data as FlashSaleRecord;
+      return data;
     } catch (error) {
       console.error('Error in resetTimer:', error);
       return null;
