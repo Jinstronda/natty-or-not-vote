@@ -1,3 +1,4 @@
+
 export interface Vote {
   userId: string;
   influencerId: string;
@@ -41,6 +42,8 @@ export interface Influencer {
     instagram?: string;
     youtube?: string;
     tiktok?: string;
+    twitter?: string;
+    website?: string;
   };
   photos?: InfluencerPhoto[];
 }
