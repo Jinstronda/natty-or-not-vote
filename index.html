@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -20,18 +20,8 @@
     <meta name="twitter:site" content="@nattyorjuicy" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Performance Optimizations -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.shopify.com">
-    <link rel="dns-prefetch" href="https://lovable.dev">
-    <link rel="preconnect" href="https://606ejf-hf.myshopify.com" crossorigin>
-    
     <!-- Font Loading -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Resource Hints -->
-    <link rel="modulepreload" href="/src/main.tsx">
     
     <!-- Shopify Web Components -->
     <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
@@ -44,16 +34,12 @@
     <meta name="theme-color" content="#10b981">
     <meta name="msapplication-TileColor" content="#10b981">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/favicon.ico">
     <meta name="apple-mobile-web-app-title" content="Natty or Juicy">
     
     <!-- Simplified Mobile CSS -->
     <style>
-      /* Essential mobile fixes only */
       html, body {
         font-size: 16px;
         width: 100%;
@@ -63,43 +49,17 @@
         text-size-adjust: 100%;
       }
       
-      /* Prevent zoom on input focus */
       input, textarea, select {
         font-size: 16px;
         -webkit-appearance: none;
       }
       
-      /* Root container */
       #root {
         width: 100%;
         max-width: 100vw;
         overflow-x: hidden;
       }
-      
-      /* Viewport height fix for mobile */
-      .mobile-vh-fix {
-        height: 100vh;
-        height: calc(var(--vh, 1vh) * 100);
-      }
     </style>
-    
-    <!-- Minimal Mobile JavaScript -->
-    <script>
-      // Set CSS custom property for mobile viewport height
-      function setViewportHeight() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-      }
-      
-      // Initial setup
-      setViewportHeight();
-      
-      // Update on resize and orientation change
-      window.addEventListener('resize', setViewportHeight);
-      window.addEventListener('orientationchange', function() {
-        setTimeout(setViewportHeight, 100);
-      });
-    </script>
   </head>
 
   <body>
