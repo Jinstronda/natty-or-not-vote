@@ -6,8 +6,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
-import { initializeSEOMonitoring } from "./utils/seoPerformanceMonitor";
-import "./utils/emergencyDebug"; // Import emergency debug utilities
 
 // Loading component for better UX
 const PageLoader = () => (
@@ -45,28 +43,26 @@ const ErrorFallback = ({ error }: { error: Error }) => (
 );
 
 const App = () => {
-  // Initialize SEO monitoring for Core Web Vitals tracking
+  // Initialize basic tracking (only if gtag is available)
   useEffect(() => {
-    const monitor = initializeSEOMonitoring();
-    
     // Add conversion tracking for ecommerce
     const trackConversion = (event: string, value?: number) => {
       // Google Analytics 4 conversion tracking
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'conversion', {
-          event_name: event,
-          value: value,
-          currency: 'USD'
-        });
+      try {
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'conversion', {
+            event_name: event,
+            value: value,
+            currency: 'USD'
+          });
+        }
+      } catch (error) {
+        console.warn('GTAg tracking failed:', error);
       }
     };
 
     // Make tracking available globally for components
     (window as any).trackConversion = trackConversion;
-
-    return () => {
-      if (monitor) monitor.destroy();
-    };
   }, []);
 
   return (
