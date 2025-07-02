@@ -135,19 +135,63 @@ const Merch = () => {
             </div>
           </div>
 
-          {/* Search & Filter - Mobile Optimized */}
+          {/* Search & Filter - Enhanced Mobile Search Experience */}
           <div className="max-w-lg mx-auto px-2">
             <div className="relative">
               <Input
-                type="text"
+                type="search"
+                inputMode="search"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-base"
+                className="pl-10 h-12 text-base focus:ring-2 focus:ring-primary focus:border-primary"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                aria-label="Search for products"
+                role="searchbox"
               />
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              
+              {/* Enhanced search suggestions (Research: 77% don't include category scope) */}
+              {searchQuery.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="p-2">
+                    <div className="text-xs text-muted-foreground font-medium mb-2 px-2">Search suggestions</div>
+                    <div className="space-y-1">
+                      <button 
+                        className="w-full text-left px-3 py-2 hover:bg-muted rounded-md text-sm flex items-center gap-2"
+                        onClick={() => setSearchQuery('fitness gear')}
+                      >
+                        <span>🏋️</span>
+                        <span>fitness gear <span className="text-muted-foreground">in Equipment</span></span>
+                      </button>
+                      <button 
+                        className="w-full text-left px-3 py-2 hover:bg-muted rounded-md text-sm flex items-center gap-2"
+                        onClick={() => setSearchQuery('lightning')}
+                      >
+                        <span>⚡</span>
+                        <span>lightning <span className="text-muted-foreground">in Accessories</span></span>
+                      </button>
+                      <button 
+                        className="w-full text-left px-3 py-2 hover:bg-muted rounded-md text-sm flex items-center gap-2"
+                        onClick={() => setSearchQuery('premium')}
+                      >
+                        <span>✨</span>
+                        <span>premium <span className="text-muted-foreground">in All Products</span></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
