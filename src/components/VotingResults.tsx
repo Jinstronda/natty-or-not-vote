@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVotes } from "@/hooks/useVotes";
@@ -19,9 +18,11 @@ const VotingResults = ({ influencerId }: VotingResultsProps) => {
   const communityResults = getVotePercentages();
   const expertReviews = getInfluencerExpertReviews(influencerId);
   
-  // Calculate expert percentages based on ratings (assuming 4+ stars = natty, 3 or less = juicy)
-  const expertNattyCount = expertReviews.filter(review => review.rating >= 4).length;
-  const expertJuicyCount = expertReviews.filter(review => review.rating < 4).length;
+  // Calculate expert review counts using same logic as VotingSection.tsx and InfluencerCard.tsx
+  const expertNattyCount = expertReviews.filter(review => 
+    (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty')
+  ).length;
+  const expertJuicyCount = expertReviews.length - expertNattyCount;
   const totalExpertReviews = expertReviews.length;
   
   const expertNattyPercentage = totalExpertReviews > 0 ? Math.round((expertNattyCount / totalExpertReviews) * 100) : 0;
