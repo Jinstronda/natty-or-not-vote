@@ -1,3 +1,4 @@
+
 import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,6 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
+import MobileLoadingDiagnostic from "./components/MobileLoadingDiagnostic";
 
 // Loading component for better UX
 const PageLoader = () => (
@@ -66,32 +68,34 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/merch" element={<Merch />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/influencer/:id" element={<InfluencerProfile />} />
-                <Route path="/user/:id" element={<UserProfile />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/experts" element={<ExpertsDirectory />} />
-                <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <MobileLoadingDiagnostic>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/merch" element={<Merch />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
+                  <Route path="/influencer/:id" element={<InfluencerProfile />} />
+                  <Route path="/user/:id" element={<UserProfile />} />
+                  <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/experts" element={<ExpertsDirectory />} />
+                  <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </MobileLoadingDiagnostic>
   );
 };
 
