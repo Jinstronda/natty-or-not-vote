@@ -22,7 +22,7 @@ const AdminTopBar = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-red-900/95 to-red-800/95 border-b border-red-600/50 md:backdrop-blur-sm">
+    <div className="bg-gradient-to-r from-red-900 to-red-800 border-b border-red-600/50">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           {/* Admin Badge and Status */}
