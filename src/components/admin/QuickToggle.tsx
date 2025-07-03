@@ -42,9 +42,9 @@ export function QuickToggle({
 
   // Mobile-optimized button sizes (ensure minimum 44px touch target)
   const mobileButtonSizes = {
-    sm: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
-    md: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
-    lg: 'h-12 px-6 text-base min-w-12' // 48px height for large
+    sm: 'h-11 px-4 text-sm min-w-[44px]', // 44px height & width minimum
+    md: 'h-11 px-4 text-sm min-w-[44px]', // 44px height & width minimum
+    lg: 'h-12 px-6 text-base min-w-[48px]' // 48px for large
   };
 
   // Desktop button sizes (original)
