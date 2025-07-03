@@ -25,7 +25,9 @@
       "WebFetch(domain:nutgdqowaqjnxtedascw.supabase.co)",
       "WebFetch(domain:localhost)",
       "Bash(mkdir:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(node:*)",
+      "Bash(npx playwright:*)"
     ],
     "deny": []
   },
