@@ -201,115 +201,109 @@ const Merch = () => {
 
           {/* Shopify Store Container - Mobile Optimized */}
           <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-            <shopify-store 
-              store-domain="606ejf-hf.myshopify.com"
-              public-access-token="abe5bbfdabf81963d9104f5dfc4ba552"
-              country="US" 
-              language="en"
-            >
-              {/* Products Grid - Responsive */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 max-w-7xl mx-auto">
-                <shopify-list-context 
-                  type="product" 
-                  query="products" 
-                  first="12"
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                      <template>
-                      <div 
-                        onclick="window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
-                        class="bg-card/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-border/50 overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 group hover:border-natty/30 relative cursor-pointer">
-                        <!-- Product Image -->
-                        <div class="relative group overflow-hidden">
-                          <div class="aspect-square bg-gradient-to-br from-muted/50 to-muted">
-                            <shopify-media 
-                              query="product.featuredImage" 
-                              width="500" 
-                              height="500"
-                              style="width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 0;"
-                              class="transition-transform duration-500 group-hover:scale-105"
-                            ></shopify-media>
-                          </div>
-                          
-                          <!-- Hot Badge -->
-                          <div class="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-                            <div class="bg-gradient-to-r from-destructive to-destructive/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold uppercase backdrop-blur-sm shadow-lg">
-                              🔥 BESTSELLER
+            <div
+              id="shopify-store-wrapper"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  <shopify-store 
+                    store-domain="606ejf-hf.myshopify.com"
+                    public-access-token="abe5bbfdabf81963d9104f5dfc4ba552"
+                    country="US" 
+                    language="en"
+                  >
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 max-w-7xl mx-auto">
+                      <shopify-list-context 
+                        type="product" 
+                        query="products" 
+                        first="12"
+                      >
+                        <template>
+                          <div 
+                            onclick="window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
+                            class="bg-card/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-border/50 overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 group hover:border-natty/30 relative cursor-pointer">
+                            <!-- Product Image -->
+                            <div class="relative group overflow-hidden">
+                              <div class="aspect-square bg-gradient-to-br from-muted/50 to-muted">
+                                <shopify-media 
+                                  query="product.featuredImage" 
+                                  width="500" 
+                                  height="500"
+                                  style="width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 0;"
+                                  class="transition-transform duration-500 group-hover:scale-105"
+                                ></shopify-media>
+                              </div>
+                              <!-- Hot Badge -->
+                              <div class="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
+                                <div class="bg-gradient-to-r from-destructive to-destructive/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold uppercase backdrop-blur-sm shadow-lg">
+                                  🔥 BESTSELLER
+                                </div>
+                              </div>
+                              <!-- Sale Badge -->
+                              <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
+                                <div class="bg-gradient-to-r from-natty to-natty/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-lg">
+                                  50% OFF
+                                </div>
+                              </div>
+                              <!-- Hover Overlay -->
+                              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                             </div>
-                          </div>
-                          
-                          <!-- Sale Badge -->
-                          <div class="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
-                            <div class="bg-gradient-to-r from-natty to-natty/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-lg">
-                              50% OFF
-                            </div>
-                          </div>
-                          
-                          <!-- Hover Overlay -->
-                          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                        </div>
-                        
-                        <!-- Product Info - Mobile Optimized -->
-                        <div class="p-4 sm:p-6 space-y-3 sm:space-y-5">
-                          <!-- Product Title -->
-                          <div class="space-y-1 sm:space-y-2">
-                            <shopify-data query="product.title" tag="h3" class="font-bold text-lg sm:text-xl leading-tight text-foreground group-hover:text-natty transition-colors line-clamp-2"></shopify-data>
-                            <shopify-data query="product.vendor" class="text-sm text-muted-foreground font-medium"></shopify-data>
-                          </div>
-                          
-                          <!-- Key Features - Mobile Grid */}
-                          <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
-                            <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">✨ Premium</span>
-                            <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🔋 Long Lasting</span>
-                            <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🧲 Ergonomic</span>
-                            <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">⚡ Fast Ship</span>
-                          </div>
-                          
-                          <!-- Stock Warning -->
-                          <div class="bg-gradient-to-r from-destructive/15 to-destructive/10 border border-destructive/20 text-destructive px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-center relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-r from-destructive/5 to-transparent"></div>
-                            <div class="relative">⚠️ Only 7 left - Order now!</div>
-                          </div>
-                          
-                          <!-- Pricing - Mobile Optimized */}
-                          <div class="space-y-3 sm:space-y-4">
-                            <div class="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-                              <shopify-data query="product.priceRange.minVariantPrice.amount" class="text-2xl sm:text-4xl font-black text-natty"></shopify-data>
-                              <span class="text-lg sm:text-xl text-muted-foreground line-through opacity-75">34.99</span>
-                              <div class="bg-gradient-to-r from-juicy to-juicy/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-lg">
-                                Save 50%
+                            <!-- Product Info - Mobile Optimized -->
+                            <div class="p-4 sm:p-6 space-y-3 sm:space-y-5">
+                              <!-- Product Title -->
+                              <div class="space-y-1 sm:space-y-2">
+                                <shopify-data query="product.title" tag="h3" class="font-bold text-lg sm:text-xl leading-tight text-foreground group-hover:text-natty transition-colors line-clamp-2"></shopify-data>
+                                <shopify-data query="product.vendor" class="text-sm text-muted-foreground font-medium"></shopify-data>
+                              </div>
+                              <!-- Key Features - Mobile Grid -->
+                              <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">✨ Premium</span>
+                                <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🔋 Long Lasting</span>
+                                <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">🧲 Ergonomic</span>
+                                <span class="bg-secondary/80 text-secondary-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium text-center transition-colors hover:bg-secondary">⚡ Fast Ship</span>
+                              </div>
+                              <!-- Stock Warning -->
+                              <div class="bg-gradient-to-r from-destructive/15 to-destructive/10 border border-destructive/20 text-destructive px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-r from-destructive/5 to-transparent"></div>
+                                <div class="relative">⚠️ Only 7 left - Order now!</div>
+                              </div>
+                              <!-- Pricing - Mobile Optimized -->
+                              <div class="space-y-3 sm:space-y-4">
+                                <div class="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+                                  <shopify-data query="product.priceRange.minVariantPrice.amount" class="text-2xl sm:text-4xl font-black text-natty"></shopify-data>
+                                  <span class="text-lg sm:text-xl text-muted-foreground line-through opacity-75">34.99</span>
+                                  <div class="bg-gradient-to-r from-juicy to-juicy/90 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-lg">
+                                    Save 50%
+                                  </div>
+                                </div>
+                                <!-- Availability Status -->
+                                <div class="flex items-center justify-center gap-2 py-1 sm:py-2">
+                                  <div class="w-2 sm:w-3 h-2 sm:h-3 bg-natty rounded-full animate-pulse"></div>
+                                  <span class="text-xs sm:text-sm text-natty font-semibold tracking-wide">In Stock & Ready to Ship</span>
+                                </div>
+                              </div>
+                              <!-- Buy Now Button - Touch Optimized -->
+                              <div class="pt-2">
+                                <button 
+                                  onclick="event.stopPropagation(); window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
+                                  class="w-full bg-gradient-to-r from-natty via-natty to-juicy hover:from-juicy hover:via-juicy hover:to-natty text-white px-4 sm:px-8 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-natty/25 transform uppercase tracking-wider relative overflow-hidden group min-h-[48px]"
+                                >
+                                  <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                  <div class="relative flex items-center justify-center gap-2 sm:gap-3">
+                                    <span class="text-xl sm:text-2xl">🚀</span>
+                                    <span class="text-sm sm:text-base">Buy Now - $17.99</span>
+                                    <span class="text-xs sm:text-sm opacity-90">→</span>
+                                  </div>
+                                </button>
                               </div>
                             </div>
-                            
-                            <!-- Availability Status -->
-                            <div class="flex items-center justify-center gap-2 py-1 sm:py-2">
-                              <div class="w-2 sm:w-3 h-2 sm:h-3 bg-natty rounded-full animate-pulse"></div>
-                              <span class="text-xs sm:text-sm text-natty font-semibold tracking-wide">In Stock & Ready to Ship</span>
-                            </div>
                           </div>
-                          
-                          <!-- Buy Now Button - Touch Optimized -->
-                          <div class="pt-2">
-                            <button 
-                              onclick="event.stopPropagation(); window.open('https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know', '_blank')"
-                              class="w-full bg-gradient-to-r from-natty via-natty to-juicy hover:from-juicy hover:via-juicy hover:to-natty text-white px-4 sm:px-8 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-natty/25 transform uppercase tracking-wider relative overflow-hidden group min-h-[48px]"
-                            >
-                              <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                              <div class="relative flex items-center justify-center gap-2 sm:gap-3">
-                                <span class="text-xl sm:text-2xl">🚀</span>
-                                <span class="text-sm sm:text-base">Buy Now - $17.99</span>
-                                <span class="text-xs sm:text-sm opacity-90">→</span>
-                              </div>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      </template>
-                    `
-                  }}
-                />
-              </div>
-            </shopify-store>
+                        </template>
+                      </shopify-list-context>
+                    </div>
+                  </shopify-store>
+                `
+              }}
+            />
           </div>
 
           {/* Error State - Mobile Optimized */}
