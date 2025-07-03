@@ -27,7 +27,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: voteStats, isLoading } = useVoteStats(influencer.id);
-  const { getInfluencerExpertReviews } = useSupabaseExpertReviews();
+  const { getInfluencerExpertReviews, loading: expertReviewsLoading } = useSupabaseExpertReviews();
 
   const handleClaim = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,6 +55,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
   const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
 
+  // Combined loading state - wait for both vote stats and expert reviews
+  const isDataLoading = isLoading || expertReviewsLoading;
+
   const mainImage = influencer.photos && influencer.photos.length > 0
     ? influencer.photos[0].image_url
     : influencer.image;
@@ -62,8 +65,8 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   return (
     <Link to={`/influencer/${influencer.id}`}>
       <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden
-        ${!isLoading && voteStats && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/20' : ''}
-        ${!isLoading && voteStats && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/20' : ''}
+        ${!isDataLoading && totalVotes > 0 && juicyPercentage > 50 ? 'hover:bg-juicy/20' : ''}
+        ${!isDataLoading && totalVotes > 0 && nattyPercentage > 50 ? 'hover:bg-natty/20' : ''}
         cursor-pointer select-none relative
         hover:shadow-2xl hover:shadow-black/10
         active:scale-[0.98] active:shadow-md
@@ -107,8 +110,8 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             {influencer.name}
           </h3>
           
-          {/* Vote Statistics */}
-          {user && !isLoading && voteStats && totalVotes > 0 && (
+          {/* Vote Statistics - Now properly waits for both vote stats AND expert reviews */}
+          {user && !isDataLoading && totalVotes > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <span>💉 Juicy: {juicyPercentage}%</span>
@@ -156,7 +159,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             </div>
           )}
 
-          {!user && !isLoading && voteStats && (
+          {!user && !isDataLoading && voteStats && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="space-y-2 select-none cursor-pointer">
@@ -179,7 +182,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             </Tooltip>
           )}
 
-          {!isLoading && voteStats && totalVotes === 0 && (
+          {!isDataLoading && totalVotes === 0 && (
             <div className="text-center text-sm text-muted-foreground">
               No votes yet
             </div>
