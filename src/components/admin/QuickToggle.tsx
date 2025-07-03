@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface QuickToggleProps {
   isControversial: boolean;
@@ -21,17 +22,34 @@ export function QuickToggle({
   size = 'sm',
   showLabel = true
 }: QuickToggleProps) {
-  const buttonSizes = {
+  const isMobile = useIsMobile();
+
+  // Mobile-optimized button sizes (ensure minimum 44px touch target)
+  const mobileButtonSizes = {
+    sm: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
+    md: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
+    lg: 'h-12 px-6 text-base min-w-12' // 48px height for large
+  };
+
+  // Desktop button sizes (original)
+  const desktopButtonSizes = {
     sm: 'h-8 px-3 text-xs',
     md: 'h-9 px-4 text-sm',
     lg: 'h-10 px-6 text-base'
   };
+
+  const buttonSizes = isMobile ? mobileButtonSizes : desktopButtonSizes;
 
   const iconSizes = {
     sm: 'h-3 w-3',
     md: 'h-4 w-4', 
     lg: 'h-5 w-5'
   };
+
+  // Mobile-specific styles (remove problematic hover effects)
+  const mobileStyles = isMobile 
+    ? "active:scale-95 active:opacity-75 touch-manipulation" 
+    : "transition-all duration-200 transform hover:scale-105";
 
   if (isControversial) {
     return (
@@ -43,7 +61,7 @@ export function QuickToggle({
         className={cn(
           buttonSizes[size],
           "bg-orange-600 hover:bg-orange-700 text-white",
-          "transition-all duration-200 transform hover:scale-105"
+          mobileStyles
         )}
         title={`Remove ${influencerName} from controversial`}
       >
@@ -70,7 +88,7 @@ export function QuickToggle({
       className={cn(
         buttonSizes[size],
         "border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300",
-        "transition-all duration-200 transform hover:scale-105"
+        mobileStyles
       )}
       title={`Mark ${influencerName} as controversial`}
     >
