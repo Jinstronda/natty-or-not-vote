@@ -105,7 +105,11 @@ const Merch = () => {
         { name: 'Store', url: 'https://nattyorjuicy.com/merch' }
       ]} />
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 space-y-8">
+        <div
+          className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8"
+          data-testid="merch-container"
+          style={{ maxWidth: '100vw', overflowX: 'hidden' }}
+        >
           {/* Hero Section */}
           <div className="text-center space-y-6 bg-gradient-to-r from-natty/20 to-juicy/20 rounded-2xl p-8 border border-border">
             <h1 className="text-4xl md:text-6xl font-bold">

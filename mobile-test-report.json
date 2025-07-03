@@ -1,0 +1,1041 @@
+{
+  "timestamp": "2025-07-03T21:43:15.588Z",
+  "summary": {
+    "totalBugs": 126,
+    "criticalBugs": 0,
+    "highBugs": 84,
+    "mediumBugs": 42,
+    "lowBugs": 0
+  },
+  "categories": {
+    "Navigation": 84,
+    "Testing": 42
+  },
+  "devices": {
+    "iPhone 12": 21,
+    "iPhone 12 Pro Max": 21,
+    "iPhone SE": 21,
+    "Android Large": 21,
+    "Android Small": 21,
+    "iPad Portrait": 21
+  },
+  "pages": {
+    "http://localhost:8080/": 18,
+    "http://localhost:8080/login": 18,
+    "http://localhost:8080/signup": 18,
+    "http://localhost:8080/how-it-works": 18,
+    "http://localhost:8080/terms": 18,
+    "http://localhost:8080/merch": 18,
+    "http://localhost:8080/experts": 18
+  },
+  "bugs": [
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:49.837Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:49.845Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:50.440Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:50.446Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:51.058Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:51.063Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:51.645Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:51.649Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:52.248Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:52.251Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:52.822Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:52.826Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:53.411Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:53.414Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:54.489Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:54.494Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:55.061Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:55.065Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:55.659Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:55.662Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:56.223Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:56.227Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:56.787Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:56.790Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:57.347Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:57.351Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:57.938Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:57.941Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:58.890Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:58.893Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:59.450Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:59.453Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:00.048Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:00.052Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:00.612Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:00.615Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:01.171Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:01.174Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:01.732Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:01.735Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:02.321Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:02.324Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:03.385Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:03.388Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:03.955Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:03.958Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:04.536Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:04.540Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:05.091Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:05.094Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:05.652Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:05.655Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:06.208Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:06.212Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:06.790Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Large",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:06.792Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:07.731Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:07.735Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:08.294Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:08.296Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:08.884Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:08.887Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:09.440Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:09.443Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:09.997Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:10.000Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:10.553Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:10.555Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:11.142Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "Android Small",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:11.144Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:12.105Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:12.109Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:12.663Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:12.665Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:13.257Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:13.259Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:13.814Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:13.817Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:14.368Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:14.372Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:14.922Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:14.925Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "HIGH",
+      "description": "No navigation links found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:15.499Z"
+    },
+    {
+      "category": "Testing",
+      "severity": "HIGH",
+      "description": "Error testing specific features: page.evaluate: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '[data-testid*=\"vote\"], button:has-text(\"Vote\"), button:has-text(\"Natty\"), button:has-text(\"Not\")' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:5:38)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:15.502Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:49.837Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:50.440Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:51.058Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:51.644Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:52.248Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:52.822Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:53.411Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:54.489Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:55.061Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:42:55.659Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:42:56.223Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:42:56.787Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:42:57.347Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone 12 Pro Max",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:42:57.938Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:42:58.890Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:42:59.450Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:00.048Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:00.612Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:01.170Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:01.731Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPhone SE",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:02.321Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:03.385Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:03.955Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:04.536Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:05.091Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:05.652Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:06.208Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Large",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:06.790Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:07.731Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:08.294Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:08.884Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:09.440Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:09.997Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:10.553Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "Android Small",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:11.141Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/",
+      "timestamp": "2025-07-03T21:43:12.105Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/login",
+      "timestamp": "2025-07-03T21:43:12.662Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/signup",
+      "timestamp": "2025-07-03T21:43:13.257Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/how-it-works",
+      "timestamp": "2025-07-03T21:43:13.814Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/terms",
+      "timestamp": "2025-07-03T21:43:14.368Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/merch",
+      "timestamp": "2025-07-03T21:43:14.922Z"
+    },
+    {
+      "category": "Navigation",
+      "severity": "MEDIUM",
+      "description": "No mobile menu button found",
+      "device": "iPad Portrait",
+      "page": "http://localhost:8080/experts",
+      "timestamp": "2025-07-03T21:43:15.499Z"
+    }
+  ]
+}
