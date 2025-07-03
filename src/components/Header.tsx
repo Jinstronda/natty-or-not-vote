@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -40,15 +41,15 @@ const Header = () => {
 
   return (
     <header 
-      className="border-b border-border bg-card sticky top-0 z-50 shadow-sm"
+      className="border-b border-border bg-card sticky top-0 z-50 shadow-sm w-full"
       role="banner"
     >
-      <div className="container mx-auto px-3 sm:px-4 py-3">
+      <div className="container mx-auto px-4 py-3 max-w-full">
         <div className="flex items-center justify-between">
           {/* Logo - Enhanced with better mobile sizing */}
           <Link 
             to="/" 
-            className="font-heading font-bold text-lg sm:text-xl md:text-2xl hover:opacity-90 transition-opacity focus:ring-2 focus:ring-primary focus:outline-none rounded-md"
+            className="font-heading font-bold text-base sm:text-lg md:text-xl lg:text-2xl hover:opacity-90 transition-opacity focus:ring-2 focus:ring-primary focus:outline-none rounded-md"
             onClick={closeMobileMenu}
             aria-label="Natty or Juicy Home"
           >
@@ -56,14 +57,14 @@ const Header = () => {
           </Link>
           
           {/* Desktop Navigation - Hidden on mobile with current scope highlighting */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-4" role="navigation" aria-label="Main navigation">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-4" role="navigation" aria-label="Main navigation">
             {navigationItems.map((item) => (
               <Button 
                 key={item.path}
                 asChild 
                 variant={isCurrentRoute(item.path) ? "secondary" : "ghost"} 
                 size="sm" 
-                className={`lg:size-default ${isCurrentRoute(item.path) ? 'bg-primary/10 text-primary font-semibold' : ''}`}
+                className={`xl:size-default ${isCurrentRoute(item.path) ? 'bg-primary/10 text-primary font-semibold' : ''}`}
               >
                 <Link to={item.path} title={item.description}>
                   {item.label}
@@ -73,37 +74,37 @@ const Header = () => {
             {user && <SuggestInfluencer />}
             
             {user ? (
-              <div className="flex items-center gap-2 lg:gap-4">
+              <div className="flex items-center gap-2 xl:gap-4">
                 <Link 
                   to={`/user/${user.id}`}
-                  className="font-medium hover:text-primary transition-colors text-sm lg:text-base flex items-center gap-1 p-2 hover:bg-muted rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="font-medium hover:text-primary transition-colors text-sm xl:text-base flex items-center gap-1 p-2 hover:bg-muted rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
                   title="View your profile"
                 >
                   <User className="w-4 h-4" />
-                  <span className="hidden lg:inline">
+                  <span className="hidden xl:inline">
                     {user.user_metadata?.username || user.email}
                   </span>
                 </Link>
-                <Button variant="outline" size="sm" className="lg:size-default" onClick={signOut}>
+                <Button variant="outline" size="sm" className="xl:size-default" onClick={signOut}>
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-1 lg:gap-2">
-                <Button asChild variant="ghost" size="sm" className="lg:size-default">
+              <div className="flex items-center gap-1 xl:gap-2">
+                <Button asChild variant="ghost" size="sm" className="xl:size-default">
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button asChild size="sm" className="lg:size-default">
+                <Button asChild size="sm" className="xl:size-default">
                   <Link to="/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
           </nav>
 
-          {/* Mobile Menu Button - Enhanced with better accessibility */}
+          {/* Mobile Menu Button - Show on tablets and mobile */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden p-3 hover:bg-muted rounded-lg transition-colors focus:ring-2 focus:ring-primary focus:outline-none"
+            className="lg:hidden p-3 hover:bg-muted rounded-lg transition-colors focus:ring-2 focus:ring-primary focus:outline-none"
             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -116,11 +117,11 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation Menu - Enhanced with better UX patterns */}
+        {/* Mobile Navigation Menu - Show on tablets and mobile */}
         <div 
           id="mobile-navigation"
           className={`
-            md:hidden overflow-hidden transition-all duration-300 ease-in-out
+            lg:hidden overflow-hidden transition-all duration-300 ease-in-out w-full
             ${isMobileMenuOpen 
               ? 'max-h-screen opacity-100 mt-4' 
               : 'max-h-0 opacity-0 mt-0'
@@ -129,14 +130,14 @@ const Header = () => {
           role="navigation" 
           aria-label="Mobile navigation"
         >
-          <nav className="flex flex-col gap-1 pb-4 border-t border-border pt-4">
+          <nav className="flex flex-col gap-1 pb-4 border-t border-border pt-4 w-full">
             {/* Enhanced navigation items with current scope highlighting and descriptions */}
             {navigationItems.map((item) => (
               <Button 
                 key={item.path}
                 asChild 
                 variant={isCurrentRoute(item.path) ? "secondary" : "ghost"}
-                className={`justify-start h-14 text-base group ${
+                className={`justify-start h-14 text-base group w-full ${
                   isCurrentRoute(item.path) ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary' : ''
                 }`}
                 onClick={closeMobileMenu}
@@ -155,19 +156,19 @@ const Header = () => {
             ))}
 
             {user && (
-              <div className="py-2" onClick={closeMobileMenu}>
+              <div className="py-2 w-full" onClick={closeMobileMenu}>
                 <SuggestInfluencer />
               </div>
             )}
 
             {/* User section with enhanced mobile UX */}
-            <div className="border-t border-border pt-3 mt-2">
+            <div className="border-t border-border pt-3 mt-2 w-full">
               {user ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 w-full">
                   <Button 
                     asChild 
                     variant="ghost" 
-                    className="justify-start h-14 text-base group"
+                    className="justify-start h-14 text-base group w-full"
                     onClick={closeMobileMenu}
                   >
                     <Link to={`/user/${user.id}`} className="flex items-center justify-between w-full">
@@ -185,7 +186,7 @@ const Header = () => {
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="justify-start h-12 text-base mx-2"
+                    className="justify-start h-12 text-base mx-2 w-auto"
                     onClick={() => {
                       signOut();
                       closeMobileMenu();
@@ -195,18 +196,18 @@ const Header = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 w-full">
                   <Button 
                     asChild 
                     variant="ghost" 
-                    className="justify-start h-12 text-base"
+                    className="justify-start h-12 text-base w-full"
                     onClick={closeMobileMenu}
                   >
                     <Link to="/login">🔐 Login</Link>
                   </Button>
                   <Button 
                     asChild 
-                    className="justify-start h-12 text-base"
+                    className="justify-start h-12 text-base w-full"
                     onClick={closeMobileMenu}
                   >
                     <Link to="/signup">✨ Sign Up</Link>
@@ -218,10 +219,10 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Enhanced Mobile Menu Backdrop with better accessibility */}
+      {/* Enhanced Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/20 z-40"
+          className="lg:hidden fixed inset-0 bg-black/20 z-40"
           onClick={closeMobileMenu}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
@@ -237,3 +238,4 @@ const Header = () => {
 };
 
 export default Header;
+
