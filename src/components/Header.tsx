@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import SuggestInfluencer from "@/components/SuggestInfluencer";
 import { Menu, X, User, ChevronRight } from "lucide-react";
+import { useMobileHeaderSafety } from "@/hooks/useMobileHeaderSafety";
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Mobile header safety to prevent backdrop blur conflicts and ensure proper functionality
+  const { runManualSafetyCheck } = useMobileHeaderSafety({
+    preventBackdropBlurConflicts: true,
+    ensureHeaderVisibility: true,
+    fixTouchTargets: true,
+    monitorZIndexStacking: true
+  });
 
   // Close mobile menu when route changes (UX best practice)
   useEffect(() => {
@@ -17,6 +26,11 @@ const Header = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    
+    // Run safety check after menu state change to ensure header remains functional
+    setTimeout(() => {
+      runManualSafetyCheck();
+    }, 100);
   };
 
   const closeMobileMenu = () => {
