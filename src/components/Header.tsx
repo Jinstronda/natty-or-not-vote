@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -49,22 +48,22 @@ const Header = () => {
           {/* Logo - Enhanced with better mobile sizing */}
           <Link 
             to="/" 
-            className="font-heading font-bold text-base sm:text-lg md:text-xl lg:text-2xl hover:opacity-90 transition-opacity focus:ring-2 focus:ring-primary focus:outline-none rounded-md"
+            className="font-heading font-bold text-base sm:text-lg md:text-xl xl:text-2xl hover:opacity-90 transition-opacity focus:ring-2 focus:ring-primary focus:outline-none rounded-md"
             onClick={closeMobileMenu}
             aria-label="Natty or Juicy Home"
           >
             <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span>
           </Link>
           
-          {/* Desktop Navigation - Hidden on mobile with current scope highlighting */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-4" role="navigation" aria-label="Main navigation">
+          {/* Desktop Navigation - Force hidden on mobile screens */}
+          <nav className="hidden xl:flex items-center gap-1 2xl:gap-4" role="navigation" aria-label="Main navigation">
             {navigationItems.map((item) => (
               <Button 
                 key={item.path}
                 asChild 
                 variant={isCurrentRoute(item.path) ? "secondary" : "ghost"} 
                 size="sm" 
-                className={`xl:size-default ${isCurrentRoute(item.path) ? 'bg-primary/10 text-primary font-semibold' : ''}`}
+                className={`2xl:size-default ${isCurrentRoute(item.path) ? 'bg-primary/10 text-primary font-semibold' : ''}`}
               >
                 <Link to={item.path} title={item.description}>
                   {item.label}
@@ -74,37 +73,37 @@ const Header = () => {
             {user && <SuggestInfluencer />}
             
             {user ? (
-              <div className="flex items-center gap-2 xl:gap-4">
+              <div className="flex items-center gap-2 2xl:gap-4">
                 <Link 
                   to={`/user/${user.id}`}
-                  className="font-medium hover:text-primary transition-colors text-sm xl:text-base flex items-center gap-1 p-2 hover:bg-muted rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="font-medium hover:text-primary transition-colors text-sm 2xl:text-base flex items-center gap-1 p-2 hover:bg-muted rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
                   title="View your profile"
                 >
                   <User className="w-4 h-4" />
-                  <span className="hidden xl:inline">
+                  <span className="hidden 2xl:inline">
                     {user.user_metadata?.username || user.email}
                   </span>
                 </Link>
-                <Button variant="outline" size="sm" className="xl:size-default" onClick={signOut}>
+                <Button variant="outline" size="sm" className="2xl:size-default" onClick={signOut}>
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-1 xl:gap-2">
-                <Button asChild variant="ghost" size="sm" className="xl:size-default">
+              <div className="flex items-center gap-1 2xl:gap-2">
+                <Button asChild variant="ghost" size="sm" className="2xl:size-default">
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button asChild size="sm" className="xl:size-default">
+                <Button asChild size="sm" className="2xl:size-default">
                   <Link to="/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
           </nav>
 
-          {/* Mobile Menu Button - Show on tablets and mobile */}
+          {/* Mobile Menu Button - Show on everything except extra large screens */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-3 hover:bg-muted rounded-lg transition-colors focus:ring-2 focus:ring-primary focus:outline-none"
+            className="xl:hidden p-3 hover:bg-muted rounded-lg transition-colors focus:ring-2 focus:ring-primary focus:outline-none"
             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -117,11 +116,11 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation Menu - Show on tablets and mobile */}
+        {/* Mobile Navigation Menu - Show on everything except extra large screens */}
         <div 
           id="mobile-navigation"
           className={`
-            lg:hidden overflow-hidden transition-all duration-300 ease-in-out w-full
+            xl:hidden overflow-hidden transition-all duration-300 ease-in-out w-full
             ${isMobileMenuOpen 
               ? 'max-h-screen opacity-100 mt-4' 
               : 'max-h-0 opacity-0 mt-0'
@@ -222,7 +221,7 @@ const Header = () => {
       {/* Enhanced Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/20 z-40"
+          className="xl:hidden fixed inset-0 bg-black/20 z-40"
           onClick={closeMobileMenu}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
@@ -238,4 +237,3 @@ const Header = () => {
 };
 
 export default Header;
-
