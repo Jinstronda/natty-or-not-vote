@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -116,6 +115,21 @@ const Header = () => {
           </button>
         </div>
 
+        {/* Enhanced Mobile Menu Backdrop - move before mobile nav, pointer-events-none unless open */}
+        {isMobileMenuOpen && (
+          <div
+            className="xl:hidden fixed inset-0 bg-black/20 z-40"
+            style={{ pointerEvents: isMobileMenuOpen ? 'auto' : 'none' }}
+            onClick={closeMobileMenu}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                closeMobileMenu();
+              }
+            }}
+            aria-hidden="true"
+            role="presentation"
+          />
+        )}
         {/* Mobile Navigation Menu - Show on everything except extra large screens */}
         <div 
           id="mobile-navigation"
@@ -128,6 +142,7 @@ const Header = () => {
           `}
           role="navigation" 
           aria-label="Mobile navigation"
+          style={{ zIndex: 50, position: 'relative' }}
         >
           <nav className="flex flex-col gap-1 pb-4 border-t border-border pt-4 w-full">
             {/* Enhanced navigation items with current scope highlighting and descriptions */}
@@ -201,6 +216,7 @@ const Header = () => {
                     variant="ghost" 
                     className="justify-start h-12 text-base w-full"
                     onClick={closeMobileMenu}
+                    data-testid="mobile-login-btn"
                   >
                     <Link to="/login">🔐 Login</Link>
                   </Button>
@@ -208,6 +224,7 @@ const Header = () => {
                     asChild 
                     className="justify-start h-12 text-base w-full"
                     onClick={closeMobileMenu}
+                    data-testid="mobile-signup-btn"
                   >
                     <Link to="/signup">✨ Sign Up</Link>
                   </Button>
@@ -217,21 +234,6 @@ const Header = () => {
           </nav>
         </div>
       </div>
-
-      {/* Enhanced Mobile Menu Backdrop */}
-      {isMobileMenuOpen && (
-        <div
-          className="xl:hidden fixed inset-0 bg-black/20 z-40"
-          onClick={closeMobileMenu}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              closeMobileMenu();
-            }
-          }}
-          aria-hidden="true"
-          role="presentation"
-        />
-      )}
     </header>
   );
 };
