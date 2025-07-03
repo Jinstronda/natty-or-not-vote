@@ -27,7 +27,8 @@
       "Bash(mkdir:*)",
       "Bash(cd:*)",
       "Bash(node:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   },
