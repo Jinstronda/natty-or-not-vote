@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ const Header = () => {
 
   return (
     <header 
-      className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm"
+      className="border-b border-border bg-card sticky top-0 z-50 shadow-sm"
       role="banner"
     >
       <div className="container mx-auto px-3 sm:px-4 py-3">
@@ -220,7 +221,7 @@ const Header = () => {
       {/* Enhanced Mobile Menu Backdrop with better accessibility */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          className="md:hidden fixed inset-0 bg-black/20 z-40"
           onClick={closeMobileMenu}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
