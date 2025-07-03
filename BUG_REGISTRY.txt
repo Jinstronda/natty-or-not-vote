@@ -460,93 +460,90 @@ FUTURE CONSIDERATIONS:
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-BUG #005: MOBILE BUTTON INTERACTION FAILURES
+BUG #006: EXPERT REVIEWS NOT COUNTED IN INFLUENCER SORTING
 ═══════════════════════════════════════════════════════════════════════════════
-SEVERITY: HIGH (Mobile UX Blocking)
+SEVERITY: MEDIUM (UX Impact - Content Discovery)
 DATE DISCOVERED: January 2025
 DATE RESOLVED: January 2025
 
 SYMPTOMS:
-- QuickToggle controversial buttons not working on mobile devices
-- Touch events not registering properly on small buttons
-- Hover effects interfering with touch interactions
-- Poor mobile usability in admin panel
+- Influencers with expert reviews but no user votes appearing at bottom of homepage
+- Sorting only considering user votes, ignoring expert review count
+- Expert reviews counting for percentage display but not for ranking
+- Poor content discovery for expert-reviewed influencers
 
 ROOT CAUSE ANALYSIS:
-1. Touch Target Size Non-Compliance:
-   - Button heights: sm=32px, md=36px, lg=40px (all below WCAG 44px minimum)
-   - Inadequate touch targets causing user interaction failures
-   - Mobile accessibility guidelines not followed
+1. Database View Limitation:
+   - `influencers_sorted_by_votes` view only counted votes from `votes` table
+   - Expert reviews in `expert_reviews` table not included in sorting logic
+   - Frontend correctly combined both for display, but sorting happened at database level
 
-2. Problematic CSS Hover Effects:
-   - hover:scale-105 transform effects interfering with touch events
-   - CSS transitions causing touch timing issues
-   - Desktop-centric styling without mobile considerations
-
-3. Missing Mobile-Responsive Design:
-   - No mobile detection in component logic
-   - Same styling applied regardless of device type
-   - No touch-optimized interaction patterns
+2. Inconsistent Data Integration:
+   - Display logic: User votes + Expert reviews combined for percentage bars
+   - Sorting logic: Only user votes counted for ranking
+   - Mismatch between what users see vs. how content is prioritized
 
 DIAGNOSTIC METHODOLOGY:
-1. Sequential Thinking Framework applied to systematically analyze mobile UX issues
-2. Codebase analysis of existing mobile detection patterns (useIsMobile hook)
-3. WCAG accessibility guideline research for touch target requirements
-4. Mobile testing validation patterns from existing test suite
+1. Sequential Thinking Framework applied to trace sorting flow
+2. Supabase MCP tools used for database analysis:
+   - Examined `influencers_sorted_by_votes` view definition
+   - Analyzed `expert_reviews` table structure  
+   - Verified current sorting behavior with test queries
+3. Identified database view as single source of truth for sorting
+4. Confirmed expert reviews use rating system (>=4 natty, <4 juicy)
 
 SOLUTION IMPLEMENTED:
-1. Mobile Detection Integration:
-   ```typescript
-   import { useIsMobile } from '@/hooks/use-mobile';
-   const isMobile = useIsMobile();
+1. Database View Update via Migration:
+   ```sql
+   -- Updated influencers_sorted_by_votes view to include expert reviews
+   -- Combined user votes + expert reviews for total vote count in sorting
+   
+   LEFT JOIN (
+       -- Expert reviews from expert_reviews table (new logic)
+       SELECT 
+           expert_reviews.influencer_id,
+           count(*) AS total_expert_reviews,
+           count(*) FILTER (WHERE expert_reviews.rating >= 4) AS natty_expert_reviews,
+           count(*) FILTER (WHERE expert_reviews.rating < 4) AS juicy_expert_reviews
+       FROM expert_reviews
+       GROUP BY expert_reviews.influencer_id
+   ) e ON i.id = e.influencer_id
+   
+   -- Combined totals for sorting
+   COALESCE(v.total_votes, 0) + COALESCE(e.total_expert_reviews, 0) AS total_votes
    ```
 
-2. WCAG-Compliant Touch Targets:
-   ```typescript
-   // Mobile-optimized button sizes (ensure minimum 44px touch target)
-   const mobileButtonSizes = {
-     sm: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
-     md: 'h-11 px-4 text-sm min-w-11', // 44px height minimum
-     lg: 'h-12 px-6 text-base min-w-12' // 48px height for large
-   };
-   ```
-
-3. Mobile-Optimized Interaction Styles:
-   ```typescript
-   // Mobile-specific styles (remove problematic hover effects)
-   const mobileStyles = isMobile 
-     ? "active:scale-95 active:opacity-75 touch-manipulation" 
-     : "transition-all duration-200 transform hover:scale-105";
-   ```
-
-4. Conditional Styling Application:
-   - Desktop: Original hover effects and transforms maintained
-   - Mobile: Touch-optimized active states with proper touch-action CSS
-   - Accessibility: Touch targets comply with WCAG 2.1 guidelines
+2. Maintained Existing Sort Priority:
+   - Controversial influencers first (unchanged)
+   - Then by trending status (unchanged)  
+   - Then by COMBINED total votes (user + expert) - FIXED
+   - Then by creation date (unchanged)
 
 VERIFICATION RESULTS:
-✅ Mobile buttons now meet 44px minimum touch target requirement
-✅ Touch interactions work properly without hover interference
-✅ Build completes successfully with no TypeScript errors
-✅ Desktop functionality preserved unchanged
-✅ Mobile UX significantly improved for admin panel operations
+✅ Tristan Lee: 0 user votes + 3 expert reviews = now appears at position 9 vs. bottom
+✅ Multiple influencers with expert reviews properly repositioned based on combined count
+✅ Controversial influencers still prioritized first
+✅ Frontend percentage bars continue working correctly (no changes needed)
+✅ Database query performance maintained
 
 TECHNICAL IMPLEMENTATION:
-- Component: src/components/admin/QuickToggle.tsx
-- Hook Used: src/hooks/use-mobile.tsx (existing mobile detection)
-- Method: Conditional styling based on device detection
-- Accessibility: WCAG 2.1 Level AA compliance for touch targets
+- Migration: `update_influencers_sorted_by_votes_include_expert_reviews`
+- View Updated: `influencers_sorted_by_votes` 
+- Tables Combined: `votes` + `expert_reviews`
+- Rating Logic: >=4 natty, <4 juicy (matches frontend logic)
+- Sorting Order: controversial DESC, trending DESC, total_votes DESC, created_at DESC
 
 LESSONS LEARNED:
-- Always consider mobile-first design for interactive elements
-- WCAG touch target guidelines are critical for mobile usability
-- Existing mobile detection hooks should be leveraged across components
-- Hover effects can interfere with touch events on mobile devices
-- Sequential thinking effective for UX problem analysis
+- Database views are critical single source of truth for sorting
+- Frontend display logic must align with backend sorting logic
+- Supabase MCP tools essential for database analysis and verification
+- Sequential thinking effective for tracing data flow across layers
+- Always verify sorting changes with test queries before deployment
 
-FUTURE CONSIDERATIONS:
-- Audit other components with similar hover:scale effects for mobile optimization
-- Consider implementing global mobile touch target standards
-- Add mobile-specific testing to automated test suite
+IMPACT ASSESSMENT:
+- Improved content discovery for expert-reviewed influencers
+- Consistent data presentation between display and ranking
+- Enhanced user experience for finding reviewed content
+- No performance impact on existing queries
 
 ═══════════════════════════════════════════════════════════════════════════════ 
