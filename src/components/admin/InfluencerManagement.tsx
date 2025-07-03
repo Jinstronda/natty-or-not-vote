@@ -18,6 +18,7 @@ import { SearchFilter } from './SearchFilter';
 import { QuickToggle, ControversialBadge } from './QuickToggle';
 import { StatusSelect, StatusBadge } from './StatusSelect';
 import { TabbedEditModal } from './TabbedEditModal';
+import { useToggleControversial } from '@/hooks/api/useToggleControversial';
 
 interface SocialLinks {
   instagram?: string;
@@ -464,23 +465,7 @@ const InfluencerManagement = () => {
     }
   });
 
-  const toggleControversialMutation = useMutation({
-    mutationFn: async ({ id, controversial }: { id: string; controversial: boolean }) => {
-      const { error } = await supabase
-        .from('influencers')
-        .update({ controversial } as any)
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
-      // Use predicate-based invalidation to catch all influencer queries
-      queryClient.invalidateQueries({ 
-        predicate: (query) => query.queryKey[0] === 'influencers'
-      });
-    }
-  });
+  const { mutate: toggleControversial, isPending: isTogglingControversial } = useToggleControversial();
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -578,23 +563,6 @@ const InfluencerManagement = () => {
       toast({
         title: "Error",
         description: "Failed to update influencer.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleToggleControversial = async (id: string, currentControversial: boolean, name: string) => {
-    try {
-      await toggleControversialMutation.mutateAsync({ id, controversial: !currentControversial });
-      toast({
-        title: "Success",
-        description: `${name} ${!currentControversial ? 'marked as controversial' : 'removed from controversial'}.`,
-      });
-    } catch (error) {
-      console.error('Error toggling controversial:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update controversial status.",
         variant: "destructive",
       });
     }
@@ -1342,8 +1310,8 @@ const InfluencerManagement = () => {
                 <div className="flex gap-2">
                   <QuickToggle
                     isControversial={influencer.controversial || false}
-                    isLoading={toggleControversialMutation.isPending}
-                    onToggle={() => handleToggleControversial(influencer.id, influencer.controversial || false, influencer.name)}
+                    isLoading={isTogglingControversial}
+                    influencerId={influencer.id}
                     influencerName={influencer.name}
                     size="sm"
                     showLabel={false}

@@ -4,25 +4,41 @@ import { Badge } from '@/components/ui/badge';
 import { Flame, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToggleControversial } from '@/hooks/api/useToggleControversial';
 
 interface QuickToggleProps {
   isControversial: boolean;
-  isLoading: boolean;
-  onToggle: () => void;
+  isLoading?: boolean;
+  onToggle?: () => void;
   influencerName: string;
+  influencerId?: string;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
 }
 
 export function QuickToggle({
   isControversial,
-  isLoading,
+  isLoading: isLoadingProp,
   onToggle,
   influencerName,
+  influencerId,
   size = 'sm',
   showLabel = true
 }: QuickToggleProps) {
   const isMobile = useIsMobile();
+
+  // Self-contained mode: use the hook if influencerId is provided and no onToggle
+  const { mutate: toggleControversial, isPending: isLoadingHook } = useToggleControversial();
+
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle();
+    } else if (influencerId) {
+      toggleControversial({ influencerId, controversial: !isControversial });
+    }
+  };
+
+  const isLoading = typeof isLoadingProp === 'boolean' ? isLoadingProp : isLoadingHook;
 
   // Mobile-optimized button sizes (ensure minimum 44px touch target)
   const mobileButtonSizes = {
@@ -56,7 +72,7 @@ export function QuickToggle({
       <Button
         variant="default"
         size="sm"
-        onClick={onToggle}
+        onClick={handleToggle}
         disabled={isLoading}
         className={cn(
           buttonSizes[size],
@@ -83,7 +99,7 @@ export function QuickToggle({
     <Button
       variant="outline"
       size="sm"
-      onClick={onToggle}
+      onClick={handleToggle}
       disabled={isLoading}
       className={cn(
         buttonSizes[size],
