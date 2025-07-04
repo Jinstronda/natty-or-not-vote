@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { OptimizedImage } from "./OptimizedImage";
 import { userInteractionTracker } from "@/utils/userInteractionHelper";
 import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
+import { usePrefetchInfluencer } from "@/hooks/api/usePrefetchInfluencer";
 
 export interface InfluencerCardProps {
   influencer: {
@@ -28,6 +29,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const { user } = useAuth();
   const { data: voteStats, isLoading } = useVoteStats(influencer.id);
   const { getInfluencerExpertReviews, loading: expertReviewsLoading } = useSupabaseExpertReviews();
+  const { prefetchInfluencerData } = usePrefetchInfluencer();
 
   const handleClaim = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,6 +76,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
       onMouseEnter={() => {
         // Subtle haptic feedback on card hover
         userInteractionTracker.safeVibrate(3);
+        
+        // Safe prefetching - improves loading without breaking anything
+        prefetchInfluencerData(influencer.id);
       }}
       >
         {/* Subtle glow effect on hover */}
