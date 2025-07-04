@@ -112,21 +112,27 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       onClick={handleCardClick}
     >
       <div className="relative">
-        {/* Enhanced juicy background */}
+        {/* Enhanced juicy background with FULL IMAGE COVERAGE */}
         <div className="aspect-square bg-gradient-to-br from-juicy/20 via-juicy/10 to-juicy/30 overflow-hidden relative">
           {/* Animated background effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-30" />
           
           {!imageError ? (
             <img
               src={product.image}
               alt={product.title}
-              className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-110 relative z-10 ${
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 relative z-10 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
               loading="lazy"
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'center',
+                minHeight: '100%',
+                minWidth: '100%'
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-juicy/20 to-juicy/40">
