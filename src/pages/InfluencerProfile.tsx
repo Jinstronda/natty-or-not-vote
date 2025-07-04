@@ -18,7 +18,7 @@ const InfluencerProfile = () => {
   const { user, supabaseUser } = useAuth();
   const { fetchUserProfile } = useUserProfile();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
-  const userReviewsRef = useRef<UserReviewsRef>(null);
+  const userReviewsRef = useRef<EnhancedUserReviewsRef>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
