@@ -33,6 +33,7 @@ const Merch = lazy(() => import("./pages/Merch"));
 const DebugUsername = lazy(() => import("./pages/DebugUsername"));
 const LoadingDemo = lazy(() => import("./components/OptimizedInfluencerGrid"));
 const FastInfluencerProfile = lazy(() => import("./components/FastInfluencerProfile"));
+const TestReviewPagination = lazy(() => import("./pages/TestReviewPagination"));
 
 // Error Boundary Component for better error handling
 const ErrorFallback = ({ error }: { error: Error }) => (
@@ -94,6 +95,7 @@ const App = () => {
                   <Route path="/experts" element={<ExpertsDirectory />} />
                   <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
                   <Route path="/debug-username" element={<DebugUsername />} />
+                  <Route path="/test-reviews/:influencerId" element={<TestReviewPagination />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
