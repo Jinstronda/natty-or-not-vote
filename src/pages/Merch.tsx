@@ -27,20 +27,20 @@ interface Product {
   shopifyUrl: string;
 }
 
-// Static product data as fallback (more reliable than API calls)
+// Real Shopify product data - no fake information
 const PRODUCTS: Product[] = [
   {
     id: "juicy-lightning-1",
-    title: "The Juicy Lightning™ - The Secret Weapon Every Natural Influencer Doesn't Want You to Know",
-    description: "Professional gear that transforms your fitness content ⚡",
+    title: "THE JUICY LIGHTNING™ The Secret Weapon Every 'Natural' Influencer Doesn't Want You to Know",
+    description: "Compact lighting device designed to enhance gym selfies and muscle definition",
     price: 17.99,
     originalPrice: 34.99,
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=500&fit=crop",
-    features: ["✨ Premium Quality", "🔋 Long Lasting", "🧲 Ergonomic", "⚡ Fast Delivery"],
+    image: "https://606ejf-hf.myshopify.com/cdn/shop/files/image_2025-06-30_111357976.png",
+    features: ["💡 800 lumens", "⏱️ 8-hour runtime", "🧲 Magnetic mount", "🔌 USB-C charging"],
     inStock: true,
     stockCount: 7,
-    rating: 4.8,
-    reviewCount: 127,
+    rating: 0, // No fake ratings
+    reviewCount: 0, // No fake reviews
     shopifyUrl: "https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know"
   }
 ];
@@ -79,26 +79,29 @@ const ProductSkeleton = () => (
   </Card>
 );
 
-// Modern product card with accessibility
+// Modern product card with juicy pink theme and full clickability
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  const handleBuyNow = useCallback(() => {
+  const handleCardClick = useCallback(() => {
     window.open(product.shopifyUrl, '_blank', 'noopener,noreferrer');
   }, [product.shopifyUrl]);
   
   const discountPercentage = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
   
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group">
+    <Card 
+      className="overflow-hidden hover:shadow-lg hover:shadow-juicy/20 transition-all duration-300 hover:scale-[1.02] group cursor-pointer border-juicy/20 hover:border-juicy/40"
+      onClick={handleCardClick}
+    >
       <div className="relative">
-        <div className="aspect-square bg-gradient-to-br from-muted/50 to-muted overflow-hidden">
+        <div className="aspect-square bg-gradient-to-br from-juicy/10 to-juicy/5 overflow-hidden">
           {!imageError ? (
             <img
               src={product.image}
               alt={product.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
+              className={`w-full h-full object-contain transition-all duration-300 group-hover:scale-105 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}
@@ -106,21 +109,21 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <ShoppingCart className="w-16 h-16 text-muted-foreground" />
+            <div className="w-full h-full flex items-center justify-center bg-juicy/10">
+              <ShoppingCart className="w-16 h-16 text-juicy/60" />
             </div>
           )}
         </div>
         
         {/* Badges */}
         <div className="absolute top-3 left-3 z-10">
-          <Badge className="bg-destructive hover:bg-destructive/90">
+          <Badge className="bg-juicy hover:bg-juicy/90 text-white">
             🔥 BESTSELLER
           </Badge>
         </div>
         
         <div className="absolute top-3 right-3 z-10">
-          <Badge className="bg-primary hover:bg-primary/90">
+          <Badge className="bg-juicy/90 hover:bg-juicy text-white">
             {discountPercentage}% OFF
           </Badge>
         </div>
@@ -128,7 +131,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         {/* Stock warning */}
         {product.stockCount <= 10 && (
           <div className="absolute bottom-3 left-3 right-3 z-10">
-            <Alert className="bg-destructive/90 border-destructive text-destructive-foreground">
+            <Alert className="bg-juicy/90 border-juicy text-white">
               <AlertDescription className="text-center text-sm font-bold">
                 ⚠️ Only {product.stockCount} left in stock!
               </AlertDescription>
@@ -139,34 +142,20 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       
       <CardContent className="p-6">
         <div className="space-y-4">
-          {/* Title and Rating */}
+          {/* Title - No fake ratings */}
           <div className="space-y-2">
-            <CardTitle className="text-lg leading-tight line-clamp-2">
+            <CardTitle className="text-lg leading-tight line-clamp-2 group-hover:text-juicy transition-colors">
               {product.title}
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-4 h-4 ${
-                      i < Math.floor(product.rating) 
-                        ? 'fill-yellow-400 text-yellow-400' 
-                        : 'text-muted-foreground'
-                    }`} 
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {product.rating} ({product.reviewCount} reviews)
-              </span>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              {product.description}
+            </p>
           </div>
           
           {/* Features */}
           <div className="grid grid-cols-2 gap-2">
             {product.features.map((feature, index) => (
-              <Badge key={index} variant="secondary" className="text-xs justify-center">
+              <Badge key={index} variant="secondary" className="text-xs justify-center bg-juicy/10 text-juicy border-juicy/20">
                 {feature}
               </Badge>
             ))}
@@ -175,18 +164,18 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           {/* Price */}
           <div className="space-y-2">
             <div className="flex items-center justify-center gap-3">
-              <span className="text-3xl font-bold text-primary">
-                ${product.price}
+              <span className="text-3xl font-bold text-juicy">
+                €{product.price}
               </span>
               <span className="text-lg text-muted-foreground line-through">
-                ${product.originalPrice}
+                €{product.originalPrice}
               </span>
             </div>
             
             {/* Stock status */}
             <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm text-green-600 font-medium">
+              <div className="w-2 h-2 bg-juicy rounded-full animate-pulse" />
+              <span className="text-sm text-juicy font-medium">
                 In Stock & Ready to Ship
               </span>
             </div>
@@ -194,23 +183,22 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           
           {/* Buy button */}
           <Button 
-            onClick={handleBuyNow}
-            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-bold py-3 text-lg transition-all duration-300 hover:scale-[1.02]"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
+            className="w-full bg-gradient-to-r from-juicy to-juicy/80 hover:from-juicy/90 hover:to-juicy/70 text-white font-bold py-3 text-lg transition-all duration-300 hover:scale-[1.02]"
             size="lg"
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            Buy Now - ${product.price}
+            Buy Now - €{product.price}
           </Button>
           
-          {/* Trust signals */}
+          {/* Guarantee - real info only */}
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Truck className="w-4 h-4" />
-              <span>Free Shipping</span>
-            </div>
-            <div className="flex items-center gap-1">
               <Shield className="w-4 h-4" />
-              <span>Secure Payment</span>
+              <span>30-day Money-back Guarantee</span>
             </div>
           </div>
         </div>
@@ -305,7 +293,7 @@ const Merch = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 space-y-8">
           {/* Hero Section */}
-          <div className="text-center space-y-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8 border border-border">
+          <div className="text-center space-y-6 bg-gradient-to-r from-juicy/10 to-juicy/5 rounded-2xl p-8 border border-juicy/20">
             <h1 className="text-4xl md:text-6xl font-bold">
               Official <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
             </h1>
@@ -315,7 +303,7 @@ const Merch = () => {
           </div>
           
           {/* Flash Sale Timer */}
-          <div className="bg-gradient-to-r from-destructive to-destructive/90 rounded-xl p-6 text-center text-white">
+          <div className="bg-gradient-to-r from-juicy to-juicy/90 rounded-xl p-6 text-center text-white">
             <div className="text-lg font-bold mb-4 uppercase tracking-wider">
               ⚡ FLASH SALE ENDS IN ⚡
             </div>
