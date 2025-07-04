@@ -162,3 +162,100 @@ Next step: [proposed action]
 ---
 
 **Remember**: You are a scientific debugger. Every action should be based on evidence, every change should be tested, and every decision should be communicated clearly.
+
+---
+
+# 🛍️ MERCH PAGE IMPLEMENTATION REFERENCE
+
+## ✅ WORKING MERCH PAGE CONFIGURATION (DO NOT BREAK!)
+
+### Product Data Structure (src/pages/Merch.tsx)
+```typescript
+// Real Shopify product data - NO FAKE INFORMATION
+const PRODUCTS: Product[] = [
+  {
+    id: "juicy-lightning-1",
+    title: "THE JUICY LIGHTNING™ The Secret Weapon Every 'Natural' Influencer Doesn't Want You to Know",
+    description: "", // NO DESCRIPTION - REMOVED AS REQUESTED
+    price: 17.99,
+    originalPrice: 34.99,
+    image: "https://606ejf-hf.myshopify.com/cdn/shop/files/image_2025-06-30_111357976.png",
+    features: ["💡 800 lumens", "⏱️ 8-hour runtime", "🧲 Magnetic mount", "🔌 USB-C charging"],
+    inStock: true,
+    stockCount: 7,
+    rating: 0, // NO FAKE RATINGS
+    reviewCount: 0, // NO FAKE REVIEWS
+    shopifyUrl: "https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know"
+  }
+];
+```
+
+### Image Display Configuration (FILLS UI)
+```typescript
+// ✅ CORRECT IMAGE STYLING - FILLS ENTIRE UI
+<img
+  src={product.image}
+  alt={product.title}
+  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 relative z-10"
+  style={{ 
+    objectFit: 'cover',           // FILLS CONTAINER
+    objectPosition: 'center',     // CENTERED
+    minHeight: '100%',           // FULL HEIGHT
+    minWidth: '100%'             // FULL WIDTH
+  }}
+/>
+```
+
+### Color Scheme Rules
+- **Flash Sale Timer**: ALWAYS use `from-destructive to-destructive/90` (RED for urgency)
+- **Juicy Theme**: Use `text-juicy`, `bg-juicy`, `border-juicy`, `from-juicy to-pink-500`
+- **Product Cards**: Enhanced juicy gradients with `from-juicy/5 via-background to-juicy/10`
+
+### Content Rules (NO FAKE INFO)
+- ❌ NO fake descriptions like "Compact lighting device"
+- ❌ NO fake social proof like "Join Thousands of Satisfied Customers"
+- ❌ NO fake reviews or ratings
+- ❌ NO fake shipping claims like "Free Shipping"
+- ✅ ONLY use real Shopify data: 30-day guarantee, actual price, real features
+
+### Card Layout Structure
+```typescript
+// ✅ WORKING PRODUCT CARD LAYOUT
+<Card className="overflow-hidden hover:shadow-2xl hover:shadow-juicy/30 transition-all duration-500 hover:scale-[1.03] group cursor-pointer border-2 border-juicy/30 hover:border-juicy bg-gradient-to-br from-juicy/5 via-background to-juicy/10">
+  {/* Image section with full coverage */}
+  <div className="aspect-square bg-gradient-to-br from-juicy/20 via-juicy/10 to-juicy/30">
+    {/* Image with object-cover */}
+  </div>
+  
+  {/* Content section */}
+  <CardContent className="p-8 bg-gradient-to-b from-background to-juicy/5">
+    {/* Title ONLY - no description */}
+    <CardTitle className="bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
+      {product.title}
+    </CardTitle>
+    
+    {/* Features grid */}
+    {/* Price display */}
+    {/* Buy button with full clickability */}
+    {/* Real guarantee info only */}
+  </CardContent>
+</Card>
+```
+
+### Testing Commands
+```bash
+# Test production vs localhost
+node test-production-merch.js
+node test-final-merch.js
+
+# Check image display
+node test-image-display.js
+```
+
+## 🚨 CRITICAL: DO NOT BREAK THESE RULES
+1. Keep flash sale timer RED (destructive color)
+2. Use object-cover for images to fill UI
+3. NO fake descriptions or social proof
+4. Full card clickability to Shopify
+5. Strong juicy pink theme throughout
+6. Real Shopify product data only

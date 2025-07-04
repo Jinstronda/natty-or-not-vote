@@ -129,11 +129,15 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Enhanced Mobile Menu Backdrop - move before mobile nav, pointer-events-none unless open */}
+        {/* FIXED: Mobile Menu Backdrop - LOWER z-index than header to prevent click interception */}
         {isMobileMenuOpen && (
           <div
-            className="xl:hidden fixed inset-0 bg-black/20 z-40"
-            style={{ pointerEvents: isMobileMenuOpen ? 'auto' : 'none' }}
+            className="xl:hidden fixed inset-0 bg-black/20 z-30"
+            style={{ 
+              pointerEvents: 'auto',
+              // Exclude header area from backdrop to prevent click interception
+              clipPath: 'polygon(0 73px, 100% 73px, 100% 100%, 0 100%)'
+            }}
             onClick={closeMobileMenu}
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
