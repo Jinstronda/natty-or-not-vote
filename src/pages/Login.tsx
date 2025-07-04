@@ -1,21 +1,13 @@
-import { FormEvent, useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link } from 'react-router-dom';
 
 const Login = () => {
-  const { signIn, user, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Only redirect when we're sure about the auth state (not loading) and user exists
@@ -24,21 +16,6 @@ const Login = () => {
       navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    
-    try {
-      await signIn(email, password);
-      // Don't navigate here - let the useEffect handle it when auth state updates
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message || 'Login failed. Please try again.');
-      setIsSubmitting(false);
-    }
-  };
 
   // Show loading spinner while checking auth state
   if (loading) {
@@ -64,74 +41,40 @@ const Login = () => {
     );
   }
 
+  // Google-only login page
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <p className="text-muted-foreground">Sign in with Google to continue</p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-          </form>
+          {/* Google login button */}
+          <GoogleLoginButton />
           
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          {/* Benefits section */}
+          <div className="space-y-3 text-center">
+            <p className="text-sm text-muted-foreground">
+              Access your account to:
+            </p>
+            <div className="grid grid-cols-1 gap-2 text-sm">
+              <div className="flex items-center justify-center gap-2">
+                <span>🗳️</span>
+                <span>View your voting history</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span>💬</span>
+                <span>Manage your reviews</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span>👤</span>
+                <span>Update your profile</span>
+              </div>
             </div>
           </div>
           
-          <GoogleLoginButton />
-          
+          {/* Sign up link */}
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
             <Link to="/signup" className="text-primary hover:underline">
