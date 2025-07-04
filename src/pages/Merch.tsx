@@ -32,7 +32,7 @@ const PRODUCTS: Product[] = [
   {
     id: "juicy-lightning-1",
     title: "Juicy Lightning™",
-    description: "Professional gym lighting for content creators",
+    description: "The juicy influencers secret",
     price: 17.99,
     originalPrice: 34.99,
     image: "https://606ejf-hf.myshopify.com/cdn/shop/files/image_2025-06-30_111357976.png",
@@ -65,26 +65,28 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; fallback: React.React
   return <>{children}</>;
 };
 
-// Clean loading skeleton
+// Juicy-themed loading skeleton
 const ProductSkeleton = () => (
-  <Card className="overflow-hidden">
-    <div className="aspect-square bg-muted animate-pulse" />
-    <CardContent className="p-6">
+  <Card className="overflow-hidden border-2 border-juicy/20 bg-gradient-to-br from-juicy/5 via-background to-juicy/10">
+    <div className="aspect-square bg-gradient-to-br from-juicy/20 to-pink-500/20 animate-pulse relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-50" />
+    </div>
+    <CardContent className="p-6 bg-gradient-to-b from-background to-juicy/5">
       <div className="space-y-4">
-        <div className="h-6 bg-muted rounded animate-pulse" />
-        <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+        <div className="h-6 bg-gradient-to-r from-juicy/20 to-pink-500/20 rounded animate-pulse" />
+        <div className="h-4 bg-muted/50 rounded w-3/4 animate-pulse" />
         <div className="grid grid-cols-2 gap-2">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-6 bg-muted rounded animate-pulse" />
+            <div key={i} className="h-6 bg-juicy/10 rounded animate-pulse" />
           ))}
         </div>
-        <div className="h-10 bg-muted rounded animate-pulse" />
+        <div className="h-10 bg-gradient-to-r from-juicy/30 to-pink-500/30 rounded animate-pulse" />
       </div>
     </CardContent>
   </Card>
 );
 
-// Professional minimal product card
+// Juicy-themed product card with hover effects
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -97,101 +99,104 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   
   return (
     <Card 
-      className="overflow-hidden hover:shadow-lg transition-shadow duration-200 group cursor-pointer"
+      className="overflow-hidden hover:shadow-2xl hover:shadow-juicy/30 transition-all duration-500 hover:scale-[1.03] group cursor-pointer border-2 border-juicy/30 hover:border-juicy bg-gradient-to-br from-juicy/5 via-background to-juicy/10"
       onClick={handleCardClick}
     >
       <div className="relative">
-        <div className="aspect-square bg-muted overflow-hidden">
+        <div className="aspect-square bg-gradient-to-br from-juicy/20 via-juicy/10 to-juicy/30 overflow-hidden relative">
+          {/* Animated background effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-30" />
+          
           {!imageError ? (
             <img
               src={product.image}
               alt={product.title}
-              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 relative z-10 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
               loading="lazy"
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'center',
+                minHeight: '100%',
+                minWidth: '100%'
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <ShoppingCart className="w-16 h-16 text-muted-foreground" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-juicy/20 to-juicy/40">
+              <ShoppingCart className="w-20 h-20 text-juicy animate-bounce" />
             </div>
           )}
+          
+          {/* Hover overlay effects */}
+          <div className="absolute inset-0 bg-gradient-to-t from-juicy/20 via-transparent to-transparent group-hover:from-juicy/40 transition-all duration-500" />
         </div>
         
-        {/* Simple discount badge */}
-        <div className="absolute top-3 right-3">
-          <Badge className="bg-destructive text-white font-semibold">
+        {/* Stylish discount badge */}
+        <div className="absolute top-4 right-4 z-20">
+          <Badge className="bg-gradient-to-r from-destructive to-red-600 text-white shadow-lg shadow-destructive/50 font-bold text-lg px-4 py-2">
             {discountPercentage}% OFF
           </Badge>
         </div>
       </div>
       
-      <CardContent className="p-6">
+      <CardContent className="p-6 bg-gradient-to-b from-background to-juicy/5">
         <div className="space-y-4">
-          {/* Clean title and description */}
+          {/* Juicy title and description */}
           <div className="space-y-2">
-            <CardTitle className="text-xl font-semibold leading-tight">
+            <CardTitle className="text-xl font-bold leading-tight group-hover:text-juicy transition-colors duration-300 bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
               {product.title}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium italic">
               {product.description}
             </p>
           </div>
           
-          {/* Clean features */}
+          {/* Juicy features */}
           <div className="grid grid-cols-2 gap-2">
             {product.features.map((feature, index) => (
               <Badge 
                 key={index} 
                 variant="secondary" 
-                className="text-xs justify-center py-1 font-normal"
+                className="text-xs justify-center py-2 bg-gradient-to-r from-juicy/20 to-pink-500/20 text-juicy border-juicy/30 hover:from-juicy/30 hover:to-pink-500/30 transition-all duration-300 font-semibold"
               >
                 {feature}
               </Badge>
             ))}
           </div>
           
-          {/* Clean pricing - SHOWN ONLY ONCE */}
+          {/* Juicy pricing - SHOWN ONLY ONCE */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold">
+              <span className="text-3xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
                 €{product.price}
               </span>
               <span className="text-lg text-muted-foreground line-through">
                 €{product.originalPrice}
               </span>
             </div>
-            <Badge variant="outline" className="text-green-600 border-green-600">
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold">
               Save €{(product.originalPrice - product.price).toFixed(2)}
             </Badge>
           </div>
           
-          {/* Simple buy button */}
+          {/* Juicy buy button */}
           <Button 
             onClick={(e) => {
               e.stopPropagation();
               handleCardClick();
             }}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-juicy via-pink-500 to-juicy hover:from-pink-600 hover:via-juicy hover:to-pink-600 text-white font-bold py-4 text-lg transition-all duration-500 hover:scale-[1.02] shadow-lg shadow-juicy/50 hover:shadow-xl hover:shadow-juicy/70 relative overflow-hidden group"
             size="lg"
           >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <div className="relative flex items-center justify-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              <span>Add to Cart</span>
+            </div>
           </Button>
-          
-          {/* Clean trust signals */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Shield className="w-3 h-3" />
-              <span>30-Day Guarantee</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Truck className="w-3 h-3" />
-              <span>Free Shipping</span>
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>
@@ -283,24 +288,29 @@ const Merch = () => {
       
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 space-y-8">
-          {/* Clean Hero Section */}
-          <div className="text-center space-y-6 py-12">
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-              Official <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Professional gear for content creators
-            </p>
-            <div className="flex items-center justify-center gap-6 flex-wrap">
-              <Badge variant="secondary" className="px-4 py-2">
-                Premium Quality
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2">
-                Free Shipping
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2">
-                30-Day Guarantee
-              </Badge>
+          {/* Juicy Hero Section */}
+          <div className="text-center space-y-8 bg-gradient-to-br from-juicy/20 via-juicy/10 to-pink-500/20 rounded-3xl p-12 border-2 border-juicy/30 shadow-2xl shadow-juicy/20 relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-30" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-juicy/20 rounded-full blur-3xl animate-bounce" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl animate-pulse" />
+            
+            <div className="relative z-10">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight">
+                Official <span className="text-natty drop-shadow-lg">Natty</span> or <span className="bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent drop-shadow-lg">Juicy</span> Store
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-juicy to-pink-500 mx-auto my-6 rounded-full" />
+              <p className="text-2xl text-muted-foreground max-w-3xl mx-auto font-medium">
+                Professional gear for content creators ⚡
+              </p>
+              <div className="flex items-center justify-center gap-8 mt-8">
+                <Badge className="bg-gradient-to-r from-juicy to-pink-500 text-white px-6 py-3 text-lg font-bold shadow-lg">
+                  ✨ Premium Quality
+                </Badge>
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-3 text-lg font-bold shadow-lg">
+                  🛡️ Guaranteed
+                </Badge>
+              </div>
             </div>
           </div>
           
@@ -331,19 +341,20 @@ const Merch = () => {
             </div>
           </div>
           
-          {/* Simple Search Section */}
-          <div className="max-w-md mx-auto">
-            <div className="relative">
+          {/* Juicy Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative group">
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search for the perfect gear..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-12 pr-4 py-4 text-lg border-2 border-juicy/30 focus:border-juicy focus:ring-4 focus:ring-juicy/20 rounded-2xl bg-gradient-to-r from-juicy/5 to-pink-500/5 placeholder:text-muted-foreground/70"
               />
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-juicy w-5 h-5 group-focus-within:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-juicy/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
             </div>
           </div>
           
@@ -367,14 +378,15 @@ const Merch = () => {
           
           {/* Enhanced Products Grid Section */}
           <div className="space-y-8">
-            {/* Simple Section Header */}
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-semibold">
-                Featured Products
+            {/* Juicy Section Header */}
+            <div className="text-center space-y-4">
+              <h2 className="text-4xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
+                🔥 FEATURED PRODUCTS
               </h2>
-              <p className="text-muted-foreground">
-                Professional gear for content creators
+              <p className="text-lg text-muted-foreground font-medium">
+                Transform your content with professional gear
               </p>
+              <div className="w-32 h-1 bg-gradient-to-r from-juicy to-pink-500 mx-auto rounded-full" />
             </div>
 
             {/* Products Grid */}
