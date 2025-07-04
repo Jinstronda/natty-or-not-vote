@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
 import InfluencerInfo from "@/components/InfluencerInfo";
 import ExpertReviews from "@/components/ExpertReviews";
-import UserReviews, { UserReviewsRef } from "@/components/UserReviews";
+import EnhancedUserReviews, { EnhancedUserReviewsRef } from "@/components/EnhancedUserReviews";
 import AdminInfluencerEditor from "@/components/AdminInfluencerEditor";
 import { useInfluencer } from "@/hooks/api/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
