@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import UsernameEditor from "@/components/UsernameEditor";
 
 const UserProfile = () => {
   const { id } = useParams();
@@ -74,6 +75,14 @@ const UserProfile = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Username Editor (only for own profile) */}
+          {isOwnProfile && (
+            <UsernameEditor 
+              currentUsername={profileData?.username || ''} 
+              userId={profileData.id} 
+            />
+          )}
+          
           {/* User Info */}
           <Card className="mb-8">
             <CardHeader>
@@ -83,15 +92,17 @@ const UserProfile = () => {
                     <ProfilePictureUpload />
                   ) : (
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src={profileData.profile_picture_url} alt={profileData.username} />
+                      <AvatarImage src={profileData.profile_picture_url} alt={profileData.username || 'User'} />
                       <AvatarFallback className="text-xl">
-                        {profileData.username.charAt(0).toUpperCase()}
+                        {(profileData.username || 'U').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   )}
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-3xl font-heading">{profileData.username}</CardTitle>
+                  <CardTitle className="text-3xl font-heading">
+                    {profileData.username || 'User (No username set)'}
+                  </CardTitle>
                   <p className="text-muted-foreground">Member since {new Date(profileData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
                   {profileData.role === 'admin' && (
                     <Badge className="mt-2 bg-yellow-500">Admin</Badge>

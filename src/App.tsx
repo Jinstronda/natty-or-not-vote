@@ -29,6 +29,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const ExpertsDirectory = lazy(() => import('./pages/experts/index'));
 const ExpertProfilePage = lazy(() => import('./pages/experts/[expertId]'));
 const Merch = lazy(() => import("./pages/Merch"));
+const DebugUsername = lazy(() => import("./pages/DebugUsername"));
 
 // Error Boundary Component for better error handling
 const ErrorFallback = ({ error }: { error: Error }) => (
@@ -88,6 +89,7 @@ const App = () => {
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/experts" element={<ExpertsDirectory />} />
                   <Route path="/experts/:expertId" element={<ExpertProfilePage />} />
+                  <Route path="/debug-username" element={<DebugUsername />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

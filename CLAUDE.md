@@ -161,6 +161,79 @@ Next step: [proposed action]
 
 ---
 
+## 📋 Implementation Registry
+
+### Google-Only Authentication with Username Selection ✅ COMPLETED
+
+**Implementation Date**: 2025-07-04  
+**Updated**: 2025-07-04 (Added username editing and debugging tools)
+**Files Modified**:
+- `/src/pages/SignUp.tsx` - Google-only signup with username selection + debug logging
+- `/src/pages/Login.tsx` - Hybrid login supporting both Google OAuth and email/password for existing users
+- `/src/pages/UserProfile.tsx` - **NEW** - Added username editing capability  
+- `/src/components/UsernameEditor.tsx` - **NEW** - Complete username management component
+- `/src/pages/DebugUsername.tsx` - **NEW** - Debug tool for testing username system
+- `/src/components/auth/GoogleLoginButton.tsx` - Verified working
+- `/supabase/migrations/20250704000000-google-only-signup-username-selection.sql` - Database migration
+- `USERNAME_TESTING_GUIDE.md` - **NEW** - Comprehensive manual testing guide
+
+**Flow Description**:
+
+**New User Signup (Google-only)**:
+1. User clicks "SIGNUP" → sees Google-only signup page
+2. User clicks "Continue with Google" → Google OAuth flow
+3. After OAuth, if user doesn't have username → username selection form appears
+4. User enters desired username → availability checked in real-time
+5. User submits → profile updated, redirected to home
+
+**Existing User Login (Hybrid)**:
+1. User clicks "LOGIN" → sees hybrid login page
+2. **Option A**: Click "Continue with Google" (recommended for new workflow)
+3. **Option B**: Use email/password form for accounts created before Google-only update
+4. Both methods authenticate and redirect to home
+
+**Key Features**:
+- ✅ **Signup**: Google-only authentication (email/password completely removed)
+- ✅ **Login**: Hybrid authentication (Google OAuth + email/password for existing users)
+- ✅ **Username Management**: Complete editing system with real-time validation
+- ✅ Google OAuth integration via Supabase
+- ✅ Real-time username availability checking with debouncing
+- ✅ Username validation (3+ chars, alphanumeric + underscore)
+- ✅ Clean, consistent UI between login/signup pages
+- ✅ Proper loading states and error handling
+- ✅ Database migration to support nullable usernames
+- ✅ **Backward compatibility** for existing email/password accounts
+- ✅ **Debug tools** for comprehensive testing and troubleshooting
+- ✅ **Edge case handling** for users without usernames
+
+**Database Changes**:
+- `profiles.username` is now nullable to support OAuth flow
+- `handle_new_user()` function creates profile without username first
+- Username uniqueness enforced with partial index
+
+**Testing Verified**:
+- ✅ Signup page shows only Google button
+- ✅ Login page shows hybrid authentication (Google + email/password)
+- ✅ Email/password removed from signup, preserved for login
+- ✅ Navigation between pages works correctly
+- ✅ Username selection form renders properly
+- ✅ **Username editing works without bugs in user profiles**
+- ✅ **Real-time username validation and availability checking**
+- ✅ **Proper handling of users without usernames**
+- ✅ **Debug tools accessible at `/debug-username`**
+
+**User Experience**:
+- Simple, streamlined authentication process
+- No complex password requirements for new users
+- Instant access via Google account
+- Personalized username selection with real-time feedback
+- **Flexible username editing** - users can change usernames anytime
+- **No user lockouts** - existing accounts remain accessible
+- Consistent with modern web app standards
+- **Comprehensive error handling** and user guidance
+
+---
+
 **Remember**: You are a scientific debugger. Every action should be based on evidence, every change should be tested, and every decision should be communicated clearly.
 
 ---
