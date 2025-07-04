@@ -219,7 +219,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   );
 };
 
-const Merch = () => {
+const MerchRobust = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -285,7 +285,7 @@ const Merch = () => {
       "worstRating": "1"
     }
   }), []);
-
+  
   return (
     <Layout>
       <SEOHead
@@ -406,4 +406,4 @@ const Merch = () => {
   );
 };
 
-export default Merch; 
+export default MerchRobust;
