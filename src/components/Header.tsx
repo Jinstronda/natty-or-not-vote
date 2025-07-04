@@ -129,14 +129,29 @@ const Header = () => {
           </button>
         </div>
 
-        {/* FIXED: Mobile Menu Backdrop - LOWER z-index than header to prevent click interception */}
+        {/* ULTIMATE FIX: Mobile Menu Backdrop with pointer-events exclusion */}
         {isMobileMenuOpen && (
           <div
-            className="xl:hidden fixed inset-0 bg-black/20 z-30"
+            className="xl:hidden fixed inset-0 bg-black/20"
             style={{ 
-              pointerEvents: 'auto',
-              // Exclude header area from backdrop to prevent click interception
-              clipPath: 'polygon(0 73px, 100% 73px, 100% 100%, 0 100%)'
+              zIndex: 25, // Well below header z-50
+              pointerEvents: 'none' // Allow clicks to pass through
+            }}
+            aria-hidden="true"
+            role="presentation"
+          />
+        )}
+        {/* Separate clickable area that doesn't interfere with header */}
+        {isMobileMenuOpen && (
+          <div
+            className="xl:hidden fixed bg-transparent"
+            style={{ 
+              top: '73px', // Below header
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 25,
+              pointerEvents: 'auto'
             }}
             onClick={closeMobileMenu}
             onKeyDown={(e) => {
