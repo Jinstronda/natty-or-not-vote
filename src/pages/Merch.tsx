@@ -165,14 +165,11 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       
       <CardContent className="p-8 bg-gradient-to-b from-background to-juicy/5">
         <div className="space-y-6">
-          {/* Enhanced title section */}
+          {/* Enhanced title section - NO DESCRIPTION */}
           <div className="space-y-3 text-center">
             <CardTitle className="text-xl font-black leading-tight group-hover:text-juicy transition-colors duration-300 bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
               {product.title}
             </CardTitle>
-            <p className="text-base text-muted-foreground font-medium">
-              {product.description}
-            </p>
           </div>
           
           {/* Enhanced features grid */}
@@ -454,33 +451,6 @@ const Merch = () => {
               </div>
             </ErrorBoundary>
 
-            {/* Social Proof Section */}
-            {!isLoading && filteredProducts.length > 0 && (
-              <div className="bg-gradient-to-r from-juicy/10 via-pink-500/10 to-juicy/10 rounded-2xl p-8 border-2 border-juicy/20 text-center">
-                <div className="space-y-4">
-                  <h3 className="text-2xl font-bold text-juicy">
-                    ⭐ Join Thousands of Satisfied Customers
-                  </h3>
-                  <div className="flex items-center justify-center gap-8 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2">
-                        ✅ 30-Day Guarantee
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-4 py-2">
-                        🚚 Fast Worldwide Shipping
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-gradient-to-r from-purple-500 to-violet-600 text-white px-4 py-2">
-                        💎 Premium Quality
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
           
           {/* No Results */}
