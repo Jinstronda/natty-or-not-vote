@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
 import MobileLoadingDiagnostic from "./components/MobileLoadingDiagnostic";
+import "./styles/loading-animations.css";
 
 // Loading component for better UX
 const PageLoader = () => (
@@ -30,6 +31,7 @@ const ExpertsDirectory = lazy(() => import('./pages/experts/index'));
 const ExpertProfilePage = lazy(() => import('./pages/experts/[expertId]'));
 const Merch = lazy(() => import("./pages/Merch"));
 const DebugUsername = lazy(() => import("./pages/DebugUsername"));
+const LoadingDemo = lazy(() => import("./components/OptimizedInfluencerGrid"));
 
 // Error Boundary Component for better error handling
 const ErrorFallback = ({ error }: { error: Error }) => (
