@@ -10,6 +10,7 @@ import { useInfluencer } from "@/hooks/api/useInfluencer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InfluencerProfileSkeleton } from "@/components/InfluencerProfileSkeleton";
 import { Influencer } from "@/types/vote";
 
 const InfluencerProfile = () => {
@@ -64,22 +65,7 @@ const InfluencerProfile = () => {
   console.log('[InfluencerProfile] influencer:', influencer);
   
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <Skeleton className="h-96 w-full" />
-            </div>
-            <div className="lg:col-span-2 space-y-8">
-              <Skeleton className="h-64 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <InfluencerProfileSkeleton />;
   }
 
   if (error || !influencer) {
