@@ -40,7 +40,7 @@ const InfluencerProfile = () => {
   }, [supabaseUser, userProfile, fetchUserProfile]);
 
   const handleReviewSubmitted = () => {
-    userReviewsRef.current?.fetchReviews();
+    userReviewsRef.current?.refresh();
   };
   
   // Debug logs
@@ -101,7 +101,7 @@ const InfluencerProfile = () => {
           <div className="lg:col-span-2 space-y-8">
             <VotingSection influencerId={id!} onReviewSubmitted={handleReviewSubmitted} />
             <ExpertReviews influencerId={id!} />
-            <UserReviews ref={userReviewsRef} influencerId={id!} />
+            <EnhancedUserReviews ref={userReviewsRef} influencerId={id!} />
           </div>
         </div>
       </div>
