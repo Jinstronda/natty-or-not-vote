@@ -28,7 +28,8 @@
       "Bash(cd:*)",
       "Bash(node:*)",
       "Bash(npx playwright:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "WebFetch(domain:606ejf-hf.myshopify.com)"
     ],
     "deny": []
   },
