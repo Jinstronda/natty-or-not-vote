@@ -65,21 +65,37 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; fallback: React.React
   return <>{children}</>;
 };
 
-// Modern loading component with skeleton
+// Enhanced loading skeleton with juicy theme
 const ProductSkeleton = () => (
-  <Card className="overflow-hidden">
-    <div className="aspect-square bg-muted animate-pulse" />
-    <CardContent className="p-6">
-      <div className="space-y-3">
-        <div className="h-4 bg-muted rounded animate-pulse" />
-        <div className="h-3 bg-muted rounded w-3/4 animate-pulse" />
-        <div className="h-8 bg-muted rounded animate-pulse" />
+  <Card className="overflow-hidden border-2 border-juicy/20 bg-gradient-to-br from-juicy/5 via-background to-juicy/10">
+    <div className="aspect-square bg-gradient-to-br from-juicy/20 to-pink-500/20 animate-pulse relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-50" />
+      <div className="absolute top-4 left-4 w-20 h-6 bg-juicy/30 rounded-full animate-pulse" />
+      <div className="absolute top-4 right-4 w-16 h-6 bg-destructive/30 rounded-full animate-pulse" />
+    </div>
+    <CardContent className="p-8 bg-gradient-to-b from-background to-juicy/5">
+      <div className="space-y-6">
+        <div className="space-y-3 text-center">
+          <div className="h-6 bg-gradient-to-r from-juicy/20 to-pink-500/20 rounded animate-pulse" />
+          <div className="h-4 bg-muted/50 rounded w-3/4 mx-auto animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-8 bg-juicy/10 rounded animate-pulse" />
+          ))}
+        </div>
+        <div className="text-center">
+          <div className="h-12 bg-gradient-to-r from-juicy/20 to-pink-500/20 rounded animate-pulse mb-4" />
+          <div className="h-6 bg-juicy/10 rounded-full w-48 mx-auto animate-pulse mb-4" />
+        </div>
+        <div className="h-16 bg-gradient-to-r from-juicy/30 to-pink-500/30 rounded-2xl animate-pulse" />
+        <div className="h-12 bg-juicy/5 rounded-lg animate-pulse" />
       </div>
     </CardContent>
   </Card>
 );
 
-// Modern product card with juicy pink theme and full clickability
+// Conversion-optimized product card with enhanced juicy theme
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -92,16 +108,20 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   
   return (
     <Card 
-      className="overflow-hidden hover:shadow-lg hover:shadow-juicy/20 transition-all duration-300 hover:scale-[1.02] group cursor-pointer border-juicy/20 hover:border-juicy/40"
+      className="overflow-hidden hover:shadow-2xl hover:shadow-juicy/30 transition-all duration-500 hover:scale-[1.03] group cursor-pointer border-2 border-juicy/30 hover:border-juicy bg-gradient-to-br from-juicy/5 via-background to-juicy/10"
       onClick={handleCardClick}
     >
       <div className="relative">
-        <div className="aspect-square bg-gradient-to-br from-juicy/10 to-juicy/5 overflow-hidden">
+        {/* Enhanced juicy background */}
+        <div className="aspect-square bg-gradient-to-br from-juicy/20 via-juicy/10 to-juicy/30 overflow-hidden relative">
+          {/* Animated background effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-50" />
+          
           {!imageError ? (
             <img
               src={product.image}
               alt={product.title}
-              className={`w-full h-full object-contain transition-all duration-300 group-hover:scale-105 ${
+              className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-110 relative z-10 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}
@@ -109,96 +129,115 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-juicy/10">
-              <ShoppingCart className="w-16 h-16 text-juicy/60" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-juicy/20 to-juicy/40">
+              <ShoppingCart className="w-20 h-20 text-juicy animate-bounce" />
             </div>
           )}
+          
+          {/* Enhanced overlay effects */}
+          <div className="absolute inset-0 bg-gradient-to-t from-juicy/20 via-transparent to-transparent group-hover:from-juicy/40 transition-all duration-500" />
         </div>
         
-        {/* Badges */}
-        <div className="absolute top-3 left-3 z-10">
-          <Badge className="bg-juicy hover:bg-juicy/90 text-white">
+        {/* Enhanced badges with glow effects */}
+        <div className="absolute top-4 left-4 z-20">
+          <Badge className="bg-gradient-to-r from-juicy to-pink-500 hover:from-pink-500 hover:to-juicy text-white shadow-lg shadow-juicy/50 animate-pulse">
             🔥 BESTSELLER
           </Badge>
         </div>
         
-        <div className="absolute top-3 right-3 z-10">
-          <Badge className="bg-juicy/90 hover:bg-juicy text-white">
+        <div className="absolute top-4 right-4 z-20">
+          <Badge className="bg-gradient-to-r from-destructive to-red-600 text-white shadow-lg shadow-destructive/50 font-bold text-lg px-4 py-2">
             {discountPercentage}% OFF
           </Badge>
         </div>
         
-        {/* Stock warning */}
+        {/* Enhanced stock warning */}
         {product.stockCount <= 10 && (
-          <div className="absolute bottom-3 left-3 right-3 z-10">
-            <Alert className="bg-juicy/90 border-juicy text-white">
-              <AlertDescription className="text-center text-sm font-bold">
-                ⚠️ Only {product.stockCount} left in stock!
+          <div className="absolute bottom-4 left-4 right-4 z-20">
+            <Alert className="bg-gradient-to-r from-destructive to-red-600 border-2 border-red-400 text-white shadow-xl animate-pulse">
+              <AlertDescription className="text-center font-black text-lg">
+                ⚠️ ONLY {product.stockCount} LEFT - ORDER NOW!
               </AlertDescription>
             </Alert>
           </div>
         )}
       </div>
       
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {/* Title - No fake ratings */}
-          <div className="space-y-2">
-            <CardTitle className="text-lg leading-tight line-clamp-2 group-hover:text-juicy transition-colors">
+      <CardContent className="p-8 bg-gradient-to-b from-background to-juicy/5">
+        <div className="space-y-6">
+          {/* Enhanced title section */}
+          <div className="space-y-3 text-center">
+            <CardTitle className="text-xl font-black leading-tight group-hover:text-juicy transition-colors duration-300 bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
               {product.title}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground font-medium">
               {product.description}
             </p>
           </div>
           
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Enhanced features grid */}
+          <div className="grid grid-cols-2 gap-3">
             {product.features.map((feature, index) => (
-              <Badge key={index} variant="secondary" className="text-xs justify-center bg-juicy/10 text-juicy border-juicy/20">
+              <Badge 
+                key={index} 
+                variant="secondary" 
+                className="text-sm justify-center py-2 bg-gradient-to-r from-juicy/20 to-pink-500/20 text-juicy border-juicy/30 hover:from-juicy/30 hover:to-pink-500/30 transition-all duration-300 font-semibold"
+              >
                 {feature}
               </Badge>
             ))}
           </div>
           
-          {/* Price */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-3xl font-bold text-juicy">
+          {/* Enhanced pricing section */}
+          <div className="space-y-4 text-center">
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-5xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
                 €{product.price}
               </span>
-              <span className="text-lg text-muted-foreground line-through">
-                €{product.originalPrice}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl text-muted-foreground line-through">
+                  €{product.originalPrice}
+                </span>
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold">
+                  Save €{(product.originalPrice - product.price).toFixed(2)}
+                </Badge>
+              </div>
             </div>
             
-            {/* Stock status */}
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-juicy rounded-full animate-pulse" />
-              <span className="text-sm text-juicy font-medium">
-                In Stock & Ready to Ship
+            {/* Enhanced stock status */}
+            <div className="flex items-center justify-center gap-3 bg-juicy/10 rounded-full px-4 py-2">
+              <div className="w-3 h-3 bg-juicy rounded-full animate-ping" />
+              <span className="text-juicy font-bold tracking-wide">
+                ✅ IN STOCK & READY TO SHIP
               </span>
             </div>
           </div>
           
-          {/* Buy button */}
+          {/* Enhanced buy button */}
           <Button 
             onClick={(e) => {
               e.stopPropagation();
               handleCardClick();
             }}
-            className="w-full bg-gradient-to-r from-juicy to-juicy/80 hover:from-juicy/90 hover:to-juicy/70 text-white font-bold py-3 text-lg transition-all duration-300 hover:scale-[1.02]"
+            className="w-full bg-gradient-to-r from-juicy via-pink-500 to-juicy hover:from-pink-600 hover:via-juicy hover:to-pink-600 text-white font-black py-6 text-xl transition-all duration-500 hover:scale-[1.05] shadow-lg shadow-juicy/50 hover:shadow-xl hover:shadow-juicy/70 relative overflow-hidden group"
             size="lg"
           >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Buy Now - €{product.price}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <div className="relative flex items-center justify-center gap-3">
+              <ShoppingCart className="w-6 h-6" />
+              <span>🚀 GET IT NOW - €{product.price}</span>
+            </div>
           </Button>
           
-          {/* Guarantee - real info only */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Shield className="w-4 h-4" />
-              <span>30-day Money-back Guarantee</span>
+          {/* Enhanced trust signals */}
+          <div className="flex items-center justify-center gap-6 text-sm font-medium bg-juicy/5 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-juicy">
+              <Shield className="w-5 h-5" />
+              <span>30-Day Guarantee</span>
+            </div>
+            <div className="flex items-center gap-2 text-green-600">
+              <Truck className="w-5 h-5" />
+              <span>Fast Shipping</span>
             </div>
           </div>
         </div>
@@ -292,18 +331,37 @@ const Merch = () => {
       
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 space-y-8">
-          {/* Hero Section */}
-          <div className="text-center space-y-6 bg-gradient-to-r from-juicy/10 to-juicy/5 rounded-2xl p-8 border border-juicy/20">
-            <h1 className="text-4xl md:text-6xl font-bold">
-              Official <span className="text-natty">Natty</span> or <span className="text-juicy">Juicy</span> Store
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Professional gear that transforms your fitness content ⚡
-            </p>
+          {/* Enhanced Hero Section with Juicy Theme */}
+          <div className="text-center space-y-8 bg-gradient-to-br from-juicy/20 via-juicy/10 to-pink-500/20 rounded-3xl p-12 border-2 border-juicy/30 shadow-2xl shadow-juicy/20 relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-juicy/10 to-transparent animate-pulse opacity-30" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-juicy/20 rounded-full blur-3xl animate-bounce" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl animate-pulse" />
+            
+            <div className="relative z-10">
+              <h1 className="text-5xl md:text-7xl font-black leading-tight">
+                Official <span className="text-natty drop-shadow-lg">Natty</span> or <span className="bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent drop-shadow-lg">Juicy</span> Store
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-juicy to-pink-500 mx-auto my-6 rounded-full" />
+              <p className="text-2xl text-muted-foreground max-w-3xl mx-auto font-medium">
+                Professional gear that transforms your fitness content ⚡
+              </p>
+              <div className="flex items-center justify-center gap-8 mt-8">
+                <Badge className="bg-gradient-to-r from-juicy to-pink-500 text-white px-6 py-3 text-lg font-bold shadow-lg">
+                  ✨ Premium Quality
+                </Badge>
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 text-lg font-bold shadow-lg">
+                  🚀 Fast Shipping
+                </Badge>
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-3 text-lg font-bold shadow-lg">
+                  🛡️ Guaranteed
+                </Badge>
+              </div>
+            </div>
           </div>
           
-          {/* Flash Sale Timer */}
-          <div className="bg-gradient-to-r from-juicy to-juicy/90 rounded-xl p-6 text-center text-white">
+          {/* Flash Sale Timer - Keep RED for urgency */}
+          <div className="bg-gradient-to-r from-destructive to-destructive/90 rounded-xl p-6 text-center text-white">
             <div className="text-lg font-bold mb-4 uppercase tracking-wider">
               ⚡ FLASH SALE ENDS IN ⚡
             </div>
@@ -329,19 +387,20 @@ const Merch = () => {
             </div>
           </div>
           
-          {/* Search */}
-          <div className="max-w-lg mx-auto">
-            <div className="relative">
+          {/* Enhanced Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative group">
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search for the perfect gear..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-12 pr-4 py-4 text-lg border-2 border-juicy/30 focus:border-juicy focus:ring-4 focus:ring-juicy/20 rounded-2xl bg-gradient-to-r from-juicy/5 to-pink-500/5 placeholder:text-muted-foreground/70"
               />
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-juicy w-5 h-5 group-focus-within:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-juicy/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
             </div>
           </div>
           
@@ -363,24 +422,66 @@ const Merch = () => {
             </Alert>
           )}
           
-          {/* Products Grid */}
-          <ErrorBoundary fallback={
-            <Alert className="max-w-md mx-auto">
-              <AlertDescription>
-                Something went wrong loading products. Please refresh the page.
-              </AlertDescription>
-            </Alert>
-          }>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {isLoading ? (
-                Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
-              ) : (
-                filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))
-              )}
+          {/* Enhanced Products Grid Section */}
+          <div className="space-y-8">
+            {/* Section Header */}
+            <div className="text-center space-y-4">
+              <h2 className="text-4xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
+                🔥 FEATURED PRODUCTS
+              </h2>
+              <p className="text-lg text-muted-foreground font-medium">
+                Transform your content with professional-grade gear
+              </p>
+              <div className="w-32 h-1 bg-gradient-to-r from-juicy to-pink-500 mx-auto rounded-full" />
             </div>
-          </ErrorBoundary>
+
+            {/* Products Grid */}
+            <ErrorBoundary fallback={
+              <Alert className="max-w-md mx-auto border-2 border-juicy/30 bg-gradient-to-r from-juicy/10 to-pink-500/10">
+                <AlertDescription className="text-center font-medium">
+                  Something went wrong loading products. Please refresh the page.
+                </AlertDescription>
+              </Alert>
+            }>
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                {isLoading ? (
+                  Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
+                ) : (
+                  filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))
+                )}
+              </div>
+            </ErrorBoundary>
+
+            {/* Social Proof Section */}
+            {!isLoading && filteredProducts.length > 0 && (
+              <div className="bg-gradient-to-r from-juicy/10 via-pink-500/10 to-juicy/10 rounded-2xl p-8 border-2 border-juicy/20 text-center">
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-juicy">
+                    ⭐ Join Thousands of Satisfied Customers
+                  </h3>
+                  <div className="flex items-center justify-center gap-8 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2">
+                        ✅ 30-Day Guarantee
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-4 py-2">
+                        🚚 Fast Worldwide Shipping
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-violet-600 text-white px-4 py-2">
+                        💎 Premium Quality
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* No Results */}
           {!isLoading && filteredProducts.length === 0 && (
