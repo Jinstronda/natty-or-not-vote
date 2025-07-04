@@ -277,7 +277,7 @@ const Merch = () => {
         description="Transform your fitness content with professional gear. The Juicy Lightning™ - now 50% OFF. In stock & ready to ship. Free shipping on all orders."
         canonicalUrl="https://nattyorjuicy.com/merch"
         ogType="product"
-        ogImage="https://lovable.dev/opengraph-image-p98pqg.png"
+        ogImage="/LOGO.png"
         keywords={["fitness gear", "content creation", "natty or juicy", "fitness equipment", "bodybuilding", "workout accessories", "fitness influencer gear"]}
         structuredData={ecommerceSchema}
       />
