@@ -5,7 +5,11 @@
       "handle": "filesystem"
     },
     {
-      "src": "/.*",
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
@@ -15,16 +19,25 @@
       "headers": [
         {
           "key": "Content-Type", 
-          "value": "text/javascript; charset=utf-8"
+          "value": "application/javascript; charset=utf-8"
         }
       ]
     },
     {
-      "source": "/src/(.*)\\.tsx?",
+      "source": "/assets/(.*)\\.mjs",
       "headers": [
         {
           "key": "Content-Type",
-          "value": "text/javascript; charset=utf-8"
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "**/*.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
         }
       ]
     },
@@ -33,7 +46,16 @@
       "headers": [
         {
           "key": "Content-Type",
-          "value": "text/javascript; charset=utf-8"
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
         }
       ]
     },
