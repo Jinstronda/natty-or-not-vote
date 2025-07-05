@@ -200,7 +200,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                 <div
                   key={review.id}
                   className={cn('w-full flex-shrink-0 p-4 overflow-y-auto', cardColor)}
-                  style={{ width: `${100 / reviews.length}%` }}
+                  style={{ width: '100%' }}
                 >
                   <ExpertReviewCard 
                     review={review}
