@@ -1,0 +1,100 @@
+/* Professional Mobile Expert Reviews Carousel Styles */
+
+/* Smooth scrolling for carousel transitions */
+.expert-reviews-carousel {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Enhanced backdrop effects for mobile */
+.expert-review-card {
+  background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  .expert-review-navigation-button {
+    min-width: 48px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+  
+  .expert-review-dot {
+    min-width: 32px;
+    min-height: 32px;
+    touch-action: manipulation;
+  }
+  
+  /* Improved text readability on mobile */
+  .expert-review-content {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    line-height: 1.6;
+  }
+  
+  /* Better spacing for mobile content */
+  .expert-review-card-mobile {
+    padding: 1.5rem;
+    min-height: calc(100vh - 200px);
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Responsive verdict badges */
+  .expert-verdict-badge {
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  
+  /* Floating admin actions */
+  .expert-admin-actions {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+}
+
+/* Animations for better UX */
+@keyframes expertSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.expert-review-enter {
+  animation: expertSlideIn 0.3s ease-out;
+}
+
+/* Gradient overlays for better content hierarchy */
+.expert-review-gradient-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.3) 100%
+  );
+}
+
+/* Better focus states for accessibility */
+.expert-review-focusable:focus {
+  outline: 2px solid rgba(255,255,255,0.8);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+.expert-review-interactive {
+  transition: all 0.2s ease-out;
+}
+
+.expert-review-interactive:hover {
+  transform: translateY(-1px);
+}

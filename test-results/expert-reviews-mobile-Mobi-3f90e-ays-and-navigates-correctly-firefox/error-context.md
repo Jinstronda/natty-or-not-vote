@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- banner:
+  - link "Natty or Juicy Home":
+    - /url: /
+    - text: Natty or Juicy
+  - button "Open navigation menu"
+  - navigation "Mobile navigation":
+    - navigation:
+      - link "Trending Latest fitness content":
+        - /url: /
+      - link "Merch Official store":
+        - /url: /merch
+      - link "How It Works Learn about our process":
+        - /url: /how-it-works
+      - link "🔐 Login":
+        - /url: /login
+      - link "✨ Sign Up":
+        - /url: /signup
+- img "Influencer photo"
+- heading "David Laid" [level=1]
+- paragraph: Aesthetic bodybuilder and fitness influencer.
+- link "Instagram":
+  - /url: https://instagram.com/davidlaid
+  - img
+  - text: Instagram
+- link "YouTube":
+  - /url: https://youtube.com/davidlaid
+  - img
+  - text: YouTube
+- link "TikTok":
+  - /url: https://tiktok.com/@/
+  - img
+  - text: TikTok
+- text: "Height: 6'2\" Weight: 190 lbs Training: 10+ years Claims: Not Known"
+- heading "What do you think?" [level=3]
+- link "Login":
+  - /url: /login
+- link "Sign Up":
+  - /url: /signup
+- button "🏆 Natty" [disabled]
+- button "💉 Juicy" [disabled]
+- text: Sign in to see the community verdict and cast your vote!
+- img
+- text: Expert Reviews 1 of 3
+- region "Expert reviews carousel":
+  - img "Seth Feroce"
+  - link "Seth Feroce":
+    - /url: /experts/a6508824-9c4e-4979-86d3-93035befe816
+  - text: said about
+  - link "David Laid":
+    - /url: /influencer/550e8400-e29b-41d4-a716-446655440002
+  - text: "He's not natural. It's a little too much to claim natural to achieve that. He has great genetics but he's a little on the stringier side. I think he was probably on a low dosage of orals. He might not even be taking injectables. VERDICT: Juicy"
+  - img "Farhat Hussein"
+  - link "Farhat Hussein":
+    - /url: /experts/f6dd477e-8951-4e6d-adbb-27e59de05f2e
+  - text: said about
+  - link "David Laid":
+    - /url: /influencer/550e8400-e29b-41d4-a716-446655440002
+  - text: "\"peptides I would label them as natty he looks like a natty though\" VERDICT: Natty"
+  - img "Greg Doucette"
+  - link "Greg Doucette":
+    - /url: /experts/9176bb38-1a53-49f9-8d16-9876fa1c6dd6
+  - text: said about
+  - link "David Laid":
+    - /url: /influencer/550e8400-e29b-41d4-a716-446655440002
+  - text: "\"It makes it so unlikely that he's natural that you may as well just say there's more chance he got struck by lightning and lived and then got struck by lightning again and lived than is he natural.\" VERDICT: Juicy"
+  - button "Previous expert review":
+    - img
+  - button "Next expert review":
+    - img
+  - text: Swipe to navigate
+- button "Go to expert review 1"
+- button "Go to expert review 2"
+- button "Go to expert review 3"
+- heading "Community Reviews" [level=3]:
+  - img
+  - text: Community Reviews
+- img
+- text: 2 reviews
+- tablist:
+  - tab "Recent" [selected]:
+    - img
+    - text: Recent
+  - tab "Popular":
+    - img
+    - text: Popular
+- img
+- text: Sorted by newest first
+- link "JoaoPanizzutti JoaoPanizzutti":
+  - /url: /user/efc3c736-61be-4139-b63f-76a75008ce8c
+  - img "JoaoPanizzutti"
+  - text: JoaoPanizzutti
+- text: 💉 6/11/2025
+- paragraph: Juicy, its obvious
+- button "0":
+  - img
+  - text: "0"
+- button "0":
+  - img
+  - text: "0"
+- link "I ivalbinio":
+  - /url: /user/4b3ee340-5d09-497e-adc2-762770fecc5e
+- text: 💉 6/10/2025
+- paragraph: Juicy no comments needed, but he is so sexy tho
+- button "0":
+  - img
+  - text: "0"
+- button "0":
+  - img
+  - text: "0"
+- text: Loaded 2 of 2 reviews 100%
+- img
+- text: You've seen all reviews All 2 reviews loaded
+```

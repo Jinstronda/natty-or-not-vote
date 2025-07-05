@@ -123,7 +123,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
     );
   }
 
-  // Single review - no carousel needed
+  // Single review - enhanced design
   if (reviews.length === 1) {
     const review = reviews[0];
     const expert = review.expert_id ? experts[review.expert_id] : null;
@@ -131,23 +131,40 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
     const expertName = expert?.name || review.author || 'Unknown Expert';
     const influencerName = influencer?.name || 'Unknown Influencer';
     const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
-    const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
 
     return (
-      <Card className={cn('border-2', cardColor, className)}>
-        <CardContent className="p-4">
-          <ExpertReviewCard 
-            review={review}
-            expert={expert}
-            influencer={influencer}
-            expertName={expertName}
-            influencerName={influencerName}
-            isNatty={isNatty}
-            isAdmin={isAdmin}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onChangeInfluencer={onChangeInfluencer}
-          />
+      <Card className={cn('relative overflow-hidden border-2', className)}>
+        <CardContent className="p-0">
+          {/* Header */}
+          <div className="px-6 py-3 bg-gradient-to-r from-black/10 via-transparent to-black/10 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2">
+              <Star className="h-5 w-5 text-yellow-400" />
+              <span className="font-bold text-white drop-shadow-lg">Expert Analysis</span>
+            </div>
+          </div>
+          
+          {/* Single Review Content */}
+          <div 
+            className="expert-reviews-carousel-slide expert-review-enter"
+            style={{ 
+              background: isNatty 
+                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)'
+                : 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0.05) 100%)'
+            }}
+          >
+            <ExpertReviewCard 
+              review={review}
+              expert={expert}
+              influencer={influencer}
+              expertName={expertName}
+              influencerName={influencerName}
+              isNatty={isNatty}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onChangeInfluencer={onChangeInfluencer}
+            />
+          </div>
         </CardContent>
       </Card>
     );
@@ -156,31 +173,27 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
   return (
     <Card className={cn('relative overflow-hidden', className)}>
       <CardContent className="p-0">
-        {/* Header */}
-        <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" />
-              <span className="font-semibold">Expert Reviews</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {currentIndex + 1} of {reviews.length}
-            </div>
+        {/* Minimal Header */}
+        <div className="px-6 py-3 bg-gradient-to-r from-black/10 via-transparent to-black/10 backdrop-blur-sm">
+          <div className="flex items-center justify-center gap-2">
+            <Star className="h-5 w-5 text-yellow-400" />
+            <span className="font-bold text-white drop-shadow-lg">Expert Analysis</span>
           </div>
         </div>
 
-        {/* Carousel Container */}
+        {/* Carousel Container - Dynamic Height */}
         <div
           ref={carouselRef}
-          className="relative overflow-hidden min-h-[400px]"
+          className="relative overflow-hidden"
           {...gestureHandlers}
           role="region"
           aria-label="Expert reviews carousel"
+          style={{ minHeight: 'auto' }}
         >
           {/* Reviews Container */}
           <div
             className={cn(
-              'flex transition-transform duration-300 ease-out h-full',
+              'flex transition-transform duration-300 ease-out',
               isTransitioning && 'transition-transform'
             )}
             style={{
@@ -199,8 +212,13 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
               return (
                 <div
                   key={review.id}
-                  className={cn('w-full flex-shrink-0 p-4 overflow-y-auto', cardColor)}
-                  style={{ width: '100%' }}
+                  className="w-full flex-shrink-0 expert-reviews-carousel-slide expert-review-enter"
+                  style={{ 
+                    width: '100%',
+                    background: isNatty 
+                      ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)'
+                      : 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0.05) 100%)'
+                  }}
                 >
                   <ExpertReviewCard 
                     review={review}
@@ -219,39 +237,43 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
             })}
           </div>
 
-          {/* Navigation Arrows */}
+          {/* Navigation Arrows - Enhanced Mobile Touch Targets */}
           {reviews.length > 1 && (
             <>
               <button
                 onClick={previousReview}
                 disabled={isTransitioning}
                 className={cn(
-                  'absolute left-2 top-1/2 -translate-y-1/2 z-20',
-                  'w-10 h-10 rounded-full bg-black/70 text-white',
+                  'absolute left-3 top-1/2 -translate-y-1/2 z-30',
+                  'w-12 h-12 rounded-full bg-black/80 text-white',
                   'flex items-center justify-center',
-                  'hover:bg-black/80 transition-colors',
+                  'hover:bg-black/90 active:scale-95 transition-all duration-200',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'focus:outline-none focus:ring-2 focus:ring-white/50'
+                  'focus:outline-none focus:ring-2 focus:ring-white/50',
+                  'expert-review-navigation-button expert-review-interactive',
+                  'backdrop-blur-sm border border-white/10'
                 )}
                 aria-label="Previous expert review"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-7 h-7" />
               </button>
 
               <button
                 onClick={nextReview}
                 disabled={isTransitioning}
                 className={cn(
-                  'absolute right-2 top-1/2 -translate-y-1/2 z-20',
-                  'w-10 h-10 rounded-full bg-black/70 text-white',
+                  'absolute right-3 top-1/2 -translate-y-1/2 z-30',
+                  'w-12 h-12 rounded-full bg-black/80 text-white',
                   'flex items-center justify-center',
-                  'hover:bg-black/80 transition-colors',
+                  'hover:bg-black/90 active:scale-95 transition-all duration-200',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'focus:outline-none focus:ring-2 focus:ring-white/50'
+                  'focus:outline-none focus:ring-2 focus:ring-white/50',
+                  'expert-review-navigation-button expert-review-interactive',
+                  'backdrop-blur-sm border border-white/10'
                 )}
                 aria-label="Next expert review"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-7 h-7" />
               </button>
             </>
           )}
@@ -266,25 +288,29 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
           )}
         </div>
 
-        {/* Indicators */}
+        {/* Enhanced Indicators */}
         {reviews.length > 1 && (
-          <div className="p-4 bg-gradient-to-r from-muted/20 to-muted/30">
-            <div className="flex justify-center space-x-2">
+          <div className="p-6 bg-gradient-to-r from-black/20 via-black/10 to-black/20 backdrop-blur-sm">
+            <div className="flex justify-center items-center space-x-3">
               {reviews.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToReview(index)}
                   disabled={isTransitioning}
                   className={cn(
-                    'w-2 h-2 rounded-full transition-all duration-300',
-                    'focus:outline-none focus:ring-2 focus:ring-primary/50',
+                    'rounded-full transition-all duration-300 expert-review-dot expert-review-interactive',
+                    'focus:outline-none focus:ring-2 focus:ring-white/50',
+                    'border border-white/20',
                     index === currentIndex 
-                      ? 'bg-primary scale-125' 
-                      : 'bg-primary/30 hover:bg-primary/50'
+                      ? 'w-4 h-4 bg-primary scale-110 shadow-lg shadow-primary/30' 
+                      : 'w-3 h-3 bg-white/40 hover:bg-white/60 hover:scale-105'
                   )}
                   aria-label={`Go to expert review ${index + 1}`}
                 />
               ))}
+            </div>
+            <div className="text-center mt-2 text-white/70 text-sm font-medium">
+              {currentIndex + 1} of {reviews.length}
             </div>
           </div>
         )}
@@ -320,14 +346,14 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
   onChangeInfluencer
 }) => {
   return (
-    <div className="relative">
-      {/* Admin Actions */}
+    <div className="relative p-6 min-h-[500px] flex flex-col">
+      {/* Admin Actions - Floating */}
       {isAdmin && (
-        <div className="absolute top-0 right-0 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white/20">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-10 w-10 p-0 hover:bg-white/20 backdrop-blur-sm bg-black/30 rounded-full">
+                <MoreVertical className="h-5 w-5 text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -357,58 +383,70 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       )}
 
-      {/* Expert Info */}
-      <div className="flex items-start gap-3 mb-3">
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold overflow-hidden">
+      {/* Expert Header - Compact */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-2 border-white/20">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
-            expertName[0] || <User className="w-6 h-6" />
+            expertName[0] || <User className="w-7 h-7" />
           )}
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1 mb-2">
+          <div className="mb-1">
             {expert?.id ? (
-              <a href={`/experts/${expert.id}`} className="font-semibold text-white drop-shadow hover:underline">
+              <a href={`/experts/${expert.id}`} className="font-bold text-lg text-white drop-shadow-lg hover:underline">
                 {expertName}
               </a>
             ) : (
-              <span className="font-semibold text-white drop-shadow">{expertName}</span>
+              <span className="font-bold text-lg text-white drop-shadow-lg">{expertName}</span>
             )}
-            <span className="text-muted-foreground text-sm">said about</span>
-            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded text-sm">
+          </div>
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-white/70">analyzing</span>
+            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-white hover:underline bg-white/20 px-2 py-0.5 rounded-full">
               {influencerName}
             </a>
           </div>
-          
-          {/* External Link */}
-          {review.link_url && isValidUrl(review.link_url) && (
-            <div className="mb-2">
-              <a 
-                href={review.link_url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1"
-              >
-                <ExternalLink className="h-3 w-3" /> Read Full Review
-              </a>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Review Content */}
-      <div className="text-sm mb-3 break-words whitespace-pre-line text-white drop-shadow">
-        {review.content}
+      {/* Review Content - Main Focus */}
+      <div className="flex-1 mb-6">
+        <div className="text-base leading-relaxed break-words whitespace-pre-line text-white drop-shadow-sm font-medium">
+          {review.content}
+        </div>
       </div>
       
-      {/* Verdict */}
-      <div className="flex items-center gap-2">
-        <span className="font-semibold text-xs text-muted-foreground">VERDICT:</span>
-        <span className={cn('font-bold text-sm', isNatty ? 'text-natty' : 'text-juicy')}>
-          {isNatty ? 'Natty' : 'Juicy'}
-        </span>
+      {/* Bottom Section - Verdict & Actions */}
+      <div className="space-y-3">
+        {/* Verdict Badge */}
+        <div className="flex justify-center">
+          <div className={cn(
+            'px-6 py-3 rounded-full font-bold text-lg shadow-lg',
+            isNatty 
+              ? 'bg-natty text-black' 
+              : 'bg-juicy text-white'
+          )}>
+            {isNatty ? '💪 NATTY' : '💉 JUICY'}
+          </div>
+        </div>
+        
+        {/* External Link */}
+        {review.link_url && isValidUrl(review.link_url) && (
+          <div className="flex justify-center">
+            <a 
+              href={review.link_url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-full transition-colors duration-200 backdrop-blur-sm"
+            >
+              <ExternalLink className="h-4 w-4" /> 
+              Read Full Analysis
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
