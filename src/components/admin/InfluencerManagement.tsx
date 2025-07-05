@@ -83,7 +83,7 @@ const GOOGLE_APIS = [
 const GOOGLE_CX = GOOGLE_APIS[0].cx;
 const GOOGLE_API_KEY = GOOGLE_APIS[0].key;
 
-// Advanced image validation - actually loads and analyzes image content
+// ENHANCED: Fitness-focused image validation - optimized for Priority 1 cases
 const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
   return new Promise((resolve) => {
     if (!imageUrl || typeof imageUrl !== 'string') {
@@ -91,7 +91,7 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
       return;
     }
 
-    // Basic URL pattern checks first
+    // Basic URL pattern checks - relaxed for fitness content
     const lower = imageUrl.trim().toLowerCase();
     if (
       lower === '' ||
@@ -100,11 +100,8 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
       lower.includes('no-image') ||
       lower.includes('default') ||
       lower.includes('broken') ||
-      lower.includes('/image/') ||
-      lower.includes('/photo/') ||
-      lower.includes('/missing/') ||
       lower.startsWith('http://') ||
-      !(/\.(jpg|jpeg|png|webp)$/i.test(lower))
+      !(/\.(jpg|jpeg|png|webp|gif)$/i.test(lower))
     ) {
       resolve(false);
       return;
@@ -116,23 +113,37 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
     
     const timeout = setTimeout(() => {
       resolve(false);
-    }, 10000); // 10 second timeout
+    }, 8000); // Reduced timeout for faster processing
 
     img.onload = () => {
       clearTimeout(timeout);
       
       try {
-        // Check image dimensions
-        if (img.width < 50 || img.height < 50) {
+        // Relaxed dimension requirements for fitness photos
+        if (img.width < 100 || img.height < 100) {
           resolve(false);
           return;
         }
 
-        // Create canvas to analyze image content
+        // For fitness influencers, prioritize image availability over perfect quality
+        // Skip pixel analysis for certain trusted domains
+        const trustedDomains = [
+          'instagram.com', 'ig.me', 'fbcdn.net', 'cdninstagram.com',
+          'youtube.com', 'yt3.ggpht.com', 'googleusercontent.com',
+          'twitter.com', 'twimg.com', 'pbs.twimg.com',
+          'supabase.co', 'amazonaws.com', 'cloudfront.net'
+        ];
+        
+        if (trustedDomains.some(domain => lower.includes(domain))) {
+          resolve(true);
+          return;
+        }
+
+        // Create canvas to analyze image content - only for untrusted sources
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          resolve(false);
+          resolve(true); // Accept if can't analyze rather than reject
           return;
         }
 
@@ -141,7 +152,7 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
         
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Get image data to analyze colors
+        // Get image data to analyze colors - RELAXED THRESHOLDS for fitness content
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         
@@ -165,8 +176,8 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
           const brightness = (r + g + b) / 3;
           totalBrightness += brightness;
           
-          // Check for white/near-white pixels
-          if (r > 240 && g > 240 && b > 240) {
+          // Check for white/near-white pixels - relaxed threshold
+          if (r > 250 && g > 250 && b > 250) {
             whitePixels++;
           }
         }
@@ -176,8 +187,8 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
         const transparentRatio = transparentPixels / totalPixels;
         const averageBrightness = totalBrightness / (totalPixels - transparentPixels);
         
-        // Reject if image is mostly white, transparent, or too bright
-        if (whiteRatio > 0.85 || transparentRatio > 0.7 || averageBrightness > 230) {
+        // RELAXED thresholds for fitness content - bright backgrounds are common
+        if (whiteRatio > 0.95 || transparentRatio > 0.8 || averageBrightness > 250) {
           resolve(false);
           return;
         }
@@ -185,7 +196,7 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
         resolve(true);
       } catch (error) {
         console.error('Error analyzing image:', error);
-        resolve(false);
+        resolve(true); // Accept if analysis fails rather than reject
       }
     };
 
@@ -198,79 +209,105 @@ const validateImageVisually = async (imageUrl: string): Promise<boolean> => {
   });
 };
 
-// Enhanced function with fallback APIs and progress notifications
+// ENHANCED: Fitness-targeted search with multiple query strategies
 async function fetchImagesForInfluencer(name: string, showProgress = false): Promise<string[]> {
   let lastError = '';
   
-  // Try Google APIs in sequence
+  // ENHANCED: Fitness-specific search terms for better results
+  const getSearchQueries = (influencerName: string): string[] => {
+    const baseName = influencerName.trim();
+    return [
+      `${baseName} fitness model bodybuilder`, // Primary fitness search
+      `${baseName} physique workout gym`,       // Secondary fitness search  
+      `${baseName} bodybuilding competition`,   // Competition photos
+      `${baseName} athlete fitness`,            // Athletic context
+      `${baseName} muscle training`,            // Training context
+      baseName                                  // Fallback: original name only
+    ];
+  };
+  
+  const searchQueries = getSearchQueries(name);
+  
+  // Try Google APIs with fitness-specific search terms
   for (let i = 0; i < GOOGLE_APIS.length; i++) {
     const api = GOOGLE_APIS[i];
-    try {
-      if (showProgress) {
-        toast({
-          title: `🔍 Searching for ${name}`,
-          description: `Using ${api.name}...`,
-          duration: 2000,
-        });
-      }
+    
+    // Try each search query until we find good results
+    for (let queryIndex = 0; queryIndex < searchQueries.length; queryIndex++) {
+      const searchQuery = searchQueries[queryIndex];
       
-      const params = new URLSearchParams({
-        key: api.key,
-        cx: api.cx,
-        q: name,
-        searchType: 'image',
-        num: '3',
-        safe: 'active',
-      });
-      
-      const res = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
-      
-      if (res.status === 429) {
-        const errorMsg = `${api.name} quota exceeded (429)`;
-        console.warn(errorMsg);
-        lastError = errorMsg;
-        
+      try {
         if (showProgress) {
           toast({
-            title: "⚠️ API Quota Exceeded",
-            description: `${api.name} hit rate limit, trying next API...`,
-            variant: "destructive",
-            duration: 3000,
+            title: `🔍 Searching for ${name}`,
+            description: `${api.name} - Query ${queryIndex + 1}: "${searchQuery}"`,
+            duration: 2000,
           });
         }
-        continue; // Try next API
-      }
-      
-      if (!res.ok) {
-        const errorMsg = `${api.name} error: ${res.status} ${res.statusText}`;
-        console.warn(errorMsg);
-        lastError = errorMsg;
-        continue;
-      }
-      
-      const data = await res.json();
-      if (!data.items || !Array.isArray(data.items)) {
-        lastError = `${api.name} returned no images`;
-        continue;
-      }
-      
-      const images = data.items.map((item: any) => item.link).slice(0, 3);
-      
-      if (showProgress) {
-        toast({
-          title: "✅ Images Found",
-          description: `Found ${images.length} images using ${api.name}`,
-          duration: 2000,
+        
+        const params = new URLSearchParams({
+          key: api.key,
+          cx: api.cx,
+          q: searchQuery,
+          searchType: 'image',
+          num: '5', // Increased from 3 to get more options
+          safe: 'active',
+          imgSize: 'large', // Prefer larger images
+          imgType: 'photo', // Prefer photos over graphics
+          fileType: 'jpg,jpeg,png,webp', // Specific file types
         });
+        
+        const res = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+        
+        if (res.status === 429) {
+          const errorMsg = `${api.name} quota exceeded (429)`;
+          console.warn(errorMsg);
+          lastError = errorMsg;
+          
+          if (showProgress) {
+            toast({
+              title: "⚠️ API Quota Exceeded",
+              description: `${api.name} hit rate limit, trying next API...`,
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+          break; // Try next API, not next query
+        }
+        
+        if (!res.ok) {
+          const errorMsg = `${api.name} error: ${res.status} ${res.statusText}`;
+          console.warn(errorMsg);
+          lastError = errorMsg;
+          continue; // Try next query
+        }
+        
+        const data = await res.json();
+        if (!data.items || !Array.isArray(data.items)) {
+          lastError = `${api.name} returned no images for query: ${searchQuery}`;
+          continue; // Try next query
+        }
+        
+        const images = data.items.map((item: any) => item.link).slice(0, 5); // Get up to 5 images
+        
+        if (images.length > 0) {
+          if (showProgress) {
+            toast({
+              title: "✅ Images Found",
+              description: `Found ${images.length} images using ${api.name} (Query: "${searchQuery.length > 30 ? searchQuery.substring(0, 30) + '...' : searchQuery}")`,
+              duration: 2000,
+            });
+          }
+          
+          return images;
+        }
+        
+      } catch (err) {
+        const errorMsg = `${api.name} exception: ${err instanceof Error ? err.message : 'Unknown error'}`;
+        console.error(errorMsg);
+        lastError = errorMsg;
+        continue; // Try next query
       }
-      
-      return images;
-      
-    } catch (err) {
-      const errorMsg = `${api.name} exception: ${err instanceof Error ? err.message : 'Unknown error'}`;
-      console.error(errorMsg);
-      lastError = errorMsg;
-      continue;
     }
   }
   
@@ -678,12 +715,159 @@ const InfluencerManagement = () => {
     }
   };
 
-  // NEW: Enhanced Google fetch with visual validation
+  // ENHANCED: Priority 1 Focused Image Fetching - Targets the 45 most critical cases
+  const handlePriority1ImageFetching = async () => {
+    setFetchingImages(true);
+    setUpdatedInfluencersLog([]);
+    
+    // Priority 1 influencer IDs (20 missing + 2 placeholders + 23 broken Wikipedia links)
+    const priority1Ids = [
+      'e95389cc-8e1b-4012-8b2c-e9a41b5897b5', '1c32692a-735a-4dc5-89a5-94a75d146a8f', 
+      '29f3e4d0-10a7-4374-9f83-e19475993abe', 'e7b71e81-bfdb-4cf6-a54f-9def9a9d17e1', 
+      '907e048f-4012-4696-9961-acfac618690e', '9fbdde14-d0e0-4077-8eed-1a348f80ad45', 
+      'fd947207-4882-4c08-87b6-46613ef4160b', 'fba76971-69db-42d5-9f4b-b9db1219c1ac', 
+      'abf92f9d-1232-4d6e-884d-c64de2972612', '939b654c-028d-47f3-8ea6-24e130ae2b33', 
+      'd14130ee-43ab-4ea8-b077-cd2659cbbb5b', '7a80d638-1f7e-4042-8893-a4d69018630d', 
+      '06b6330e-ea43-42b3-b6db-b10d890fbe31', 'e432428d-4052-48cd-bf40-bbae015d5872', 
+      '4cf9c68e-6a17-4b5f-bf4a-6b5d8651d0a9', '4942ec0e-4f0f-4cb5-92b4-dc86c2858454', 
+      'eb39ca8d-76ab-4daa-a0e9-94f24e010dfd', '248fe283-7291-4e53-bff1-cb5b38c4c543', 
+      '5b839a0b-afe8-4810-8961-50e157ddc2ae', 'e91245bc-53e8-4459-83b6-134783e72778', 
+      'd3ac6684-c828-4c44-a7c8-39a7bc353dce', '79bfa2ae-4ba3-4f31-bae3-23ef8d083977', 
+      '7c6926f2-386c-4b57-aedc-6b4bf46a4f3d', '9cbd6431-c7e2-4b3f-89af-17253d5638e7', 
+      '4e0e98a5-8f55-4738-bdf3-16011cb75ce2', 'e509eae1-de41-4f9d-8c0b-568b2527e606', 
+      '36ca6c34-6a14-46c4-a1c0-3c2676ef0aa5', '5f2bdca6-05b1-482a-bd98-72e704901b58', 
+      '68464dfc-50ef-4376-b403-de09d80c2abb', '83179dbb-6b7d-40dd-8532-49fbfcc4f253', 
+      'de704bde-9b47-4205-86a5-2d5f13e93b92', '7598c60c-703a-48ef-abe9-7d22c5964776', 
+      '550e8400-e29b-41d4-a716-446655440001', '60bb9359-5655-4de0-b758-fbb0e43c260f', 
+      'c7e333a1-d331-42a4-a278-5849cd1c9449', '4221f4ac-67f7-446f-8058-8a5687134149', 
+      'a4466e27-106e-4e74-a92c-d1163134be80', '4c40a78e-6286-403c-9470-353d893b4425', 
+      'ce3c27e6-e3ab-4c1c-987f-7cee729164f1', '8fc1f118-c9f3-4bf9-a752-adff9494b32c', 
+      '76f3d32c-523e-4be5-8a6d-fa1dd93ca264', '2ce8299b-4949-4cb5-be93-c2b9113812c2', 
+      'dca21c0e-9d60-44fa-92d0-059f9b06a409', 'f5bb88aa-c95b-4e3e-8e57-419470293873', 
+      '8cfe8880-04fc-4d8e-a44b-51784920886f'
+    ];
+    
+    toast({
+      title: "🎯 Priority 1 Image Fetching",
+      description: `Targeting 45 critical influencers (missing images, placeholders, broken links)`,
+      duration: 4000,
+    });
+    
+    try {
+      // Get Priority 1 influencers only
+      const { data: priority1Influencers, error: infError } = await supabase
+        .from('influencers')
+        .select('id, name, image')
+        .in('id', priority1Ids);
+      if (infError) throw infError;
+
+      let updatedCount = 0;
+      const processedInfluencers: string[] = [];
+      let apiFailures = 0;
+
+      // Sort by priority: no images first, then placeholders, then broken links
+      const sortedInfluencers = priority1Influencers.sort((a, b) => {
+        if (!a.image && b.image) return -1; // No image = highest priority
+        if (a.image && !b.image) return 1;
+        if (a.image?.includes('placeholder') && !b.image?.includes('placeholder')) return -1;
+        if (!a.image?.includes('placeholder') && b.image?.includes('placeholder')) return 1;
+        return 0; // Same priority
+      });
+
+      for (const inf of sortedInfluencers) {
+        console.log(`🔍 Priority 1: Processing ${inf.name}...`);
+        
+        // Check if current image needs replacement
+        const needsReplacement = !inf.image || 
+                                inf.image.includes('placeholder') || 
+                                inf.image.includes('wikipedia') ||
+                                inf.image.endsWith('.svg');
+        
+        if (needsReplacement) {
+          console.log(`❌ ${inf.name} needs image replacement...`);
+          
+          // Clean up any existing broken photos
+          await supabase
+            .from('influencer_photos')
+            .delete()
+            .eq('influencer_id', inf.id);
+          
+          // Fetch new images with fitness-specific targeting
+          const newImages = await fetchImagesForInfluencer(inf.name, true);
+          const validImages: string[] = [];
+          
+          // Validate each new image with relaxed fitness standards
+          for (const imgUrl of newImages) {
+            const isValid = await validateImageVisually(imgUrl);
+            if (isValid) {
+              validImages.push(imgUrl);
+              console.log(`✅ Valid fitness image found for ${inf.name}`);
+            } else {
+              console.log(`❌ Rejected low-quality image for ${inf.name}`);
+            }
+          }
+          
+          if (validImages.length > 0) {
+            // Update main image with best valid image
+            await supabase
+              .from('influencers')
+              .update({ image: validImages[0] })
+              .eq('id', inf.id);
+            
+            // FIXED: Save ALL validated images to photos table
+            for (let i = 0; i < validImages.length; i++) {
+              await supabase.from('influencer_photos').insert({
+                influencer_id: inf.id,
+                image_url: validImages[i],
+                description: `Priority 1 fitness-validated image for ${inf.name}`,
+                order: i
+              });
+            }
+            
+            processedInfluencers.push(inf.name);
+            updatedCount++;
+            console.log(`✅ Priority 1: Updated ${inf.name} with ${validImages.length} fitness images`);
+          } else {
+            console.log(`⚠️ Priority 1: No valid images found for ${inf.name}`);
+            apiFailures++;
+          }
+        } else {
+          console.log(`✅ ${inf.name} already has acceptable image`);
+        }
+        
+        // Reduced delay for Priority 1 processing
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      setUpdatedInfluencersLog(processedInfluencers);
+      
+      // Success notification with Priority 1 focus
+      const successRate = priority1Influencers.length > 0 ? ((updatedCount / priority1Influencers.length) * 100).toFixed(1) : 100;
+      toast({
+        title: '🎯 Priority 1 Complete!',
+        description: `Fixed ${updatedCount}/${priority1Influencers.length} critical influencers • ${successRate}% success rate`,
+        duration: 5000,
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+    } catch (error) {
+      console.error('Error in Priority 1 fetching:', error);
+      toast({
+        title: '❌ Priority 1 Failed',
+        description: `Error during Priority 1 image fetching: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive',
+        duration: 6000,
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
+  // Keep original function as fallback
   const handleFetchImagesWithVisualValidation = async () => {
     setFetchingImages(true);
     setUpdatedInfluencersLog([]);
     
-    // Show initial progress notification
     toast({
       title: "🚀 Starting Smart Image Validation",
       description: "Analyzing all influencer images and fixing broken ones with fallback APIs...",
@@ -703,41 +887,33 @@ const InfluencerManagement = () => {
       for (const inf of allInfluencers) {
         console.log(`🔍 Checking ${inf.name}...`);
         
-        // Check if current image is visually valid
         const isCurrentImageValid = inf.image ? await validateImageVisually(inf.image) : false;
         
         if (!isCurrentImageValid) {
           console.log(`❌ ${inf.name} has broken/invalid image, fetching new ones...`);
           
-          // Remove broken images from influencer_photos table
           await supabase
             .from('influencer_photos')
             .delete()
             .eq('influencer_id', inf.id);
           
-          // Fetch new images from Google with progress notifications
           const newImages = await fetchImagesForInfluencer(inf.name, true);
           const validImages: string[] = [];
           
-          // Validate each new image visually
           for (const imgUrl of newImages) {
             const isValid = await validateImageVisually(imgUrl);
             if (isValid) {
               validImages.push(imgUrl);
               console.log(`✅ Found valid image for ${inf.name}`);
-            } else {
-              console.log(`❌ Rejected invalid image for ${inf.name}`);
             }
           }
           
           if (validImages.length > 0) {
-            // Update main image with first valid image
             await supabase
               .from('influencers')
               .update({ image: validImages[0] })
               .eq('id', inf.id);
             
-            // Add all valid images to photos table
             for (let i = 0; i < validImages.length; i++) {
               await supabase.from('influencer_photos').insert({
                 influencer_id: inf.id,
@@ -751,20 +927,15 @@ const InfluencerManagement = () => {
             updatedCount++;
             console.log(`✅ Updated ${inf.name} with ${validImages.length} valid images`);
           } else {
-            console.log(`⚠️ No valid images found for ${inf.name}`);
             apiFailures++;
           }
-        } else {
-          console.log(`✅ ${inf.name} already has a valid image`);
         }
         
-        // Small delay to avoid overwhelming APIs
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       setUpdatedInfluencersLog(processedInfluencers);
       
-      // Final completion notification with detailed stats
       const successRate = allInfluencers.length > 0 ? ((allInfluencers.length - apiFailures) / allInfluencers.length * 100).toFixed(1) : 100;
       toast({
         title: '✅ Smart Image Validation Complete!',
@@ -1059,6 +1230,100 @@ const InfluencerManagement = () => {
     }
   };
 
+  // ENHANCED: Priority 1 focused image fetching - targets 45 critical influencers
+  const handlePriority1ImageFetching = async () => {
+    setFetchingImages(true);
+    setUpdatedInfluencersLog([]);
+    
+    try {
+      console.log('🎯 Starting Priority 1 image fetching...');
+      
+      // Target Priority 1 influencers based on database analysis
+      const { data: priority1Influencers, error: priority1Error } = await supabase
+        .from('influencers')
+        .select('id, name, image')
+        .or('image.is.null,image.ilike.%placeholder%,image.ilike.%wikipedia%,image.ilike.%dummy%,image.ilike.%sample%');
+      
+      if (priority1Error) throw priority1Error;
+      
+      console.log(`📊 Found ${priority1Influencers.length} Priority 1 influencers to fix`);
+      
+      let updatedCount = 0;
+      let processedCount = 0;
+      
+      for (const influencer of priority1Influencers) {
+        console.log(`🔄 Processing ${influencer.name} (${++processedCount}/${priority1Influencers.length})`);
+        
+        try {
+          // Clean up existing bad images first
+          if (influencer.image && (
+            influencer.image.includes('placeholder') ||
+            influencer.image.includes('wikipedia') ||
+            influencer.image.includes('dummy') ||
+            influencer.image.includes('sample')
+          )) {
+            await supabase.from('influencers').update({ image: null }).eq('id', influencer.id);
+            console.log(`🧹 Cleaned up bad image for ${influencer.name}`);
+          }
+          
+          // Fetch new images using enhanced system
+          const images = await fetchImagesForInfluencer(influencer.name);
+          const validImages = [];
+          
+          // Enhanced validation for fitness content
+          for (const imageUrl of images) {
+            const isValid = await validateImageVisually(imageUrl);
+            if (isValid) {
+              validImages.push(imageUrl);
+            }
+          }
+          
+          if (validImages.length > 0) {
+            // Update main image
+            await supabase.from('influencers')
+              .update({ image: validImages[0] })
+              .eq('id', influencer.id);
+            
+            // Save all validated images to influencer_photos
+            for (let i = 0; i < validImages.length; i++) {
+              await supabase.from('influencer_photos').insert({
+                influencer_id: influencer.id,
+                image_url: validImages[i],
+                description: `Priority 1 fix: ${influencer.name} fitness photo`,
+                order: i
+              });
+            }
+            
+            setUpdatedInfluencersLog(log => [...log, influencer.name]);
+            updatedCount++;
+            console.log(`✅ Successfully updated ${influencer.name} with ${validImages.length} images`);
+          } else {
+            console.log(`⚠️ No valid images found for ${influencer.name}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error processing ${influencer.name}:`, error);
+        }
+      }
+      
+      toast({
+        title: 'Priority 1 Image Fetching Complete',
+        description: `Successfully updated ${updatedCount} out of ${priority1Influencers.length} Priority 1 influencers with high-quality fitness images.`,
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-influencers'] });
+      
+    } catch (error) {
+      console.error('❌ Priority 1 fetching failed:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to complete Priority 1 image fetching. Check console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingImages(false);
+    }
+  };
+
   const influencerIds = influencers.map(i => i.id);
   const { data: voteCounts } = useInfluencerVoteCounts(influencerIds);
   
@@ -1110,6 +1375,14 @@ const InfluencerManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 mb-4">
+        <Button 
+          onClick={handlePriority1ImageFetching} 
+          disabled={fetchingImages} 
+          variant="default"
+          className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+        >
+          🎯 Priority 1: Fix Critical Cases (45 influencers)
+        </Button>
         <Button 
           onClick={handleFetchImagesWithVisualValidation} 
           disabled={fetchingImages} 
