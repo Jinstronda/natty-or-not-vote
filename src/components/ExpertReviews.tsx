@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ExpertReviewForm from "@/components/ExpertReviewForm";
 import EditExpertReviewDialog from "@/components/EditExpertReviewDialog";
+import { MobileExpertReviewsCarousel } from "@/components/MobileExpertReviewsCarousel";
 import { useSupabaseExpertReviews } from '@/hooks/useSupabaseExpertReviews';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
@@ -128,28 +129,43 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
-            Expert Reviews
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {user?.role === 'admin' && (
-          <ExpertReviewForm influencerId={influencerId} />
-        )}
-        
-        <div className="space-y-6">
-          {filteredReviews.map((review) => {
-            const expert = review.expert_id ? experts[review.expert_id] : null;
-            const influencer = influencers[review.influencer_id];
-            const expertName = expert?.name || review.author || 'Unknown Expert';
-            const influencerName = influencer?.name || 'Unknown Influencer';
-            const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
-            const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
+    <>
+      {/* Mobile Carousel - Hidden on larger screens */}
+      <div className="block lg:hidden">
+        <MobileExpertReviewsCarousel
+          reviews={filteredReviews}
+          experts={experts}
+          influencers={influencers}
+          isAdmin={user?.role === 'admin'}
+          onEdit={setEditingReview}
+          onDelete={handleDeleteExpertReview}
+          onChangeInfluencer={(reviewId) => setEditingInfluencerFor(reviewId)}
+        />
+      </div>
+
+      {/* Desktop Layout - Hidden on mobile */}
+      <Card className="hidden lg:block">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              Expert Reviews
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {user?.role === 'admin' && (
+            <ExpertReviewForm influencerId={influencerId} />
+          )}
+          
+          <div className="space-y-6">
+            {filteredReviews.map((review) => {
+              const expert = review.expert_id ? experts[review.expert_id] : null;
+              const influencer = influencers[review.influencer_id];
+              const expertName = expert?.name || review.author || 'Unknown Expert';
+              const influencerName = influencer?.name || 'Unknown Influencer';
+              const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
+              const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
             
             return (
               <div
@@ -265,18 +281,20 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
               </div>
             );
           })}
-        </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {editingReview && (
-          <EditExpertReviewDialog
-            isOpen={!!editingReview}
-            onClose={() => setEditingReview(null)}
-            review={editingReview}
-            onSuccess={refetch}
-          />
-        )}
-      </CardContent>
-    </Card>
+      {/* Shared dialog for both mobile and desktop */}
+      {editingReview && (
+        <EditExpertReviewDialog
+          isOpen={!!editingReview}
+          onClose={() => setEditingReview(null)}
+          review={editingReview}
+          onSuccess={refetch}
+        />
+      )}
+    </>
   );
 };
 

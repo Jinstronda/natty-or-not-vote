@@ -232,14 +232,9 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
           <div className="space-y-4">
             {reviews.map((review, index) => {
               const isOwnReview = user && review.userId === user.id;
-              const reviewNumber = index + 1; // Add numbering as requested
               
               return (
                 <div key={review.id} className="border border-border rounded-lg p-4 relative">
-                  {/* Review number badge */}
-                  <div className="absolute -top-2 -left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
-                    {reviewNumber}
-                  </div>
 
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
