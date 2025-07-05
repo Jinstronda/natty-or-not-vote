@@ -15,7 +15,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { ExpertReview } from "@/types/vote";
-import { useMobileGestures } from '@/hooks/useMobileGestures';
+// import { useMobileGestures } from '@/hooks/useMobileGestures'; // Disabled for better UX
 import { isValidUrl } from '@/utils/urlValidator';
 
 interface MobileExpertReviewsCarouselProps {
@@ -41,7 +41,6 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [translateX, setTranslateX] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const nextReview = useCallback(() => {
@@ -64,23 +63,22 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
     setCurrentIndex(index);
   }, [currentIndex, isTransitioning, reviews.length]);
 
-  // Touch gesture handling for swipe navigation
-  const gestureHandlers = useMobileGestures({
-    onSwipeLeft: nextReview,
-    onSwipeRight: previousReview,
-    onPan: (deltaX) => {
-      // Visual feedback during pan
-      const maxTranslate = carouselRef.current?.offsetWidth || 0;
-      const normalizedDelta = Math.max(-maxTranslate, Math.min(maxTranslate, deltaX));
-      setTranslateX(normalizedDelta);
-    },
-    threshold: 50
-  });
+  // Touch gesture handling disabled - using buttons for better UX
+  // const gestureHandlers = useMobileGestures({
+  //   onSwipeLeft: nextReview,
+  //   onSwipeRight: previousReview,
+  //   onPan: (deltaX) => {
+  //     // Visual feedback during pan
+  //     const maxTranslate = carouselRef.current?.offsetWidth || 0;
+  //     const normalizedDelta = Math.max(-maxTranslate, Math.min(maxTranslate, deltaX));
+  //     setTranslateX(normalizedDelta);
+  //   },
+  //   threshold: 50
+  // });
 
   // Handle transition animations
   useEffect(() => {
     setIsTransitioning(true);
-    setTranslateX(0);
     
     const timer = setTimeout(() => {
       setIsTransitioning(false);
@@ -185,7 +183,6 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
         <div
           ref={carouselRef}
           className="relative overflow-hidden"
-          {...gestureHandlers}
           role="region"
           aria-label="Expert reviews carousel"
           style={{ minHeight: 'auto' }}
@@ -197,7 +194,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
               isTransitioning && 'transition-transform'
             )}
             style={{
-              transform: `translateX(calc(-${currentIndex * 100}% + ${translateX}px))`,
+              transform: `translateX(-${currentIndex * 100}%)`,
               width: `${reviews.length * 100}%`
             }}
           >
@@ -276,15 +273,6 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                 <ChevronRight className="w-7 h-7" />
               </button>
             </>
-          )}
-          
-          {/* Swipe instruction for mobile */}
-          {reviews.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 md:hidden">
-              <div className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full">
-                Swipe to navigate
-              </div>
-            </div>
           )}
         </div>
 
