@@ -19,7 +19,9 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(rg:*)",
       "Bash(npm test:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }
