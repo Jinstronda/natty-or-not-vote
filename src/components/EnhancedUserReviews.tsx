@@ -65,33 +65,9 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
     changeSorting
   }), [refresh, changeSorting]);
 
-  // Page visibility and real-time hooks (keeping existing functionality)
-  usePageVisibility({
-    onReturnAfterDelay: (awayTime) => {
-      console.log(`[EnhancedUserReviews] User returned after ${Math.round(awayTime / 1000)}s, refreshing reviews`);
-      refresh();
-    },
-    maxAwayTime: 30000,
-    enableLogging: true
-  });
-
-  useVisibilityRecovery(refresh);
-
-  useLoadingWatchdog({
-    component: 'EnhancedUserReviews',
-    isLoading: loading,
-    timeout: 15000,
-    onTimeout: () => {
-      console.warn('[EnhancedUserReviews] Loading timeout detected');
-      toast({
-        title: "Loading timeout",
-        description: "Reviews are taking longer than expected. Please try refreshing.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  useRealTimeReviews(influencerId);
+  // Temporarily disabled hooks that may cause infinite API calls
+  // TODO: Re-enable after fixing hook dependencies
+  // usePageVisibility, useVisibilityRecovery, useLoadingWatchdog, useRealTimeReviews
 
   // Initial load
   useEffect(() => {
