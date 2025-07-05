@@ -9,6 +9,7 @@ import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
 import MobileLoadingDiagnostic from "./components/MobileLoadingDiagnostic";
 import "./styles/loading-animations.css";
+import "./styles/mobile-expert-reviews.css";
 
 // Loading component for better UX
 const PageLoader = () => (
