@@ -149,11 +149,22 @@ export const usePaginatedReviews = ({
     await fetchReviews(state.currentPage + 1, state.sortBy, true);
   }, [fetchReviews, state.loading, state.hasMore, state.currentPage, state.sortBy]);
 
-  // Change sorting
+  // Change sorting with improved error handling
   const changeSorting = useCallback(async (newSort: ReviewSortOption) => {
-    if (newSort === state.sortBy) return;
-    await fetchReviews(0, newSort, false);
-  }, [fetchReviews, state.sortBy]);
+    if (newSort === state.sortBy || state.loading) {
+      console.log(`[PaginatedReviews] Skipping sort change: same=${newSort === state.sortBy}, loading=${state.loading}`);
+      return;
+    }
+    
+    console.log(`[PaginatedReviews] Changing sort from ${state.sortBy} to ${newSort}`);
+    
+    try {
+      await fetchReviews(0, newSort, false);
+    } catch (error) {
+      console.error('[PaginatedReviews] Sort change failed:', error);
+      // Don't throw - error is already handled in fetchReviews
+    }
+  }, [fetchReviews, state.sortBy, state.loading]);
 
   // Refresh reviews (reset to page 1)
   const refresh = useCallback(async () => {
