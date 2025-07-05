@@ -14,13 +14,21 @@
   will-change: transform;
 }
 
-/* Individual slide */
+/* Individual slide - CRITICAL: Each slide must be 100% of container width */
 .expert-reviews-carousel-slide {
-  flex: 0 0 100%;
-  width: 100%;
+  flex: 0 0 100% !important; /* Force each slide to be exactly 100% width */
+  width: 100% !important;
+  max-width: 100% !important;
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Fix for carousel slides in mobile expert reviews */
+[aria-label="Expert reviews carousel"] .flex > div {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* Ensure content is visible */
