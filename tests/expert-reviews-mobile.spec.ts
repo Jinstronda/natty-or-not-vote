@@ -114,12 +114,12 @@ test.describe('Mobile Expert Reviews Carousel', () => {
     const carousel = page.locator('[aria-label="Expert reviews carousel"]');
     
     // Check minimum height is applied
-    const height = await carousel.evaluate(el => el.offsetHeight);
+    const height = await carousel.evaluate(el => (el as HTMLElement).offsetHeight);
     expect(height).toBeGreaterThanOrEqual(400);
 
     // Verify content doesn't overflow horizontally
-    const width = await carousel.evaluate(el => el.scrollWidth);
-    const clientWidth = await carousel.evaluate(el => el.clientWidth);
+    const width = await carousel.evaluate(el => (el as HTMLElement).scrollWidth);
+    const clientWidth = await carousel.evaluate(el => (el as HTMLElement).clientWidth);
     expect(width).toBeLessThanOrEqual(clientWidth + 1); // +1 for rounding
   });
 }); 
