@@ -43,7 +43,7 @@ export const ReviewSortingControls = ({
         )}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground" data-testid="loading-spinner">
             <div className="h-3 w-3 border border-primary border-t-transparent rounded-full animate-spin" />
             <span className="text-xs">Loading...</span>
           </div>
@@ -58,12 +58,14 @@ export const ReviewSortingControls = ({
           value={currentSort} 
           onValueChange={(value) => onSortChange(value as ReviewSortOption)}
           className="w-auto"
+          data-testid="sorting-controls"
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger 
               value="recent" 
               className="flex items-center gap-2 text-xs"
               disabled={isLoading}
+              data-testid="sort-recent"
             >
               <Clock className="h-3 w-3" />
               Recent
@@ -72,6 +74,7 @@ export const ReviewSortingControls = ({
               value="likes" 
               className="flex items-center gap-2 text-xs"
               disabled={isLoading}
+              data-testid="sort-popular"
             >
               <Heart className="h-3 w-3" />
               Popular
