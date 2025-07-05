@@ -1,0 +1,134 @@
+/* Mobile Expert Reviews Carousel Styles */
+
+/* Ensure carousel container has proper dimensions */
+.expert-reviews-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Carousel track */
+.expert-reviews-carousel-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Individual slide */
+.expert-reviews-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Ensure content is visible */
+.expert-reviews-carousel-content {
+  padding: 1rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation buttons */
+.expert-reviews-nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.expert-reviews-nav-button:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.expert-reviews-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.expert-reviews-nav-prev {
+  left: 0.5rem;
+}
+
+.expert-reviews-nav-next {
+  right: 0.5rem;
+}
+
+/* Dots indicator */
+.expert-reviews-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.expert-reviews-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.expert-reviews-dot.active {
+  background-color: var(--primary);
+  transform: scale(1.25);
+}
+
+/* Swipe instruction */
+.expert-reviews-swipe-hint {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Ensure review cards fit properly */
+.expert-review-card {
+  background-color: transparent;
+  color: inherit;
+  height: 100%;
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .expert-reviews-carousel {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .expert-reviews-carousel {
+    min-height: 400px;
+  }
+}
+
+@media (min-width: 641px) {
+  .expert-reviews-carousel {
+    min-height: 450px;
+  }
+} 

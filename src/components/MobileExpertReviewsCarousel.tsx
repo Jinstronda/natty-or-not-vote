@@ -172,7 +172,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
         {/* Carousel Container */}
         <div
           ref={carouselRef}
-          className="relative overflow-hidden"
+          className="relative overflow-hidden min-h-[400px]"
           {...gestureHandlers}
           role="region"
           aria-label="Expert reviews carousel"
@@ -180,7 +180,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
           {/* Reviews Container */}
           <div
             className={cn(
-              'flex transition-transform duration-300 ease-out',
+              'flex transition-transform duration-300 ease-out h-full',
               isTransitioning && 'transition-transform'
             )}
             style={{
@@ -199,7 +199,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
               return (
                 <div
                   key={review.id}
-                  className={cn('w-full flex-shrink-0 p-4', cardColor)}
+                  className={cn('w-full flex-shrink-0 p-4 overflow-y-auto', cardColor)}
                   style={{ width: `${100 / reviews.length}%` }}
                 >
                   <ExpertReviewCard 
@@ -226,10 +226,10 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                 onClick={previousReview}
                 disabled={isTransitioning}
                 className={cn(
-                  'absolute left-2 top-1/2 -translate-y-1/2 z-10',
-                  'w-10 h-10 rounded-full bg-black/50 text-white',
+                  'absolute left-2 top-1/2 -translate-y-1/2 z-20',
+                  'w-10 h-10 rounded-full bg-black/70 text-white',
                   'flex items-center justify-center',
-                  'hover:bg-black/70 transition-colors',
+                  'hover:bg-black/80 transition-colors',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'focus:outline-none focus:ring-2 focus:ring-white/50'
                 )}
@@ -242,10 +242,10 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                 onClick={nextReview}
                 disabled={isTransitioning}
                 className={cn(
-                  'absolute right-2 top-1/2 -translate-y-1/2 z-10',
-                  'w-10 h-10 rounded-full bg-black/50 text-white',
+                  'absolute right-2 top-1/2 -translate-y-1/2 z-20',
+                  'w-10 h-10 rounded-full bg-black/70 text-white',
                   'flex items-center justify-center',
-                  'hover:bg-black/70 transition-colors',
+                  'hover:bg-black/80 transition-colors',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'focus:outline-none focus:ring-2 focus:ring-white/50'
                 )}
@@ -254,6 +254,15 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                 <ChevronRight className="w-6 h-6" />
               </button>
             </>
+          )}
+          
+          {/* Swipe instruction for mobile */}
+          {reviews.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 md:hidden">
+              <div className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full">
+                Swipe to navigate
+              </div>
+            </div>
           )}
         </div>
 
@@ -276,15 +285,6 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
                   aria-label={`Go to expert review ${index + 1}`}
                 />
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Swipe instruction for mobile */}
-        {reviews.length > 1 && (
-          <div className="absolute top-20 left-4 z-10 md:hidden">
-            <div className="bg-black/50 text-white text-xs px-2 py-1 rounded">
-              Swipe to navigate
             </div>
           </div>
         )}
