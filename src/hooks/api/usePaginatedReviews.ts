@@ -44,15 +44,14 @@ export const usePaginatedReviews = ({
     append: boolean = false
   ) => {
     try {
-      // Prevent rapid successive calls
-      setState(prev => {
-        if (prev.loading) {
-          console.log(`[PaginatedReviews] Skipping fetch - already loading`);
-          return prev;
-        }
-        return { ...prev, loading: true, error: null };
-      });
+      // Check if already loading to prevent overlapping requests
+      const currentState = state;
+      if (currentState.loading) {
+        console.log(`[PaginatedReviews] Skipping fetch - already loading`);
+        return;
+      }
 
+      setState(prev => ({ ...prev, loading: true, error: null }));
       console.log(`[PaginatedReviews] Fetching page ${page + 1}, sort: ${sort}, append: ${append}`);
 
       const result = await withDatabaseTimeout(
