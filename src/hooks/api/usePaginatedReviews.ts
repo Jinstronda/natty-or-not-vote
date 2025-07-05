@@ -50,8 +50,8 @@ export const usePaginatedReviews = ({
 
       const result = await withDatabaseTimeout(
         async () => {
-          // Get total count first (only on first load)
-          let totalCount = state.totalCount;
+          // Get total count first (only on first load or sort change)
+          let totalCount = 0;
           if (page === 0 && !append) {
             const { count, error: countError } = await supabase
               .from('reviews')
@@ -127,7 +127,7 @@ export const usePaginatedReviews = ({
         loading: false,
         hasMore: formattedReviews.length === pageSize,
         currentPage: page,
-        totalCount: result.totalCount,
+        totalCount: page === 0 && !append ? result.totalCount : prev.totalCount,
         sortBy: sort
       }));
 
@@ -141,7 +141,7 @@ export const usePaginatedReviews = ({
         reviews: append ? prev.reviews : []
       }));
     }
-  }, [influencerId, pageSize, state.totalCount]);
+  }, [influencerId, pageSize]);
 
   // Load more reviews (pagination)
   const loadMore = useCallback(async () => {
@@ -151,9 +151,9 @@ export const usePaginatedReviews = ({
 
   // Change sorting
   const changeSorting = useCallback(async (newSort: ReviewSortOption) => {
-    if (newSort === state.sortBy) return;
+    if (newSort === state.sortBy || state.loading) return;
     await fetchReviews(0, newSort, false);
-  }, [fetchReviews, state.sortBy]);
+  }, [fetchReviews, state.sortBy, state.loading]);
 
   // Refresh reviews (reset to page 1)
   const refresh = useCallback(async () => {

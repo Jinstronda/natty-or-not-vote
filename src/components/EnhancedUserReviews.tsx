@@ -97,7 +97,7 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
   useEffect(() => {
     console.log('[EnhancedUserReviews] Initial load for influencer:', influencerId);
     initialLoad();
-  }, [influencerId, initialLoad]);
+  }, [influencerId]); // Removed initialLoad dependency to prevent infinite loop
 
   // Delete review handler (keeping existing functionality)
   const handleDeleteReview = async (reviewId: string) => {
