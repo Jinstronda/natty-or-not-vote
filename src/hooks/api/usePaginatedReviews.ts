@@ -44,7 +44,14 @@ export const usePaginatedReviews = ({
     append: boolean = false
   ) => {
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      // Prevent rapid successive calls
+      setState(prev => {
+        if (prev.loading) {
+          console.log(`[PaginatedReviews] Skipping fetch - already loading`);
+          return prev;
+        }
+        return { ...prev, loading: true, error: null };
+      });
 
       console.log(`[PaginatedReviews] Fetching page ${page + 1}, sort: ${sort}, append: ${append}`);
 
