@@ -16,9 +16,7 @@
       "Bash(python:*)",
       "Bash(python -m pytest:*)",
       "Bash(python3 -m pytest:*)",
-      "WebFetch(domain:docs.anthropic.com)",
-      "Bash(rg:*)",
-      "Bash(npm test:*)"
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }
