@@ -23,64 +23,93 @@ export const ReviewSortingControls = ({
   isLoading = false
 }: ReviewSortingControlsProps) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border">
-      
-      {/* Left side - Stats */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">
-            {totalCount === 0 ? 'No reviews yet' : 
-             totalCount === 1 ? '1 review' : 
-             `${totalCount.toLocaleString()} reviews`}
-          </span>
-        </div>
+    <div className="bg-gradient-to-r from-muted/20 to-muted/30 rounded-xl border border-border/50 backdrop-blur-sm shadow-sm">
+      {/* Mobile-first design */}
+      <div className="p-4 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
         
-        {loadedCount < totalCount && (
-          <Badge variant="secondary" className="text-xs">
-            Showing {loadedCount} of {totalCount}
-          </Badge>
-        )}
-
-        {isLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground" data-testid="loading-spinner">
-            <div className="h-3 w-3 border border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs">Loading...</span>
+        {/* Stats Section - Full width on mobile */}
+        <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {totalCount === 0 ? 'No reviews yet' : 
+               totalCount === 1 ? '1 review' : 
+               `${totalCount.toLocaleString()} reviews`}
+            </span>
           </div>
-        )}
+          
+          {loadedCount < totalCount && (
+            <Badge variant="secondary" className="text-xs px-2 py-1 rounded-full">
+              Showing {loadedCount} of {totalCount}
+            </Badge>
+          )}
+
+          {isLoading && (
+            <div className="flex items-center gap-2 text-muted-foreground" data-testid="loading-spinner">
+              <div className="h-3 w-3 border border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs">Loading...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Sort Controls - Enhanced for mobile */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <span className="text-sm text-muted-foreground font-medium hidden sm:inline">Sort by:</span>
+          
+          <Tabs 
+            value={currentSort} 
+            onValueChange={(value) => onSortChange(value as ReviewSortOption)}
+            className="w-full sm:w-auto"
+            data-testid="sorting-controls"
+          >
+            <TabsList className="grid w-full grid-cols-2 h-10 bg-background/50 rounded-lg p-1 border border-border/30">
+              <TabsTrigger 
+                value="recent" 
+                className={`
+                  flex items-center justify-center gap-2 text-xs font-medium
+                  transition-all duration-200 rounded-md
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground
+                  data-[state=active]:shadow-sm data-[state=active]:scale-[0.98]
+                  hover:bg-muted/50 active:scale-95
+                  disabled:opacity-50 disabled:pointer-events-none
+                  min-h-[32px] px-3
+                `}
+                disabled={isLoading}
+                data-testid="sort-recent"
+              >
+                <Clock className="h-3 w-3 flex-shrink-0" />
+                <span>Recent</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="likes" 
+                className={`
+                  flex items-center justify-center gap-2 text-xs font-medium
+                  transition-all duration-200 rounded-md
+                  data-[state=active]:bg-primary data-[state=active]:text-primary-foreground
+                  data-[state=active]:shadow-sm data-[state=active]:scale-[0.98]
+                  hover:bg-muted/50 active:scale-95
+                  disabled:opacity-50 disabled:pointer-events-none
+                  min-h-[32px] px-3
+                `}
+                disabled={isLoading}
+                data-testid="sort-popular"
+              >
+                <Heart className="h-3 w-3 flex-shrink-0" />
+                <span>Popular</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
-      {/* Right side - Sort Controls */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground font-medium">Sort by:</span>
-        
-        <Tabs 
-          value={currentSort} 
-          onValueChange={(value) => onSortChange(value as ReviewSortOption)}
-          className="w-auto"
-          data-testid="sorting-controls"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger 
-              value="recent" 
-              className="flex items-center gap-2 text-xs"
-              disabled={isLoading}
-              data-testid="sort-recent"
-            >
-              <Clock className="h-3 w-3" />
-              Recent
-            </TabsTrigger>
-            <TabsTrigger 
-              value="likes" 
-              className="flex items-center gap-2 text-xs"
-              disabled={isLoading}
-              data-testid="sort-popular"
-            >
-              <Heart className="h-3 w-3" />
-              Popular
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      {/* Mobile Sort Indicator - Shows current sort prominently */}
+      <div className="px-4 pb-3 sm:hidden">
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <TrendingUp className="h-3 w-3" />
+          <span>
+            Sorted by {currentSort === 'recent' ? 'newest first' : 'most liked first'}
+          </span>
+        </div>
       </div>
     </div>
   );

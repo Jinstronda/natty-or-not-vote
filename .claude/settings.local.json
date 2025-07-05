@@ -24,7 +24,9 @@
       "Bash(npm run build:*)",
       "Bash(npx playwright test:*)",
       "Bash(npm run type-check:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
