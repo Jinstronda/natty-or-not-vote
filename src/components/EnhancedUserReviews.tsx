@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare, Trash2 } from "lucide-react";
 import UserProfile from "@/components/UserProfile";
 import ReviewReactions from "@/components/ReviewReactions";
-import { ModernSortingControls, EmptySortingState, type SortOption as ReviewSortOption } from "@/components/ModernSortingControls";
+import { ReviewSortingControls, type ReviewSortOption } from "@/components/ReviewSortingControls";
 import { ReviewPagination, EmptyReviewsState } from "@/components/ReviewPagination";
 import { usePaginatedReviews } from "@/hooks/api/usePaginatedReviews";
 import { useAuth } from "@/contexts/AuthContext";
@@ -231,17 +231,14 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
           </div>
         )}
 
-        {/* Modern sorting controls with robust error handling */}
+        {/* Sorting controls (only show if we have reviews or are loading) */}
         {(stats.totalCount > 0 || loading) && (
-          <ModernSortingControls
+          <ReviewSortingControls
             currentSort={sortBy}
             onSortChange={changeSorting}
             totalCount={stats.totalCount}
             loadedCount={stats.loadedCount}
             isLoading={loading}
-            error={error}
-            onRefresh={refresh}
-            className="mb-4"
           />
         )}
 
