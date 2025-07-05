@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpertReview } from "@/types/vote";
+import { isValidUrl } from "@/utils/urlValidator";
 
 interface ExpertReviewsProps {
   influencerId?: string;
@@ -261,7 +262,7 @@ const ExpertReviews = ({ influencerId, expertId }: ExpertReviewsProps) => {
                     </div>
                   )}
                   
-                  {review.link_url && (
+                  {review.link_url && isValidUrl(review.link_url) && (
                     <div className="mb-1">
                       <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
                         <ExternalLink className="h-4 w-4" /> Read Full Review

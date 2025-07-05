@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from '@/lib/utils';
 import { ExpertReview } from "@/types/vote";
 import { useMobileGestures } from '@/hooks/useMobileGestures';
+import { isValidUrl } from '@/utils/urlValidator';
 
 interface MobileExpertReviewsCarouselProps {
   reviews: ExpertReview[];
@@ -382,7 +383,7 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
           </div>
           
           {/* External Link */}
-          {review.link_url && (
+          {review.link_url && isValidUrl(review.link_url) && (
             <div className="mb-2">
               <a 
                 href={review.link_url} 
