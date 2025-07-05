@@ -15,7 +15,7 @@ const SEOHead = ({
   title = "Natty or Juicy - Natural or Enhanced Fitness Analysis",
   description = "Vote and analyze whether fitness influencers are natural or enhanced",
   canonicalUrl,
-  ogImage = "/LOGO.png",
+  ogImage = "https://i.imgur.com/n0sDxaT.png",
   ogType = "website",
   structuredData,
   keywords = [],

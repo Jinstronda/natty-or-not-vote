@@ -33,7 +33,8 @@
       "Bash(curl:*)",
       "Bash(mv:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:docs.lovable.dev)"
     ],
     "deny": []
   },
