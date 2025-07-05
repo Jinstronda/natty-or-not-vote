@@ -12,9 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { withDatabaseTimeout } from "@/utils/loadingTimeout";
-import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
-import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
-import { useRealTimeReviews } from '@/hooks/useRealTime';
+// Temporarily commented out to fix infinite API calls
+// import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
+// import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
+// import { useRealTimeReviews } from '@/hooks/useRealTime';
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 
 interface EnhancedUserReviewsProps {
