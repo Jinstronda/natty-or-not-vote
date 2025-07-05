@@ -168,18 +168,13 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           </div>
           
           {/* Juicy pricing - SHOWN ONLY ONCE */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
-                €{product.price}
-              </span>
-              <span className="text-lg text-muted-foreground line-through">
-                €{product.originalPrice}
-              </span>
-            </div>
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold">
-              Save €{(product.originalPrice - product.price).toFixed(2)}
-            </Badge>
+          <div className="flex items-center gap-2">
+            <span className="text-3xl font-black bg-gradient-to-r from-juicy to-pink-500 bg-clip-text text-transparent">
+              €{product.price}
+            </span>
+            <span className="text-lg text-muted-foreground line-through">
+              €{product.originalPrice}
+            </span>
           </div>
           
           {/* Juicy buy button */}
