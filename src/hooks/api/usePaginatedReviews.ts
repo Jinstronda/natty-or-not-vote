@@ -157,8 +157,9 @@ export const usePaginatedReviews = ({
 
   // Refresh reviews (reset to page 1)
   const refresh = useCallback(async () => {
+    if (state.loading) return;
     await fetchReviews(0, state.sortBy, false);
-  }, [fetchReviews, state.sortBy]);
+  }, [fetchReviews, state.sortBy, state.loading]);
 
   // Computed values
   const stats = useMemo(() => ({
