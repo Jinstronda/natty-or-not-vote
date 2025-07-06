@@ -150,8 +150,8 @@ export function TabbedEditModal({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unclaimed">Unclaimed</SelectItem>
-                      <SelectItem value="natural">Natural</SelectItem>
-                      <SelectItem value="enhanced">Enhanced</SelectItem>
+                      <SelectItem value="natural">Claims Natty</SelectItem>
+                      <SelectItem value="enhanced">Claims Juicy</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -165,7 +165,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
                       <div className="font-medium">Natty</div>
                       <div className="text-xs text-muted-foreground">Natural physique</div>
                     </div>
-                    <Badge variant="outline" className="ml-2 bg-green-100 text-green-800">Natural</Badge>
+                    <Badge variant="outline" className="ml-2 bg-green-100 text-green-800">Claims Natty</Badge>
                   </div>
                 </SelectItem>
                 <SelectItem value="juicy">
@@ -175,7 +175,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
                       <div className="font-medium">Juicy</div>
                       <div className="text-xs text-muted-foreground">Enhanced physique</div>
                     </div>
-                    <Badge variant="outline" className="ml-2 bg-pink-100 text-pink-800">Enhanced</Badge>
+                    <Badge variant="outline" className="ml-2 bg-pink-100 text-pink-800">Claims Juicy</Badge>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -184,7 +184,7 @@ const EditExpertReviewDialog = ({ isOpen, onClose, review, onSuccess }: EditExpe
             <div className="mt-2 p-3 bg-slate-50 rounded-lg">
               <p className="text-sm text-slate-600">
                 Current verdict: <strong className={currentVerdict === 'natty' ? 'text-green-700' : 'text-pink-700'}>
-                  {currentVerdict === 'natty' ? 'Natty (Natural)' : 'Juicy (Enhanced)'}
+                  {currentVerdict === 'natty' ? 'Claims Natty' : 'Claims Juicy'}
                 </strong>
               </p>
             </div>

@@ -54,8 +54,8 @@ export function SearchFilter({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="natty">Natural</SelectItem>
-              <SelectItem value="juicy">Enhanced</SelectItem>
+              <SelectItem value="natty">Claims Natty</SelectItem>
+              <SelectItem value="juicy">Claims Juicy</SelectItem>
               <SelectItem value="unclaimed">Unclaimed</SelectItem>
             </SelectContent>
           </Select>
