@@ -1,16 +1,21 @@
-import { useEffect, useRef, useMemo, startTransition } from 'react';
+import { useEffect, useRef, useMemo, startTransition, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import InfluencerCard from "./InfluencerCard";
 import { useInfluencers, type InfluencerPage } from "@/hooks/api/useInfluencers";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { useSearchState } from "@/hooks/useSearchState";
+
 interface InfluencerGridProps {
   searchTerm?: string;
+  onLoadingChange?: (isLoading: boolean) => void; // Notify parent about loading state
 }
 
-const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
+const InfluencerGrid = ({ searchTerm, onLoadingChange }: InfluencerGridProps) => {
   const { user, loading: authLoading } = useAuth();
+  
+  // Get search state management for instant feedback
+  const { handleSearchResults, handleSearchStart } = useSearchState();
   
   const {
     data,
@@ -29,15 +34,37 @@ const InfluencerGrid = ({ searchTerm }: InfluencerGridProps) => {
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Loading state is now purely based on the query state
+  // Enhanced loading states with instant feedback
   const hasData = data?.pages && data.pages.length > 0;
   const isInitialLoading = (isPending || isLoading) && !hasData;
   const isRefreshing = isFetching && hasData;
+  const isSearchLoading = isLoading || isPending || isFetching;
 
   // Memoized influencers array with optimized sorting
   const allInfluencers = useMemo(() => {
     return hasData ? data.pages.flatMap(page => page.data) : [];
   }, [data?.pages, hasData]);
+
+  // Notify search state when results change - INSTANT FEEDBACK
+  useEffect(() => {
+    if (!isSearchLoading && searchTerm) {
+      handleSearchResults(allInfluencers, hasData);
+    }
+  }, [allInfluencers, hasData, searchTerm, isSearchLoading, handleSearchResults]);
+
+  // Notify search state when search starts - INSTANT FEEDBACK
+  useEffect(() => {
+    if (isSearchLoading && searchTerm) {
+      handleSearchStart();
+    }
+  }, [isSearchLoading, searchTerm, handleSearchStart]);
+
+  // Notify parent component about loading state changes
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(isSearchLoading);
+    }
+  }, [isSearchLoading, onLoadingChange]);
   
   // Use the database view's ordering (controversial first, then by votes, then by creation date)
   // No frontend sorting needed since the database view handles this correctly

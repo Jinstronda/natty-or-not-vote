@@ -7,6 +7,7 @@ import SuggestInfluencer from "@/components/SuggestInfluencer";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isGridLoading, setIsGridLoading] = useState(false);
 
   return (
     <Layout>
@@ -22,10 +23,17 @@ const Index = () => {
         </div>
 
         <div className="mb-16 max-w-2xl mx-auto">
-          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          <SearchBar 
+            searchTerm={searchTerm} 
+            onSearchChange={setSearchTerm}
+            isGridLoading={isGridLoading}
+          />
         </div>
         
-        <InfluencerGrid searchTerm={searchTerm} />
+        <InfluencerGrid 
+          searchTerm={searchTerm}
+          onLoadingChange={setIsGridLoading}
+        />
         
         <div className="mt-32 mb-16">
           <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl p-12 text-center border border-border/50">
