@@ -39,9 +39,9 @@ export function StatusSelect({
   const getStatusDisplay = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'natty':
-        return 'Natural';
+        return 'Claims Natty';
       case 'juicy':
-        return 'Enhanced';
+        return 'Claims Juicy';
       case 'unclaimed':
         return 'Unclaimed';
       default:
@@ -99,13 +99,13 @@ export function StatusSelect({
         <SelectItem value="natty" className="cursor-pointer">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span>Natural</span>
+            <span>Claims Natty</span>
           </div>
         </SelectItem>
         <SelectItem value="juicy" className="cursor-pointer">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span>Enhanced</span>
+            <span>Claims Juicy</span>
           </div>
         </SelectItem>
         <SelectItem value="unclaimed" className="cursor-pointer">
@@ -143,9 +143,9 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   const getStatusDisplay = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'natty':
-        return 'Natural';
+        return 'Claims Natty';
       case 'juicy':
-        return 'Enhanced';
+        return 'Claims Juicy';
       case 'unclaimed':
         return 'Unclaimed';
       default:

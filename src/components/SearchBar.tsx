@@ -111,45 +111,6 @@ const SearchBar = ({ searchTerm, onSearchChange, isGridLoading = false }: Search
         </Button>
       </form>
       
-      {/* Enhanced search status with instant feedback */}
-      <div className="mt-3 min-h-[20px]">
-        {isActiveSearch && (
-          <div className="text-sm text-center transition-all duration-200">
-            {searchState.isTyping && (
-              <span className="flex items-center justify-center gap-2 text-muted-foreground">
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce" />
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                <span className="ml-2">Typing...</span>
-              </span>
-            )}
-            
-            {searchState.isSearching && !searchState.isTyping && (
-              <span className="flex items-center justify-center gap-2 text-primary">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Searching for "{searchTerm}"...
-              </span>
-            )}
-            
-            {!searchState.isSearching && !searchState.isTyping && searchState.hasResults && (
-              <span className="text-muted-foreground">
-                Found {searchState.resultCount} result{searchState.resultCount !== 1 ? 's' : ''} for "{searchTerm}"
-                {searchPerformance && (
-                  <span className={`ml-2 text-xs ${searchPerformance.isfast ? 'text-green-500' : searchPerformance.isSlow ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                    ({searchPerformance.duration}ms)
-                  </span>
-                )}
-              </span>
-            )}
-            
-            {!searchState.isSearching && !searchState.isTyping && !searchState.hasResults && searchTerm.trim() && (
-              <span className="text-muted-foreground">
-                No results found for "{searchTerm}"
-              </span>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

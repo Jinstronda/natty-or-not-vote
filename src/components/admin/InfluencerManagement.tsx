@@ -1347,8 +1347,8 @@ const InfluencerManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unclaimed">Unclaimed</SelectItem>
-                  <SelectItem value="claimed">Claimed</SelectItem>
-                  <SelectItem value="verified">Verified</SelectItem>
+                  <SelectItem value="natty">Claims Natty</SelectItem>
+                  <SelectItem value="juicy">Claims Juicy</SelectItem>
                 </SelectContent>
               </Select>
             </div>

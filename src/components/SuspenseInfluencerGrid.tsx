@@ -250,7 +250,6 @@ const SuspenseInfluencerGrid = ({ searchTerm }: SuspenseInfluencerGridProps) => 
           <div className="text-center">
             <div className="inline-flex items-center gap-2 text-primary">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              Searching for "{searchTerm}"...
             </div>
           </div>
         )}
