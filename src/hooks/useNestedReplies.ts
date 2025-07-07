@@ -215,24 +215,44 @@ export const useNestedReplies = (options: NestedRepliesOptions): UseNestedReplie
   useEffect(() => {
     if (!enabled || !reviewId) return;
 
-    const channel = supabase
-      .channel(`nested_replies_${reviewId}`)
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'review_replies',
-          filter: `review_id=eq.${reviewId}`
-        },
-        (payload) => {
-          console.log('[useNestedReplies] Real-time update received:', payload);
-          refresh();
-        }
-      )
-      .subscribe();
+    let channel: any = null;
+
+    const setupChannel = async () => {
+      console.log('[useNestedReplies] Setting up real-time subscription for review:', reviewId);
+
+      try {
+        channel = supabase
+          .channel(`nested_replies_${reviewId}_${Date.now()}`) // Unique channel name with timestamp
+          .on('postgres_changes', 
+            { 
+              event: '*', 
+              schema: 'public', 
+              table: 'review_replies',
+              filter: `review_id=eq.${reviewId}`
+            },
+            (payload) => {
+              console.log('[useNestedReplies] Real-time update received:', payload);
+              // Use setTimeout to prevent blocking the UI
+              setTimeout(() => {
+                refresh();
+              }, 100);
+            }
+          )
+          .subscribe((status) => {
+            console.log('[useNestedReplies] Subscription status:', status);
+          });
+      } catch (error) {
+        console.error('[useNestedReplies] Error setting up real-time subscription:', error);
+      }
+    };
+
+    setupChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        console.log('[useNestedReplies] Cleaning up real-time subscription');
+        supabase.removeChannel(channel);
+      }
     };
   }, [enabled, reviewId, refresh]);
 
