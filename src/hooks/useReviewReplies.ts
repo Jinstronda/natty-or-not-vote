@@ -322,28 +322,51 @@ export const useReviewReplies = () => {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    const channel = supabase
-      .channel('review_replies_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'review_replies' },
-        () => {
-          console.log('[useReviewReplies] Real-time update received');
-          fetchReplies();
-        }
-      )
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'reply_reactions' },
-        () => {
-          console.log('[useReviewReplies] Real-time reaction update received');
-          fetchReactions();
-        }
-      )
-      .subscribe();
+    let channel: any = null;
+
+    const setupChannel = async () => {
+      console.log('[useReviewReplies] Setting up real-time subscription');
+
+      try {
+        channel = supabase
+          .channel(`review_replies_changes_${Date.now()}`) // Unique channel name with timestamp
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'review_replies' },
+            (payload) => {
+              console.log('[useReviewReplies] Real-time update received:', payload);
+              // Use setTimeout to prevent blocking the UI
+              setTimeout(() => {
+                fetchReplies();
+              }, 100);
+            }
+          )
+          .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'reply_reactions' },
+            (payload) => {
+              console.log('[useReviewReplies] Real-time reaction update received:', payload);
+              // Use setTimeout to prevent blocking the UI
+              setTimeout(() => {
+                fetchReactions();
+              }, 100);
+            }
+          )
+          .subscribe((status) => {
+            console.log('[useReviewReplies] Subscription status:', status);
+          });
+      } catch (error) {
+        console.error('[useReviewReplies] Error setting up real-time subscription:', error);
+      }
+    };
+
+    setupChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        console.log('[useReviewReplies] Cleaning up real-time subscription');
+        supabase.removeChannel(channel);
+      }
     };
-  }, [fetchReplies, fetchReactions]);
+  }, []); // Empty dependency array to prevent re-subscription
 
   // Initial data fetch
   useEffect(() => {
