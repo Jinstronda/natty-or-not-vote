@@ -126,10 +126,81 @@ export const useRealTimeReviews = (influencerId?: string) => {
   }, [influencerId, queryClient]);
 };
 
-// Combined hook that sets up both votes and reviews real-time updates
+export const useRealTimeReplies = (influencerId?: string) => {
+  const queryClient = useQueryClient();
+  const channelRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!influencerId) return;
+
+    const setupChannel = async () => {
+      // Clean up existing channel first
+      if (channelRef.current) {
+        console.log('Cleaning up existing reply channel');
+        await supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+
+    console.log('Setting up real-time reply updates for influencer:', influencerId);
+
+    const channel = supabase
+      .channel(`replies-${influencerId}-${Date.now()}`) // Add timestamp to ensure unique channels
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'review_replies',
+          filter: `review_id=in.(SELECT id FROM reviews WHERE influencer_id='${influencerId}')`
+        },
+        (payload) => {
+          console.log('Real-time reply update:', payload);
+          // Use setTimeout to prevent blocking
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['replies'] });
+            queryClient.invalidateQueries({ queryKey: ['reviews'] });
+            queryClient.invalidateQueries({ queryKey: ['nested-replies'] });
+          }, 0);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reply_reactions'
+        },
+        (payload) => {
+          console.log('Real-time reply reaction update:', payload);
+          // Use setTimeout to prevent blocking
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['reply-reactions'] });
+            queryClient.invalidateQueries({ queryKey: ['replies'] });
+          }, 0);
+        }
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+    };
+
+    setupChannel();
+
+    return () => {
+      if (channelRef.current) {
+        console.log('Cleaning up real-time reply subscription');
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [influencerId, queryClient]);
+};
+
+// Combined hook that sets up votes, reviews, and replies real-time updates
 export const useRealTime = (influencerId?: string, context?: string) => {
   useRealTimeVotes(influencerId);
   useRealTimeReviews(influencerId);
+  useRealTimeReplies(influencerId);
   
   useEffect(() => {
     if (context && influencerId) {

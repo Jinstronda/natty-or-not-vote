@@ -12,11 +12,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { withDatabaseTimeout } from "@/utils/loadingTimeout";
+import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
+import { useReviewReplies } from "@/hooks/useReviewReplies";
+import ReplyList from "@/components/ReplyList";
 // Temporarily commented out to fix infinite API calls
 // import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
 // import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
 // import { useRealTimeReviews } from '@/hooks/useRealTime';
-import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 
 interface EnhancedUserReviewsProps {
   influencerId: string;
@@ -37,6 +39,7 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
 }, ref) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
+  const { getReviewReplies, getReplyCount } = useReviewReplies();
   
   // State for editing reviews (keeping existing functionality)
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -312,6 +315,16 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
                         likes={review.likes}
                         dislikes={review.dislikes || 0}
                         onReacted={refresh}
+                      />
+                      
+                      {/* Reply system integration */}
+                      <ReplyList
+                        reviewId={review.id}
+                        replies={getReviewReplies(review.id)}
+                        maxDepth={3}
+                        currentDepth={0}
+                        sortBy="recent"
+                        className="mt-4"
                       />
                     </>
                   )}
