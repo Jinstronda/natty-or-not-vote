@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
-import { useReviewReplies } from "@/hooks/useReviewReplies";
+import { useReplies } from "@/contexts/ReplyContext";
 import ReplyList from "@/components/ReplyList";
 import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
 import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
@@ -39,7 +39,9 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
   // Include replies state to trigger re-render when replies change
-  const { getReviewReplies, getReplyCount, replies: __allReplies } = useReviewReplies();
+  const { getReviewReplies, replies: allReplies } = useReplies();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _triggerRerender = allReplies.length;
   
   // State for editing reviews (keeping existing functionality)
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -208,9 +210,6 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
       </Card>
     );
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _triggerRerenderOnReplyChange = __allReplies.length;
 
   return (
     <Card>
