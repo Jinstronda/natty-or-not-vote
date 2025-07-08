@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Trash2, RefreshCw } from 'lucide-react';
 import { useOptimalReviewSystem } from '@/hooks/useOptimalReviewSystem';
+import { useReviewReplies } from '@/hooks/useReviewReplies';
 import { 
   ProgressiveReviewSkeleton, 
   ErrorState, 
@@ -43,6 +44,9 @@ export const ModernReviewSystem: React.FC<ModernReviewSystemProps> = ({
 }) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
+  
+  // Add reply system hook to get actual reply data
+  const { getReviewReplies, getReplyCount } = useReviewReplies();
   
   // State for editing
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -313,7 +317,7 @@ export const ModernReviewSystem: React.FC<ModernReviewSystemProps> = ({
                     {/* Reply system */}
                     <ReplyList
                       reviewId={review.id}
-                      replies={[]} // Will be populated by the reply system
+                      replies={getReviewReplies(review.id)}
                       maxDepth={3}
                       currentDepth={0}
                       sortBy="recent"

@@ -199,9 +199,17 @@ export const useReviewReplies = () => {
         } : undefined
       };
 
-      // Optimistic update - add to local state
-      setReplies(prev => [...prev, newReply]);
-
+      // Optimistic update - add to local state immediately for YouTube-like UX
+      setReplies(prev => {
+        // Check if reply already exists to avoid duplicates
+        const exists = prev.some(r => r.id === newReply.id);
+        if (exists) {
+          console.log('[useReviewReplies] Reply already exists in state');
+          return prev;
+        }
+        console.log('[useReviewReplies] Adding reply optimistically:', newReply.id);
+        return [...prev, newReply];
+      });
 
       console.log('[useReviewReplies] Reply created successfully:', newReply.id);
       return newReply;
@@ -364,52 +372,94 @@ export const useReviewReplies = () => {
     return replies.filter(r => r.review_id === reviewId).length;
   }, [replies]);
 
-  // Clean real-time updates - only for changes from other users
+  // Clean real-time updates - include updates from ALL users for proper YouTube-like behavior
   useEffect(() => {
     if (!user) return;
     
     let channel: any = null;
 
     const setupChannel = async () => {
-      console.log('[useReviewReplies] Setting up clean real-time subscription');
+      console.log('[useReviewReplies] Setting up real-time subscription for all users');
 
       try {
         channel = supabase
-          .channel(`clean_review_replies_${user.id}_${Date.now()}`)
+          .channel(`review_replies_${user.id}_${Date.now()}`)
           .on('postgres_changes', 
             { 
               event: '*', 
               schema: 'public', 
-              table: 'review_replies',
-              filter: `user_id=neq.${user.id}` // Only updates from OTHER users
+              table: 'review_replies'
+              // Remove user filter to allow all updates like YouTube
             },
             (payload) => {
-              console.log('[useReviewReplies] Real-time update from other user:', payload);
-              // Only fetch if it's from another user
-              setTimeout(() => {
-                fetchReplies();
-              }, 100);
+              console.log('[useReviewReplies] Real-time update received:', payload);
+              
+              // Handle different event types
+              if (payload.eventType === 'INSERT') {
+                const newReply = payload.new;
+                const formattedReply: ReviewReply = {
+                  id: newReply.id,
+                  review_id: newReply.review_id,
+                  parent_reply_id: newReply.parent_reply_id,
+                  user_id: newReply.user_id,
+                  content: newReply.content,
+                  likes: newReply.likes || 0,
+                  dislikes: newReply.dislikes || 0,
+                  created_at: newReply.created_at,
+                  updated_at: newReply.updated_at,
+                  user: {
+                    username: 'Unknown User', // Will be updated when profiles are fetched
+                    profile_picture_url: null
+                  }
+                };
+                
+                // Add to state if not already present (avoid duplicates from optimistic updates)
+                setReplies(prev => {
+                  const exists = prev.some(r => r.id === formattedReply.id);
+                  if (exists) {
+                    console.log('[useReviewReplies] Reply already exists, skipping duplicate');
+                    return prev;
+                  }
+                  console.log('[useReviewReplies] Adding new reply from real-time:', formattedReply.id);
+                  return [...prev, formattedReply];
+                });
+              } else if (payload.eventType === 'UPDATE') {
+                const updatedReply = payload.new;
+                setReplies(prev => prev.map(reply => 
+                  reply.id === updatedReply.id ? {
+                    ...reply,
+                    content: updatedReply.content,
+                    likes: updatedReply.likes || 0,
+                    dislikes: updatedReply.dislikes || 0,
+                    updated_at: updatedReply.updated_at
+                  } : reply
+                ));
+              } else if (payload.eventType === 'DELETE') {
+                const deletedReply = payload.old;
+                setReplies(prev => prev.filter(reply => reply.id !== deletedReply.id));
+              }
             }
           )
           .on('postgres_changes',
             { 
               event: '*', 
               schema: 'public', 
-              table: 'reply_reactions',
-              filter: `user_id=neq.${user.id}` // Only reactions from OTHER users
+              table: 'reply_reactions'
+              // Include all reaction updates
             },
             (payload) => {
-              console.log('[useReviewReplies] Real-time reaction from other user:', payload);
+              console.log('[useReviewReplies] Real-time reaction update:', payload);
+              // Refresh reactions when any change occurs
               setTimeout(() => {
                 fetchReactions();
               }, 100);
             }
           )
           .subscribe((status) => {
-            console.log('[useReviewReplies] Clean subscription status:', status);
+            console.log('[useReviewReplies] Real-time subscription status:', status);
           });
       } catch (error) {
-        console.error('[useReviewReplies] Error setting up clean real-time subscription:', error);
+        console.error('[useReviewReplies] Error setting up real-time subscription:', error);
       }
     };
 
@@ -421,7 +471,7 @@ export const useReviewReplies = () => {
         supabase.removeChannel(channel);
       }
     };
-  }, [user, fetchReplies, fetchReactions]);
+  }, [user, fetchReactions]); // Remove fetchReplies dependency to avoid loops
 
   // Initial data fetch
   useEffect(() => {
