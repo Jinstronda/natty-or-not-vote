@@ -15,10 +15,9 @@ import { withDatabaseTimeout } from "@/utils/loadingTimeout";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 import { useReviewReplies } from "@/hooks/useReviewReplies";
 import ReplyList from "@/components/ReplyList";
-// Temporarily commented out to fix infinite API calls
-// import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
-// import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
-// import { useRealTimeReviews } from '@/hooks/useRealTime';
+import { usePageVisibility, useVisibilityRecovery } from "@/utils/pageVisibility";
+import { useLoadingWatchdog } from "@/utils/loadingWatchdog";
+import { useRealTimeReviews } from '@/hooks/useRealTime';
 
 interface EnhancedUserReviewsProps {
   influencerId: string;
@@ -69,9 +68,29 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
     changeSorting
   }), [refresh, changeSorting]);
 
-  // Temporarily disabled hooks that may cause infinite API calls
-  // TODO: Re-enable after fixing hook dependencies
-  // usePageVisibility, useVisibilityRecovery, useLoadingWatchdog, useRealTimeReviews
+  // Re-enabled hooks with real-time updates for immediate review updates
+  useRealTimeReviews(influencerId, refresh);
+  
+  usePageVisibility({
+    onReturnAfterDelay: (awayTime) => {
+      console.log(`[EnhancedUserReviews] User returned after ${Math.round(awayTime / 1000)}s, refreshing reviews`);
+      refresh();
+    },
+    maxAwayTime: 30000,
+    enableLogging: true
+  });
+
+  useVisibilityRecovery(refresh);
+
+  useLoadingWatchdog({
+    component: 'EnhancedUserReviews',
+    isLoading: loading,
+    timeout: 15000,
+    onTimeout: () => {
+      console.warn('[EnhancedUserReviews] Loading timeout detected, forcing reset');
+      // Loading timeout is handled by usePaginatedReviews hook
+    }
+  });
 
   // Initial load
   useEffect(() => {
@@ -99,7 +118,7 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
         description: "The review has been successfully deleted.",
       });
 
-      await refresh();
+      // Real-time updates will handle refresh automatically
     } catch (error) {
       console.error('[EnhancedUserReviews] Delete error:', error);
       toast({
@@ -119,7 +138,7 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
       await submitReview(user.id, user.username, influencerId, vote, editContent.trim());
       setEditingReviewId(null);
       setEditContent("");
-      await refresh();
+      // Real-time updates will handle refresh automatically
       
       toast({
         title: "Review updated",
@@ -314,7 +333,6 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
                         reviewId={review.id}
                         likes={review.likes}
                         dislikes={review.dislikes || 0}
-                        onReacted={refresh}
                       />
                       
                       {/* Reply system integration */}

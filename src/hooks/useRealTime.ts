@@ -60,7 +60,7 @@ export const useRealTimeVotes = (influencerId?: string) => {
   }, [influencerId, user?.id, queryClient]);
 };
 
-export const useRealTimeReviews = (influencerId?: string) => {
+export const useRealTimeReviews = (influencerId?: string, onReviewsUpdate?: () => void) => {
   const queryClient = useQueryClient();
   const channelRef = useRef<any>(null);
 
@@ -87,9 +87,16 @@ export const useRealTimeReviews = (influencerId?: string) => {
           table: 'reviews',
           filter: `influencer_id=eq.${influencerId}`
         },
-        () => {
+        (payload) => {
+          console.log('Real-time review update received:', payload);
           // Use setTimeout to prevent blocking
           setTimeout(() => {
+            // Call the component callback if provided (for direct state updates)
+            if (onReviewsUpdate) {
+              console.log('Triggering component review refresh via callback');
+              onReviewsUpdate();
+            }
+            // Still invalidate React Query cache for compatibility
             queryClient.invalidateQueries({ queryKey: ['reviews'] });
           }, 0);
         }
@@ -101,9 +108,16 @@ export const useRealTimeReviews = (influencerId?: string) => {
           schema: 'public',
           table: 'review_reactions'
         },
-        () => {
+        (payload) => {
+          console.log('Real-time review reaction update received:', payload);
           // Use setTimeout to prevent blocking
           setTimeout(() => {
+            // Call the component callback for reactions too
+            if (onReviewsUpdate) {
+              console.log('Triggering component review refresh via callback (reactions)');
+              onReviewsUpdate();
+            }
+            // Still invalidate React Query cache for compatibility
             queryClient.invalidateQueries({ queryKey: ['reactions'] });
             queryClient.invalidateQueries({ queryKey: ['reviews'] });
           }, 0);
@@ -123,7 +137,7 @@ export const useRealTimeReviews = (influencerId?: string) => {
         channelRef.current = null;
       }
     };
-  }, [influencerId, queryClient]);
+  }, [influencerId, queryClient, onReviewsUpdate]);
 };
 
 export const useRealTimeReplies = (influencerId?: string) => {
@@ -197,9 +211,9 @@ export const useRealTimeReplies = (influencerId?: string) => {
 };
 
 // Combined hook that sets up votes, reviews, and replies real-time updates
-export const useRealTime = (influencerId?: string, context?: string) => {
+export const useRealTime = (influencerId?: string, context?: string, onReviewsUpdate?: () => void) => {
   useRealTimeVotes(influencerId);
-  useRealTimeReviews(influencerId);
+  useRealTimeReviews(influencerId, onReviewsUpdate);
   useRealTimeReplies(influencerId);
   
   useEffect(() => {
