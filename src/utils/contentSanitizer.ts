@@ -22,7 +22,7 @@ export const sanitizeHtml = (content: string, options: SanitizationOptions = {})
     allowedTags = ['b', 'i', 'em', 'strong', 'u', 'br', 'p'],
     allowedAttributes = [],
     stripTags = false,
-    maxLength = 10000
+    maxLength = 500 // Default to 500 for reviews
   } = options;
 
   // Truncate if too long
@@ -156,6 +156,45 @@ export const sanitizeSearchQuery = (query: string): string => {
   }
   
   return sanitized;
+};
+
+/**
+ * Sanitize review content specifically
+ */
+export const sanitizeReviewContent = (content: string): string => {
+  if (!content) return '';
+
+  // Remove HTML tags and dangerous patterns
+  let sanitized = content.replace(/<[^>]*>/g, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/data:/gi, '');
+  sanitized = sanitized.replace(/vbscript:/gi, '');
+  sanitized = sanitized.replace(/on\w+=/gi, '');
+  
+  // Normalize whitespace
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
+  
+  // Enforce 500 character limit
+  if (sanitized.length > 500) {
+    sanitized = sanitized.substring(0, 497) + '...';
+  }
+  
+  return sanitized;
+};
+
+/**
+ * Validate review content length
+ */
+export const validateReviewLength = (content: string): { isValid: boolean; message?: string } => {
+  if (!content || content.trim().length === 0) {
+    return { isValid: false, message: 'Review content cannot be empty' };
+  }
+  
+  if (content.length > 500) {
+    return { isValid: false, message: 'Review content cannot exceed 500 characters' };
+  }
+  
+  return { isValid: true };
 };
 
 /**
