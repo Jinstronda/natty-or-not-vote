@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ReviewPromptDialogProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface ReviewPromptDialogProps {
 const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmitted }: ReviewPromptDialogProps) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
+  const queryClient = useQueryClient();
   const [reviewContent, setReviewContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,6 +35,10 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmi
     setIsSubmitting(true);
     try {
       await submitReview(user.id, user.username, influencerId, vote, reviewContent.trim());
+      
+      // Force immediate UI update (backup to real-time WebSocket)
+      console.log('💫 Review submitted - forcing immediate UI refresh');
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
       
       toast({
         title: "Review submitted!",

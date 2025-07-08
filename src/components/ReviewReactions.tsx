@@ -12,7 +12,7 @@ interface ReviewReactionsProps {
   onReacted?: () => void;
 }
 
-const ReviewReactions = ({ reviewId, likes, dislikes }: ReviewReactionsProps) => {
+const ReviewReactions = ({ reviewId, likes, dislikes, onReacted }: ReviewReactionsProps) => {
   const { user } = useAuth();
   const { toggleReaction, getUserReaction } = useSupabaseReactions();
   
@@ -58,6 +58,12 @@ const ReviewReactions = ({ reviewId, likes, dislikes }: ReviewReactionsProps) =>
         setOptimisticReaction(type);
       }
       await toggleReaction(reviewId, type);
+      
+      // Trigger parent refresh if callback provided
+      if (onReacted) {
+        console.log('🔥 Reaction updated - triggering parent refresh');
+        onReacted();
+      }
     } catch (error) {
       toast({
         title: "Error",

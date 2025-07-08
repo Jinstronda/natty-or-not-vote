@@ -163,8 +163,14 @@ export const usePaginatedReviews = ({
 
   // Refresh reviews (reset to page 1)
   const refresh = useCallback(async () => {
-    if (state.loading) return;
+    console.log('🔄 [PaginatedReviews] Refresh called, loading:', state.loading);
+    if (state.loading) {
+      console.log('🔄 [PaginatedReviews] Skipping refresh - already loading');
+      return;
+    }
+    console.log('🔄 [PaginatedReviews] Executing refresh - fetching page 0');
     await fetchReviews(0, state.sortBy, false);
+    console.log('🔄 [PaginatedReviews] Refresh completed');
   }, [fetchReviews, state.sortBy, state.loading]);
 
   // Computed values

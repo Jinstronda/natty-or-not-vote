@@ -238,7 +238,7 @@ const ReplyList: React.FC<ReplyListProps> = memo(({
             className="text-xs"
             disabled={isSubmitting}
           >
-            Reply to review
+            Reply
           </Button>
         )}
       </div>
