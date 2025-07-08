@@ -102,21 +102,33 @@ export const useReviewReplies = () => {
 
       if (error) throw error;
 
-      // Get last reply time for countdown
+      // Get last reply time for countdown - use maybeSingle to handle no replies case
       const { data: lastReply } = await supabase
         .from('review_replies')
         .select('created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       let timeUntilNext = 0;
+      
+      // Only calculate timeUntilNext if user cannot reply AND has a previous reply
       if (!data && lastReply?.created_at) {
         const lastReplyTime = new Date(lastReply.created_at).getTime();
-        const oneMinuteInMs = 1 * 60 * 1000;
+        const oneMinuteInMs = 1 * 60 * 1000; // 1 minute cooldown
         const timePassed = Date.now() - lastReplyTime;
         timeUntilNext = Math.max(0, oneMinuteInMs - timePassed);
+        
+        console.log('[useReviewReplies] Rate limit calculation:', {
+          lastReplyTime: new Date(lastReply.created_at).toISOString(),
+          timePassed: Math.round(timePassed / 1000) + 's',
+          timeUntilNext: Math.round(timeUntilNext / 1000) + 's',
+          canReply: data
+        });
+      } else if (!data && !lastReply) {
+        // User cannot reply but has no previous replies - this might be a database constraint issue
+        console.warn('[useReviewReplies] User cannot reply but has no previous replies - potential DB issue');
       }
 
       return {
@@ -139,8 +151,17 @@ export const useReviewReplies = () => {
     // Check rate limit first
     const rateLimit = await checkRateLimit();
     if (!rateLimit.canReply) {
-      const hoursRemaining = Math.ceil(rateLimit.timeUntilNext / (1000 * 60 * 60));
-      throw new Error(`Rate limit exceeded. Please wait ${hoursRemaining} hours before replying again.`);
+      const secondsRemaining = Math.ceil(rateLimit.timeUntilNext / 1000);
+      const minutesRemaining = Math.ceil(rateLimit.timeUntilNext / (1000 * 60));
+      
+      if (secondsRemaining <= 0) {
+        // Time has expired, should be able to reply now
+        console.log('[useReviewReplies] Rate limit expired, allowing reply');
+      } else if (minutesRemaining > 0) {
+        throw new Error(`Rate limit exceeded. Please wait ${minutesRemaining} minute${minutesRemaining > 1 ? 's' : ''} before replying again.`);
+      } else {
+        throw new Error(`Rate limit exceeded. Please wait ${secondsRemaining} second${secondsRemaining > 1 ? 's' : ''} before replying again.`);
+      }
     }
 
     try {
