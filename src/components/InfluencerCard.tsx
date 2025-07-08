@@ -184,7 +184,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             </Tooltip>
           )}
 
-          {!isDataLoading && totalVotes === 0 && (
+          {user && !isDataLoading && totalVotes === 0 && (
             <div className="text-center text-sm text-muted-foreground">
               No votes yet
             </div>
