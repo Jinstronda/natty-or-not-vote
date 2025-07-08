@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ReviewReply,
   ReplyReaction,
@@ -16,6 +17,7 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch all replies with user data
   const fetchReplies = useCallback(async () => {
@@ -193,13 +195,17 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
         onRepliesUpdate();
       }
 
+      // Force React Query cache invalidation as backup to WebSocket
+      console.log('💫 Reply created - forcing immediate UI refresh via React Query');
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+
       console.log('[useReviewReplies] Reply created successfully:', newReply.id);
       return newReply;
     } catch (error) {
       console.error('[useReviewReplies] Error creating reply:', error);
       throw error;
     }
-  }, [user, checkRateLimit, onRepliesUpdate]);
+  }, [user, checkRateLimit, onRepliesUpdate, queryClient]);
 
   // Update an existing reply
   const updateReply = useCallback(async (replyId: string, payload: UpdateReplyPayload): Promise<void> => {
