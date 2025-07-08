@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,10 +38,8 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
 }, ref) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
-  const { getReviewReplies, getReplyCount } = useReviewReplies(() => {
-    console.log('[EnhancedUserReviews] Reply system triggered refresh - refreshing reviews');
-    refresh();
-  });
+  // TEMPORARILY SIMPLIFIED: Remove callback to fix infinite loops
+  const { getReviewReplies, getReplyCount } = useReviewReplies();
   
   // State for editing reviews (keeping existing functionality)
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -339,10 +337,6 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
                         reviewId={review.id}
                         likes={review.likes}
                         dislikes={review.dislikes || 0}
-                        onReacted={() => {
-                          console.log('🔥 Review reaction changed - refreshing reviews');
-                          refresh();
-                        }}
                       />
                       
                       {/* Reply system integration */}
