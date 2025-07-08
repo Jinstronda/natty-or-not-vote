@@ -31,6 +31,18 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
   const [error, setError] = useState<string | null>(null);
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+  
+  // Character limit for reviews
+  const MAX_REVIEW_LENGTH = 500;
+  const remainingEditChars = MAX_REVIEW_LENGTH - editContent.length;
+  const isEditOverLimit = remainingEditChars < 0;
+  
+  // Character count color for editing
+  const getEditCharCountColor = () => {
+    if (isEditOverLimit) return 'text-red-500';
+    if (remainingEditChars <= 50) return 'text-yellow-600';
+    return 'text-gray-500';
+  };
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -233,7 +245,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
                   <form
                     onSubmit={async (e) => {
                       e.preventDefault();
-                      if (!user) return;
+                      if (!user || isEditOverLimit) return;
                       await submitReview(user.id, user.username, influencerId, review.vote, editContent.trim());
                       setEditingReviewId(null);
                       setEditContent("");
@@ -241,15 +253,26 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
                     }}
                     className="space-y-2"
                   >
-                    <textarea
-                      className="w-full border rounded p-2 mb-2 bg-background text-foreground"
-                      rows={3}
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      autoFocus
-                    />
+                    <div className="space-y-2">
+                      <textarea
+                        className={`w-full border rounded p-2 bg-background text-foreground ${isEditOverLimit ? 'border-red-500' : 'border-gray-300'}`}
+                        rows={3}
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        autoFocus
+                        maxLength={MAX_REVIEW_LENGTH + 100} // Allow slight overflow for user feedback
+                      />
+                      <div className="flex justify-between items-center text-sm">
+                        <span className={getEditCharCountColor()}>
+                          {remainingEditChars >= 0 ? `${remainingEditChars} characters remaining` : `${Math.abs(remainingEditChars)} characters over limit`}
+                        </span>
+                        <span className="text-gray-500">
+                          {editContent.length}/{MAX_REVIEW_LENGTH}
+                        </span>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
-                      <Button type="submit" size="sm" className="bg-primary text-white">Save</Button>
+                      <Button type="submit" size="sm" className="bg-primary text-white" disabled={isEditOverLimit}>Save</Button>
                       <Button type="button" size="sm" variant="outline" onClick={() => setEditingReviewId(null)}>Cancel</Button>
                     </div>
                   </form>

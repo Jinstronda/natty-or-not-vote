@@ -28,9 +28,21 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmi
   const queryClient = useQueryClient();
   const [reviewContent, setReviewContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Character limit for reviews
+  const MAX_REVIEW_LENGTH = 500;
+  const remainingChars = MAX_REVIEW_LENGTH - reviewContent.length;
+  const isOverLimit = remainingChars < 0;
+  
+  // Character count color based on remaining characters
+  const getCharCountColor = () => {
+    if (isOverLimit) return 'text-destructive';
+    if (remainingChars <= 50) return 'text-yellow-600';
+    return 'text-muted-foreground';
+  };
 
   const handleSubmitReview = async () => {
-    if (!user || !reviewContent.trim()) return;
+    if (!user || !reviewContent.trim() || isOverLimit) return;
 
     setIsSubmitting(true);
     try {
@@ -74,13 +86,24 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmi
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Textarea
-            placeholder="Share your reasoning, evidence, or thoughts about this decision..."
-            value={reviewContent}
-            onChange={(e) => setReviewContent(e.target.value)}
-            rows={4}
-            className="resize-none"
-          />
+          <div className="space-y-2">
+            <Textarea
+              placeholder="Share your reasoning, evidence, or thoughts about this decision..."
+              value={reviewContent}
+              onChange={(e) => setReviewContent(e.target.value)}
+              rows={4}
+              className={`resize-none ${isOverLimit ? 'border-destructive focus:border-destructive' : ''}`}
+              maxLength={MAX_REVIEW_LENGTH + 100} // Allow slight overflow for user feedback
+            />
+            <div className="flex justify-between items-center text-sm">
+              <span className={getCharCountColor()}>
+                {remainingChars >= 0 ? `${remainingChars} characters remaining` : `${Math.abs(remainingChars)} characters over limit`}
+              </span>
+              <span className="text-muted-foreground">
+                {reviewContent.length}/{MAX_REVIEW_LENGTH}
+              </span>
+            </div>
+          </div>
         </div>
         <DialogFooter className="gap-2">
           <Button
@@ -92,7 +115,7 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmi
           </Button>
           <Button
             onClick={handleSubmitReview}
-            disabled={isSubmitting || !reviewContent.trim()}
+            disabled={isSubmitting || !reviewContent.trim() || isOverLimit}
             className={vote === 'natty' ? 'bg-natty hover:bg-natty/90' : 'bg-juicy hover:bg-juicy/90'}
           >
             {isSubmitting ? "Submitting..." : "Submit Review"}
