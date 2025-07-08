@@ -44,9 +44,9 @@ export const useReplyRateLimit = () => {
       if (!canReply && lastReply?.created_at) {
         lastReplyTime = lastReply.created_at;
         const lastReplyTimestamp = new Date(lastReply.created_at).getTime();
-        const threeHoursInMs = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+        const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
         const timePassed = Date.now() - lastReplyTimestamp;
-        timeUntilNext = Math.max(0, threeHoursInMs - timePassed);
+        timeUntilNext = Math.max(0, oneMinuteInMs - timePassed);
       }
 
       const result: ReplyRateLimit = {
@@ -105,10 +105,10 @@ export const useReplyRateLimit = () => {
     if (!lastReplyTime) return true;
 
     const lastReplyTimestamp = new Date(lastReplyTime).getTime();
-    const threeHoursInMs = 3 * 60 * 60 * 1000;
+    const oneMinuteInMs = 1 * 60 * 1000;
     const timePassed = Date.now() - lastReplyTimestamp;
 
-    return timePassed >= threeHoursInMs;
+    return timePassed >= oneMinuteInMs;
   }, []);
 
   // Auto-refresh rate limit when time expires
