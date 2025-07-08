@@ -28,7 +28,11 @@ const ReplyForm: React.FC<ReplyFormProps> = memo(({
   // Check rate limit when component mounts
   useEffect(() => {
     if (isVisible && user) {
-      checkRateLimit().then(setRateLimit);
+      console.log('[ReplyForm] Checking rate limit for user:', user.id);
+      checkRateLimit().then((result) => {
+        console.log('[ReplyForm] Rate limit result:', result);
+        setRateLimit(result);
+      });
     }
   }, [isVisible, user, checkRateLimit]);
 
@@ -161,8 +165,8 @@ const ReplyForm: React.FC<ReplyFormProps> = memo(({
 
   return (
     <div className="mt-3 p-4 border border-border rounded-lg bg-card/50">
-      {/* Rate limit warning */}
-      {rateLimit && !rateLimit.canReply && (
+      {/* Rate limit warning - only show if there's actually time remaining */}
+      {rateLimit && !rateLimit.canReply && rateLimit.timeUntilNext > 1000 && (
         <Alert className="mb-4" variant="destructive">
           <Clock className="h-4 w-4" />
           <AlertDescription>
@@ -170,6 +174,15 @@ const ReplyForm: React.FC<ReplyFormProps> = memo(({
             This helps prevent spam and maintains discussion quality.
           </AlertDescription>
         </Alert>
+      )}
+      
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && rateLimit && (
+        <div className="mb-2 p-2 bg-gray-100 text-xs rounded">
+          <strong>Debug:</strong> canReply: {rateLimit.canReply.toString()}, 
+          timeUntilNext: {rateLimit.timeUntilNext}ms, 
+          formatted: "{formatTimeRemaining(rateLimit.timeUntilNext)}"
+        </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-3">
