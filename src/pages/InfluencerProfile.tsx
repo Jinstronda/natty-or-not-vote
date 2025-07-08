@@ -40,7 +40,8 @@ const InfluencerProfile = () => {
   }, [supabaseUser, userProfile, fetchUserProfile]);
 
   const handleReviewSubmitted = () => {
-    userReviewsRef.current?.refresh();
+    // Real-time updates will handle this automatically - no manual refresh needed
+    console.log('[InfluencerProfile] Review submitted - real-time updates will handle refresh');
   };
   
   // Debug logs
