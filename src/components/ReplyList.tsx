@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNestedReplies } from '@/hooks/useNestedReplies';
 import { useReplies } from '@/contexts/ReplyContext';
 import { ReplyListProps, ReplySortOption, ReviewReply } from '@/types/reply';
 import { 
