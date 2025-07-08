@@ -34,7 +34,7 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
   onDelete,
   onReaction
 }) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { toggleReaction, getUserReaction, updateReply, deleteReply } = useReviewReplies();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -45,9 +45,6 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
   const isOwnReply = user && reply.user_id === user.id;
   const canNestFurther = currentDepth < maxDepth;
   const userReaction = getUserReaction(reply.id);
-
-  // Debug logging for auth state
-  console.log(`[ReplyItem] Auth state - user: ${user ? 'present' : 'null'}, loading: ${authLoading}, replyId: ${reply.id}`);
 
   // Calculate indentation based on depth
   const getIndentClass = (depth: number) => {
@@ -71,14 +68,7 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
 
   // Handle reaction toggle
   const handleReaction = async (type: 'like' | 'dislike') => {
-    // Don't show auth error while auth is still loading
-    if (authLoading) {
-      console.log('[ReplyItem] Auth still loading, waiting...');
-      return;
-    }
-    
     if (!user) {
-      console.log('[ReplyItem] No user found, showing auth error');
       toast({
         title: "Login required",
         description: "Please login to react to replies.",
@@ -273,12 +263,11 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleReaction('like')}
-                disabled={authLoading}
                 className={`h-6 px-2 text-xs ${
                   userReaction?.reaction_type === 'like'
                     ? 'text-green-600 bg-green-50 hover:bg-green-100'
                     : 'text-muted-foreground hover:text-green-600'
-                } ${authLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <ThumbsUp className="h-3 w-3 mr-1" />
                 {reply.likes > 0 && reply.likes}
@@ -288,12 +277,11 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleReaction('dislike')}
-                disabled={authLoading}
                 className={`h-6 px-2 text-xs ${
                   userReaction?.reaction_type === 'dislike'
                     ? 'text-red-600 bg-red-50 hover:bg-red-100'
                     : 'text-muted-foreground hover:text-red-600'
-                } ${authLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <ThumbsDown className="h-3 w-3 mr-1" />
                 {reply.dislikes > 0 && reply.dislikes}
