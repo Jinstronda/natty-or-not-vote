@@ -88,16 +88,23 @@ export const useRealTimeReviews = (influencerId?: string, onReviewsUpdate?: () =
           filter: `influencer_id=eq.${influencerId}`
         },
         (payload) => {
-          console.log('Real-time review update received:', payload);
+          console.log('🔥 Real-time review update received:', payload);
+          console.log('🔥 Event type:', payload.eventType, 'Table:', payload.table);
+          console.log('🔥 New data:', payload.new);
+          console.log('🔥 Old data:', payload.old);
+          
           // Use setTimeout to prevent blocking
           setTimeout(() => {
             // Call the component callback if provided (for direct state updates)
             if (onReviewsUpdate) {
-              console.log('Triggering component review refresh via callback');
+              console.log('🔥 Triggering component review refresh via callback');
               onReviewsUpdate();
+            } else {
+              console.warn('🔥 No onReviewsUpdate callback provided!');
             }
             // Still invalidate React Query cache for compatibility
             queryClient.invalidateQueries({ queryKey: ['reviews'] });
+            console.log('🔥 React Query cache invalidated for reviews');
           }, 0);
         }
       )

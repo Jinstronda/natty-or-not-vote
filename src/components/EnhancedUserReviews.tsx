@@ -69,7 +69,10 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
   }), [refresh, changeSorting]);
 
   // Re-enabled hooks with real-time updates for immediate review updates
-  useRealTimeReviews(influencerId, refresh);
+  useRealTimeReviews(influencerId, () => {
+    console.log('[EnhancedUserReviews] Real-time callback triggered - refreshing reviews');
+    refresh();
+  });
   
   usePageVisibility({
     onReturnAfterDelay: (awayTime) => {
@@ -333,6 +336,10 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
                         reviewId={review.id}
                         likes={review.likes}
                         dislikes={review.dislikes || 0}
+                        onReacted={() => {
+                          console.log('🔥 Review reaction changed - refreshing reviews');
+                          refresh();
+                        }}
                       />
                       
                       {/* Reply system integration */}
