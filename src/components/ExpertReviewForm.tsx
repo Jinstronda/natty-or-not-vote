@@ -23,12 +23,33 @@ const ExpertReviewForm = ({ influencerId }: ExpertReviewFormProps) => {
     link_url: ''
   });
   const { addExpertReview } = useSupabaseExpertReviews();
+  
+  // Character limit for expert reviews
+  const MAX_REVIEW_LENGTH = 500;
+  const remainingChars = MAX_REVIEW_LENGTH - formData.content.length;
+  const isOverLimit = remainingChars < 0;
+  
+  // Character count color
+  const getCharCountColor = () => {
+    if (isOverLimit) return 'text-destructive';
+    if (remainingChars <= 50) return 'text-yellow-600';
+    return 'text-muted-foreground';
+  };
 
   const handleSubmit = async () => {
     if (!formData.author.trim() || !formData.content.trim()) {
       toast({
         title: "Missing fields",
         description: "Please fill in author and content fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (isOverLimit) {
+      toast({
+        title: "Review too long",
+        description: `Please keep your review under ${MAX_REVIEW_LENGTH} characters.`,
         variant: "destructive",
       });
       return;
@@ -94,12 +115,24 @@ const ExpertReviewForm = ({ influencerId }: ExpertReviewFormProps) => {
 
         <div>
           <Label htmlFor="content">Review Content</Label>
-          <Textarea
-            id="content"
-            value={formData.content}
-            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-            placeholder="Expert review content"
-          />
+          <div className="space-y-2">
+            <Textarea
+              id="content"
+              value={formData.content}
+              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="Expert review content"
+              className={isOverLimit ? 'border-destructive focus:border-destructive' : ''}
+              maxLength={MAX_REVIEW_LENGTH + 100} // Allow slight overflow for user feedback
+            />
+            <div className="flex justify-between items-center text-sm">
+              <span className={getCharCountColor()}>
+                {remainingChars >= 0 ? `${remainingChars} characters remaining` : `${Math.abs(remainingChars)} characters over limit`}
+              </span>
+              <span className="text-muted-foreground">
+                {formData.content.length}/{MAX_REVIEW_LENGTH}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -132,7 +165,7 @@ const ExpertReviewForm = ({ influencerId }: ExpertReviewFormProps) => {
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleSubmit}>Add Review</Button>
+          <Button onClick={handleSubmit} disabled={isOverLimit || !formData.content.trim()}>Add Review</Button>
           <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
         </div>
       </CardContent>
