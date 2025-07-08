@@ -38,8 +38,8 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
 }, ref) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
-  // TEMPORARILY SIMPLIFIED: Remove callback to fix infinite loops
-  const { getReviewReplies, getReplyCount } = useReviewReplies();
+  // Include replies state to trigger re-render when replies change
+  const { getReviewReplies, getReplyCount, replies: __allReplies } = useReviewReplies();
   
   // State for editing reviews (keeping existing functionality)
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -208,6 +208,9 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
       </Card>
     );
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _triggerRerenderOnReplyChange = __allReplies.length;
 
   return (
     <Card>
