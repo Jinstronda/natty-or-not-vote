@@ -107,7 +107,7 @@ export const useSupabaseReviews = () => {
 
       if (error) throw error;
 
-      await fetchReviews(); // Refresh reviews
+      // Real-time updates will handle refresh automatically
     } catch (error) {
       console.error('Error deleting review:', error);
       throw error;
