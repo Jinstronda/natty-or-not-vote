@@ -10,20 +10,33 @@ interface VoteStats {
   not_natty_percentage: number;
 }
 
+/**
+ * Faster vote-stats hook: performs two lightweight HEAD
+ * count queries instead of downloading every row.
+ */
 export const useVoteStats = (influencerId: string) => {
   return useQuery({
     queryKey: ['vote-stats', influencerId],
     queryFn: async (): Promise<VoteStats> => {
-      const { data, error } = await supabase
-        .from('votes')
-        .select('vote')
-        .eq('influencer_id', influencerId);
+      // Run both counts in parallel – Postgres will optimise.
+      const [totalRes, nattyRes] = await Promise.all([
+        supabase
+          .from('votes')
+          .select('id', { count: 'exact', head: true })
+          .eq('influencer_id', influencerId),
+        supabase
+          .from('votes')
+          .select('id', { count: 'exact', head: true })
+          .eq('influencer_id', influencerId)
+          .eq('vote', 'natty'),
+      ]);
 
-      if (error) throw error;
+      if (totalRes.error) throw totalRes.error;
+      if (nattyRes.error) throw nattyRes.error;
 
-      const total = data?.length || 0;
-      const nattyCount = data?.filter(v => v.vote === 'natty').length || 0;
-      const juicyCount = data?.filter(v => v.vote === 'juicy').length || 0;
+      const total = totalRes.count || 0;
+      const nattyCount = nattyRes.count || 0;
+      const juicyCount = total - nattyCount;
 
       return {
         total_votes: total,
@@ -34,6 +47,7 @@ export const useVoteStats = (influencerId: string) => {
       };
     },
     enabled: !!influencerId,
-    staleTime: 30 * 1000, // 30 seconds for vote stats
+    staleTime: 2 * 60 * 1000, // 2 minutes – stats rarely change per user session
+    cacheTime: 5 * 60 * 1000,
   });
 };
