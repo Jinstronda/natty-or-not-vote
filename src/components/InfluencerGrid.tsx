@@ -45,12 +45,23 @@ const InfluencerGrid = ({ searchTerm, onLoadingChange }: InfluencerGridProps) =>
     return hasData ? data.pages.flatMap(page => page.data) : [];
   }, [data?.pages, hasData]);
 
+  // Deduplicate influencers by id to avoid duplicates when paginating or searching quickly
+  const dedupedInfluencers = useMemo(() => {
+    const map = new Map<string, typeof allInfluencers[number]>();
+    allInfluencers.forEach((inf) => {
+      if (!map.has(inf.id)) {
+        map.set(inf.id, inf);
+      }
+    });
+    return Array.from(map.values());
+  }, [allInfluencers]);
+
   // Notify search state when results change - INSTANT FEEDBACK
   useEffect(() => {
     if (!isSearchLoading && searchTerm) {
-      handleSearchResults(allInfluencers, hasData);
+      handleSearchResults(dedupedInfluencers, dedupedInfluencers.length > 0);
     }
-  }, [allInfluencers, hasData, searchTerm, isSearchLoading, handleSearchResults]);
+  }, [dedupedInfluencers, searchTerm, isSearchLoading, handleSearchResults]);
 
   // Notify search state when search starts - INSTANT FEEDBACK
   useEffect(() => {
@@ -68,7 +79,7 @@ const InfluencerGrid = ({ searchTerm, onLoadingChange }: InfluencerGridProps) =>
   
   // Use the database view's ordering (controversial first, then by votes, then by creation date)
   // No frontend sorting needed since the database view handles this correctly
-  const sortedInfluencers = allInfluencers;
+  const sortedInfluencers = dedupedInfluencers;
 
   // Intersection observer for infinite scroll with better performance
   useEffect(() => {
