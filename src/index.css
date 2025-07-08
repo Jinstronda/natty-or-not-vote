@@ -6,6 +6,7 @@
 /* Import mobile carousel styles */
 @import './styles/mobile-carousel.css';
 @import './styles/loading-animations.css';
+@import './styles/unified-loading.css';
 
 /* Design system for Natty or Juicy */
 

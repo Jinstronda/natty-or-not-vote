@@ -1,0 +1,143 @@
+/* Unified Loading Animations - Modern, Performance-Optimized */
+
+/* Fade-in animation for progressive content */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+  animation-fill-mode: both;
+}
+
+/* Stagger delays for progressive loading */
+.animation-delay-0ms { animation-delay: 0ms; }
+.animation-delay-150ms { animation-delay: 150ms; }
+.animation-delay-300ms { animation-delay: 300ms; }
+.animation-delay-450ms { animation-delay: 450ms; }
+.animation-delay-600ms { animation-delay: 600ms; }
+
+/* Optimized pulse animation (replaces complex shimmer) */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Smooth loading states */
+.loading-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Error state animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Success state animation */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.3s ease-out;
+}
+
+/* Mobile-optimized animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pulse,
+  .animate-shake,
+  .animate-bounce-in {
+    animation: none;
+  }
+  
+  .animation-delay-0ms,
+  .animation-delay-150ms,
+  .animation-delay-300ms,
+  .animation-delay-450ms,
+  .animation-delay-600ms {
+    animation-delay: 0ms;
+  }
+}
+
+/* Loading progress bar */
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.loading-progress {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.loading-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.4),
+    transparent
+  );
+  animation: progress 1.5s ease-in-out infinite;
+  transform: translateX(-100%);
+}
+
+/* High-performance GPU-accelerated animations */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Touch-friendly loading states for mobile */
+@media (max-width: 768px) {
+  .animate-fade-in {
+    animation-duration: 0.2s;
+  }
+  
+  .animate-pulse {
+    animation-duration: 1.5s;
+  }
+}
