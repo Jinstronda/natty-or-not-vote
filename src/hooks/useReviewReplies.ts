@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   ReviewReply,
   ReplyReaction,
@@ -11,13 +10,12 @@ import {
   ReplyRateLimit
 } from '@/types/reply';
 
-export const useReviewReplies = (onRepliesUpdate?: () => void) => {
+export const useReviewReplies = () => {
   const [replies, setReplies] = useState<ReviewReply[]>([]);
   const [reactions, setReactions] = useState<ReplyReaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   // Fetch all replies with user data
   const fetchReplies = useCallback(async () => {
@@ -58,12 +56,6 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
 
       console.log('[useReviewReplies] Fetched replies:', formattedReplies.length);
       setReplies(formattedReplies);
-      
-      // Trigger parent refresh if callback provided
-      if (onRepliesUpdate) {
-        console.log('🔥 Replies updated - triggering parent component refresh');
-        onRepliesUpdate();
-      }
     } catch (error) {
       console.error('[useReviewReplies] Error fetching replies:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch replies';
@@ -72,7 +64,7 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
     } finally {
       setLoading(false);
     }
-  }, [onRepliesUpdate]);
+  }, []); // Remove the dependency that was causing infinite loops
 
   // Fetch reply reactions
   const fetchReactions = useCallback(async () => {
@@ -189,15 +181,6 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
       // Optimistic update - add to local state
       setReplies(prev => [...prev, newReply]);
 
-      // Trigger parent refresh for immediate update
-      if (onRepliesUpdate) {
-        console.log('🔥 New reply created - triggering parent component refresh');
-        onRepliesUpdate();
-      }
-
-      // Force React Query cache invalidation as backup to WebSocket
-      console.log('💫 Reply created - forcing immediate UI refresh via React Query');
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
 
       console.log('[useReviewReplies] Reply created successfully:', newReply.id);
       return newReply;
@@ -205,7 +188,7 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
       console.error('[useReviewReplies] Error creating reply:', error);
       throw error;
     }
-  }, [user, checkRateLimit, onRepliesUpdate, queryClient]);
+  }, [user, checkRateLimit]);
 
   // Update an existing reply
   const updateReply = useCallback(async (replyId: string, payload: UpdateReplyPayload): Promise<void> => {
@@ -304,13 +287,35 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
           });
       }
 
-      // Refresh reactions to get updated state
-      await fetchReactions();
+      // Optimistic update - update local reactions state
+      if (existingReaction) {
+        if (existingReaction.reaction_type === reactionType) {
+          // Remove reaction
+          setReactions(prev => prev.filter(r => r.id !== existingReaction.id));
+        } else {
+          // Update reaction type
+          setReactions(prev => prev.map(r => 
+            r.id === existingReaction.id 
+              ? { ...r, reaction_type: reactionType }
+              : r
+          ));
+        }
+      } else {
+        // Add new reaction (we need to generate a temporary ID)
+        const newReaction: ReplyReaction = {
+          id: `temp_${Date.now()}`, // Temporary ID
+          reply_id: replyId,
+          user_id: user.id,
+          reaction_type: reactionType,
+          created_at: new Date().toISOString()
+        };
+        setReactions(prev => [...prev, newReaction]);
+      }
     } catch (error) {
       console.error('[useReviewReplies] Error toggling reaction:', error);
       throw error;
     }
-  }, [user, reactions, fetchReactions]);
+  }, [user, reactions]);
 
   // Get user's reaction for a specific reply
   const getUserReaction = useCallback((replyId: string): ReplyReaction | null => {
@@ -338,41 +343,52 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
     return replies.filter(r => r.review_id === reviewId).length;
   }, [replies]);
 
-  // Subscribe to real-time updates
+  // Clean real-time updates - only for changes from other users
   useEffect(() => {
+    if (!user) return;
+    
     let channel: any = null;
 
     const setupChannel = async () => {
-      console.log('[useReviewReplies] Setting up real-time subscription');
+      console.log('[useReviewReplies] Setting up clean real-time subscription');
 
       try {
         channel = supabase
-          .channel(`review_replies_changes_${Date.now()}`) // Unique channel name with timestamp
+          .channel(`clean_review_replies_${user.id}_${Date.now()}`)
           .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'review_replies' },
+            { 
+              event: '*', 
+              schema: 'public', 
+              table: 'review_replies',
+              filter: `user_id=neq.${user.id}` // Only updates from OTHER users
+            },
             (payload) => {
-              console.log('[useReviewReplies] Real-time update received:', payload);
-              // Use setTimeout to prevent blocking the UI
+              console.log('[useReviewReplies] Real-time update from other user:', payload);
+              // Only fetch if it's from another user
               setTimeout(() => {
                 fetchReplies();
               }, 100);
             }
           )
           .on('postgres_changes',
-            { event: '*', schema: 'public', table: 'reply_reactions' },
+            { 
+              event: '*', 
+              schema: 'public', 
+              table: 'reply_reactions',
+              filter: `user_id=neq.${user.id}` // Only reactions from OTHER users
+            },
             (payload) => {
-              console.log('[useReviewReplies] Real-time reaction update received:', payload);
-              // Use setTimeout to prevent blocking the UI
+              console.log('[useReviewReplies] Real-time reaction from other user:', payload);
               setTimeout(() => {
                 fetchReactions();
               }, 100);
             }
           )
           .subscribe((status) => {
-            console.log('[useReviewReplies] Subscription status:', status);
+            console.log('[useReviewReplies] Clean subscription status:', status);
           });
       } catch (error) {
-        console.error('[useReviewReplies] Error setting up real-time subscription:', error);
+        console.error('[useReviewReplies] Error setting up clean real-time subscription:', error);
       }
     };
 
@@ -384,7 +400,7 @@ export const useReviewReplies = (onRepliesUpdate?: () => void) => {
         supabase.removeChannel(channel);
       }
     };
-  }, []); // Empty dependency array to prevent re-subscription
+  }, [user, fetchReplies, fetchReactions]);
 
   // Initial data fetch
   useEffect(() => {

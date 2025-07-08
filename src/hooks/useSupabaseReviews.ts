@@ -69,19 +69,41 @@ export const useSupabaseReviews = () => {
         .eq('user_id', userId)
         .eq('influencer_id', influencerId);
 
-      // Then insert the new review
-      const { error } = await supabase
+      // Then insert the new review and get the created data
+      const { data, error } = await supabase
         .from('reviews')
         .insert({
           user_id: userId,
           influencer_id: influencerId,
           vote: vote,
           content: content
-        });
+        })
+        .select(`
+          *,
+          profiles(username, profile_picture_url)
+        `)
+        .single();
 
       if (error) throw error;
 
-      // Real-time updates will handle refresh automatically
+      // Optimistic update - add to local state immediately
+      const newReview: Review = {
+        id: data.id,
+        userId: data.user_id,
+        username: data.profiles?.username || username,
+        profilePicture: data.profiles?.profile_picture_url || undefined,
+        influencerId: data.influencer_id,
+        vote: data.vote as 'natty' | 'juicy',
+        content: data.content,
+        timestamp: data.timestamp,
+        likes: data.likes || 0
+      };
+
+      // Remove old review and add new one optimistically
+      setReviews(prev => {
+        const filteredReviews = prev.filter(r => !(r.userId === userId && r.influencerId === influencerId));
+        return [newReview, ...filteredReviews];
+      });
     } catch (error) {
       console.error('Error submitting review:', error);
       throw error;

@@ -59,11 +59,7 @@ const ReviewReactions = ({ reviewId, likes, dislikes, onReacted }: ReviewReactio
       }
       await toggleReaction(reviewId, type);
       
-      // Trigger parent refresh if callback provided
-      if (onReacted) {
-        console.log('🔥 Reaction updated - triggering parent refresh');
-        onReacted();
-      }
+      console.log('🔥 Reaction updated - optimistic update completed');
     } catch (error) {
       toast({
         title: "Error",

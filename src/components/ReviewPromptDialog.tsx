@@ -36,9 +36,7 @@ const ReviewPromptDialog = ({ isOpen, onClose, influencerId, vote, onReviewSubmi
     try {
       await submitReview(user.id, user.username, influencerId, vote, reviewContent.trim());
       
-      // Force immediate UI update (backup to real-time WebSocket)
-      console.log('💫 Review submitted - forcing immediate UI refresh');
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      console.log('💫 Review submitted - optimistic update completed');
       
       toast({
         title: "Review submitted!",
