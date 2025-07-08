@@ -38,7 +38,10 @@ const EnhancedUserReviews = forwardRef<EnhancedUserReviewsRef, EnhancedUserRevie
 }, ref) => {
   const { user } = useAuth();
   const { submitReview } = useSupabaseReviews();
-  const { getReviewReplies, getReplyCount } = useReviewReplies();
+  const { getReviewReplies, getReplyCount } = useReviewReplies(() => {
+    console.log('[EnhancedUserReviews] Reply system triggered refresh - refreshing reviews');
+    refresh();
+  });
   
   // State for editing reviews (keeping existing functionality)
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);

@@ -10,7 +10,7 @@ import {
   ReplyRateLimit
 } from '@/types/reply';
 
-export const useReviewReplies = () => {
+export const useReviewReplies = (onRepliesUpdate?: () => void) => {
   const [replies, setReplies] = useState<ReviewReply[]>([]);
   const [reactions, setReactions] = useState<ReplyReaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +56,12 @@ export const useReviewReplies = () => {
 
       console.log('[useReviewReplies] Fetched replies:', formattedReplies.length);
       setReplies(formattedReplies);
+      
+      // Trigger parent refresh if callback provided
+      if (onRepliesUpdate) {
+        console.log('🔥 Replies updated - triggering parent component refresh');
+        onRepliesUpdate();
+      }
     } catch (error) {
       console.error('[useReviewReplies] Error fetching replies:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch replies';
@@ -64,7 +70,7 @@ export const useReviewReplies = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onRepliesUpdate]);
 
   // Fetch reply reactions
   const fetchReactions = useCallback(async () => {
@@ -114,9 +120,9 @@ export const useReviewReplies = () => {
       let timeUntilNext = 0;
       if (!data && lastReply?.created_at) {
         const lastReplyTime = new Date(lastReply.created_at).getTime();
-        const threeHoursInMs = 3 * 60 * 60 * 1000;
+        const oneMinuteInMs = 1 * 60 * 1000;
         const timePassed = Date.now() - lastReplyTime;
-        timeUntilNext = Math.max(0, threeHoursInMs - timePassed);
+        timeUntilNext = Math.max(0, oneMinuteInMs - timePassed);
       }
 
       return {
@@ -181,13 +187,19 @@ export const useReviewReplies = () => {
       // Optimistic update - add to local state
       setReplies(prev => [...prev, newReply]);
 
+      // Trigger parent refresh for immediate update
+      if (onRepliesUpdate) {
+        console.log('🔥 New reply created - triggering parent component refresh');
+        onRepliesUpdate();
+      }
+
       console.log('[useReviewReplies] Reply created successfully:', newReply.id);
       return newReply;
     } catch (error) {
       console.error('[useReviewReplies] Error creating reply:', error);
       throw error;
     }
-  }, [user, checkRateLimit]);
+  }, [user, checkRateLimit, onRepliesUpdate]);
 
   // Update an existing reply
   const updateReply = useCallback(async (replyId: string, payload: UpdateReplyPayload): Promise<void> => {
