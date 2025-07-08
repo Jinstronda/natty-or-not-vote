@@ -115,7 +115,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
     }
   });
 
-  useRealTimeReviews(influencerId);
+  useRealTimeReviews(influencerId, fetchReviews);
 
   useEffect(() => {
     fetchReviews();
@@ -140,7 +140,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
         description: "The review has been successfully deleted.",
       });
 
-      await fetchReviews();
+      // Real-time updates will handle refresh automatically
     } catch (error) {
       console.error('[UserReviews] Delete error:', error);
       toast({
@@ -237,7 +237,7 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
                       await submitReview(user.id, user.username, influencerId, review.vote, editContent.trim());
                       setEditingReviewId(null);
                       setEditContent("");
-                      await fetchReviews();
+                      // Real-time updates will handle refresh automatically
                     }}
                     className="space-y-2"
                   >
@@ -260,7 +260,6 @@ const UserReviews = forwardRef<UserReviewsRef, UserReviewsProps>(({ influencerId
                       reviewId={review.id}
                       likes={review.likes}
                       dislikes={review.dislikes || 0}
-                      onReacted={fetchReviews}
                     />
                   </>
                 )}
