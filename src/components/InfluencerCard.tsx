@@ -10,7 +10,7 @@ import { Lock } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { OptimizedImage } from "./OptimizedImage";
 import { userInteractionTracker } from "@/utils/userInteractionHelper";
-import { useSupabaseExpertReviews } from "@/hooks/useSupabaseExpertReviews";
+import { useExpertReviews } from "@/hooks/api/useExpertReviews";
 import { usePrefetchInfluencer } from "@/hooks/api/usePrefetchInfluencer";
 
 export interface InfluencerCardProps {
@@ -28,7 +28,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: voteStats, isLoading } = useVoteStats(influencer.id);
-  const { getInfluencerExpertReviews, loading: expertReviewsLoading } = useSupabaseExpertReviews();
+  const { data: expertReviews = [], isLoading: expertReviewsLoading } = useExpertReviews(influencer.id);
   const { prefetchInfluencerData } = usePrefetchInfluencer();
 
   const handleClaim = (e: React.MouseEvent) => {
@@ -36,8 +36,7 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
     navigate(`/claim/${influencer.id}`);
   };
 
-  // Get expert reviews for this influencer
-  const expertReviews = getInfluencerExpertReviews(influencer.id);
+  // Expert reviews are now loaded directly from the hook
   
   // Calculate expert review counts using same logic as VotingResults.tsx
   const expertNattyCount = expertReviews.filter(review => 
@@ -57,8 +56,10 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
   const nattyPercentage = totalVotes > 0 ? Math.round((nattyCount / totalVotes) * 100) : 0;
   const juicyPercentage = totalVotes > 0 ? (100 - nattyPercentage) : 0;
 
-  // Combined loading state - wait for both vote stats and expert reviews
-  const isDataLoading = isLoading || expertReviewsLoading;
+  // HOTFIX 1: Stabilized loading state - ensure both hooks have stable data
+  const isDataLoading = isLoading || expertReviewsLoading || 
+                        voteStats === undefined || 
+                        expertReviews === undefined;
 
   const mainImage = influencer.photos && influencer.photos.length > 0
     ? influencer.photos[0].image_url
@@ -115,9 +116,9 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
             {influencer.name}
           </h3>
           
-          {/* Vote Statistics - Now properly waits for both vote stats AND expert reviews */}
+          {/* HOTFIX 2: Prevent Vote Bar Flickering - Stable rendering with unique key */}
           {user && !isDataLoading && totalVotes > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2" key={`${influencer.id}-votes-${totalVotes}`} data-testid="vote-bar">
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <span>💉 Juicy: {juicyPercentage}%</span>
                 <span>🏆 Natty: {nattyPercentage}%</span>
@@ -126,11 +127,11 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               <div className="relative">
                 <div className="w-full bg-secondary rounded-full h-2 overflow-hidden flex">
                   <div
-                    className="h-full bg-juicy transition-all duration-500"
+                    className="h-full bg-juicy transition-all duration-300"
                     style={{ width: `${juicyPercentage}%` }}
                   />
                   <div
-                    className="h-full bg-natty transition-all duration-500"
+                    className="h-full bg-natty transition-all duration-300"
                     style={{ width: `${nattyPercentage}%` }}
                   />
                 </div>
@@ -138,15 +139,11 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
               
               <div className="text-center">
                 <Badge 
-                  className={`
-                    transition-all duration-300 hover:scale-105
-                    ${nattyPercentage > 50 
-                      ? 'bg-gradient-to-r from-natty to-natty/90 hover:shadow-lg hover:shadow-natty/30 hover:brightness-110' 
-                      : 'bg-gradient-to-r from-juicy to-juicy/90 hover:shadow-lg hover:shadow-juicy/30 hover:brightness-110'
-                    }
-                    cursor-pointer select-none
-                    relative overflow-hidden
-                  `}
+                  className={`transition-all duration-300 ${
+                    nattyPercentage > 50 
+                      ? 'bg-gradient-to-r from-natty to-natty/90 hover:shadow-lg hover:shadow-natty/30' 
+                      : 'bg-gradient-to-r from-juicy to-juicy/90 hover:shadow-lg hover:shadow-juicy/30'
+                  } cursor-pointer select-none relative overflow-hidden`}
                   onMouseEnter={(e) => {
                     // Add subtle haptic feedback on mobile
                     userInteractionTracker.safeVibrate(5);
@@ -174,8 +171,8 @@ const InfluencerCard = ({ influencer }: InfluencerCardProps) => {
                   </div>
                   <div className="relative">
                     <div className="w-full rounded-full h-2 overflow-hidden flex blur-sm opacity-80">
-                      <div className="h-full bg-juicy transition-all duration-500" style={{ width: '50%' }} />
-                      <div className="h-full bg-natty transition-all duration-500" style={{ width: '50%' }} />
+                      <div className="h-full bg-juicy transition-all duration-300" style={{ width: '50%' }} />
+                      <div className="h-full bg-natty transition-all duration-300" style={{ width: '50%' }} />
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <span className="text-xs text-muted-foreground font-semibold drop-shadow-md select-none" style={{zIndex:0}}>Sign in to see verdicts</span>
