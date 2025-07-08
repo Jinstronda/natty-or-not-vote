@@ -92,8 +92,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('✅ Auth: Profile loaded successfully');
           } catch (profileError) {
             console.error('❌ Auth: Error fetching user profile:', profileError);
-            // Set user to null but keep supabaseUser for basic functionality
-            setUser(null);
+            // Keep session alive even if profile fetch fails - this prevents logout on refresh
+            console.log('⚠️ Auth: Profile fetch failed but keeping session alive');
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+              role: 'user'
+            });
           }
         } else {
           console.log('ℹ️ Auth: No existing session found');

@@ -34,7 +34,7 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
   onDelete,
   onReaction
 }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toggleReaction, getUserReaction, updateReply, deleteReply } = useReviewReplies();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -68,9 +68,22 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
 
   // Handle reaction toggle
   const handleReaction = async (type: 'like' | 'dislike') => {
-    if (!user) {
+    console.log('[ReplyItem] handleReaction called, user:', user, 'authLoading:', authLoading, 'type:', type);
+    
+    if (authLoading) {
+      console.log('[ReplyItem] Auth still loading, please wait');
       toast({
-        title: "Login required",
+        title: "Please wait",
+        description: "Authentication is loading...",
+        variant: "default",
+      });
+      return;
+    }
+    
+    if (!user) {
+      console.log('[ReplyItem] User not found, showing login toast');
+      toast({
+        title: "Login required", 
         description: "Please login to react to replies.",
         variant: "destructive",
       });
