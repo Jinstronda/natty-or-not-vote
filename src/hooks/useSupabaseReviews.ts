@@ -81,7 +81,7 @@ export const useSupabaseReviews = () => {
 
       if (error) throw error;
 
-      await fetchReviews(); // Refresh reviews
+      // Real-time updates will handle refresh automatically
     } catch (error) {
       console.error('Error submitting review:', error);
       throw error;
