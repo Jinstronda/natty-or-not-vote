@@ -1,0 +1,94 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- banner:
+  - link "Natty or Juicy Home":
+    - /url: /
+    - text: Natty or Juicy
+  - navigation "Main navigation":
+    - link "Trending":
+      - /url: /
+    - link "Merch":
+      - /url: /merch
+    - link "How It Works":
+      - /url: /how-it-works
+    - link "Login":
+      - /url: /login
+    - link "Sign Up":
+      - /url: /signup
+- img "Mike Mentzer"
+- heading "Mike Mentzer" [level=1]
+- paragraph: Professional bodybuilder known for high-intensity training.
+- link "Instagram":
+  - /url: https://instagram.com/mikementzer
+  - img
+  - text: Instagram
+- link "YouTube":
+  - /url: https://youtube.com/mikementzer
+  - img
+  - text: YouTube
+- text: "Height: 5'8\" Weight: 225 lbs Training: 15+ years Claims: Not Known"
+- heading "What do you think?" [level=3]
+- link "Login":
+  - /url: /login
+- link "Sign Up":
+  - /url: /signup
+- button "🏆 Natty" [disabled]
+- button "💉 Juicy" [disabled]
+- text: Sign in to see the community verdict and cast your vote!
+- paragraph: No expert reviews yet.
+- heading "Community Reviews" [level=3]:
+  - img
+  - text: Community Reviews
+- img
+- text: "3 reviews Sort by:"
+- tablist:
+  - tab "Recent" [selected]:
+    - img
+    - text: Recent
+  - tab "Popular":
+    - img
+    - text: Popular
+- link "JoaoPanizzutti JoaoPanizzutti":
+  - /url: /user/efc3c736-61be-4139-b63f-76a75008ce8c
+  - img "JoaoPanizzutti"
+  - text: JoaoPanizzutti
+- text: 💉 6/11/2025
+- paragraph: Bro was literally on crack
+- button "1":
+  - img
+  - text: "1"
+- button "0":
+  - img
+  - text: "0"
+- img
+- text: No replies yet
+- link "U user1":
+  - /url: /user/55190aa3-1352-4f57-ba54-2b8633804627
+- text: 🏆 6/10/2025
+- paragraph: He is the goat
+- button "0":
+  - img
+  - text: "0"
+- button "1":
+  - img
+  - text: "1"
+- img
+- text: No replies yet
+- link "J jistronda100":
+  - /url: /user/2a964c42-9637-4f2d-b4d7-8de2d0a33c51
+- text: 💉 6/10/2025
+- paragraph: Bro is on crack
+- button "0":
+  - img
+  - text: "0"
+- button "0":
+  - img
+  - text: "0"
+- img
+- text: No replies yet Loaded 3 of 3 reviews 100%
+- img
+- text: You've seen all reviews All 3 reviews loaded
+```
