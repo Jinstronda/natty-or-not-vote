@@ -48,6 +48,6 @@ export const useVoteStats = (influencerId: string) => {
     },
     enabled: !!influencerId,
     staleTime: 2 * 60 * 1000, // 2 minutes – stats rarely change per user session
-    cacheTime: 5 * 60 * 1000,
-  });
-};
+     
+   });
+ };
