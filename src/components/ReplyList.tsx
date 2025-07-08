@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNestedReplies } from '@/hooks/useNestedReplies';
-import { useReviewReplies } from '@/hooks/useReviewReplies';
+import { useReplies } from '@/contexts/ReplyContext';
 import { ReplyListProps, ReplySortOption, ReviewReply } from '@/types/reply';
 import { 
   ChevronDown, 
@@ -35,7 +35,7 @@ const ReplyList: React.FC<ReplyListProps> = memo(({
   className = ''
 }) => {
   const { user } = useAuth();
-  const { createReply } = useReviewReplies();
+  const { createReply } = useReplies();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [currentSort, setCurrentSort] = useState<ReplySortOption>(sortBy);

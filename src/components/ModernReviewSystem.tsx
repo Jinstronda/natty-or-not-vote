@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Trash2, RefreshCw } from 'lucide-react';
 import { useOptimalReviewSystem } from '@/hooks/useOptimalReviewSystem';
-import { useReviewReplies } from '@/hooks/useReviewReplies';
+import { useReplies } from '@/contexts/ReplyContext';
 import { 
   ProgressiveReviewSkeleton, 
   ErrorState, 
@@ -46,7 +46,9 @@ export const ModernReviewSystem: React.FC<ModernReviewSystemProps> = ({
   const { submitReview } = useSupabaseReviews();
   
   // Add reply system hook to get actual reply data
-  const { getReviewReplies, getReplyCount } = useReviewReplies();
+  const { getReviewReplies, replies: allReplies } = useReplies();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _triggerRerender = allReplies.length;
   
   // State for editing
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
