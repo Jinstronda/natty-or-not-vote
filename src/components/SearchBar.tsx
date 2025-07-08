@@ -44,9 +44,10 @@ const SearchBar = ({ searchTerm, onSearchChange, isGridLoading = false }: Search
     onSearchChange('');
   }, [clearSearch, onSearchChange]);
 
-  // Determine loading state (either typing, searching, or grid loading)
-  const isLoading = showLoadingIndicator || isGridLoading;
-  const isSearching = searchState.isSearching || isGridLoading;
+  // Spinner appears only when a search request is in-flight (not merely typing)
+  const isSpinnerActive = searchState.isSearching || isGridLoading;
+  // Input visual style should still react on typing/searching
+  const isBusy = showLoadingIndicator || isGridLoading;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -60,21 +61,21 @@ const SearchBar = ({ searchTerm, onSearchChange, isGridLoading = false }: Search
             className={`
               pl-10 pr-10 h-12 text-lg bg-input border-border focus:border-primary 
               transition-all duration-200 focus:ring-2 focus:ring-primary/20
-              ${isLoading ? 'bg-primary/5 border-primary/30' : ''}
-              ${isSearching ? 'bg-muted/50' : ''}
+              ${isBusy ? 'bg-primary/5 border-primary/30' : ''}
+              ${isSpinnerActive ? 'bg-muted/50' : ''}
             `}
             autoComplete="off"
             spellCheck="false"
           />
           
           {/* Dynamic search icon with instant feedback */}
-          {isLoading ? (
-            <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary animate-spin" />
+          {isSpinnerActive ? (
+            <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
           ) : (
             <Search className={`
               absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 
               transition-colors duration-200
-              ${isSearching ? 'text-primary' : 'text-muted-foreground'}
+              ${isSpinnerActive ? 'text-primary' : 'text-muted-foreground'}
             `} />
           )}
           
@@ -96,11 +97,11 @@ const SearchBar = ({ searchTerm, onSearchChange, isGridLoading = false }: Search
           size="lg" 
           className={`
             h-12 px-8 transition-all duration-200 
-            ${isLoading ? 'bg-primary/80' : ''}
+            ${isBusy ? 'bg-primary/80' : ''}
           `}
-          disabled={isLoading}
+          disabled={isBusy}
         >
-          {isLoading ? (
+          {isSpinnerActive ? (
             <span className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Searching...
