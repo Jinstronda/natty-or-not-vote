@@ -253,8 +253,7 @@ export const useReviewReplies = () => {
   // Toggle reaction on a reply
   const toggleReaction = useCallback(async (replyId: string, reactionType: 'like' | 'dislike'): Promise<void> => {
     if (!user) {
-      console.log('[useReviewReplies] No user found, cannot toggle reaction');
-      return;
+      throw new Error('Authentication required');
     }
 
     try {
