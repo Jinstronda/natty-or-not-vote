@@ -223,12 +223,18 @@ const ReplyList: React.FC<ReplyListProps> = memo(({
           )}
         </div>
 
-        {/* Reply button */}
-        {user && isExpanded && !isReplying && (
+        {/* Reply button - always visible when user is logged in */}
+        {user && !isReplying && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsReplying(true)}
+            onClick={() => {
+              setIsReplying(true);
+              // Auto-expand replies when user wants to reply
+              if (!isExpanded) {
+                setIsExpanded(true);
+              }
+            }}
             className="text-xs"
             disabled={isSubmitting}
           >
@@ -238,7 +244,7 @@ const ReplyList: React.FC<ReplyListProps> = memo(({
       </div>
 
       {/* Reply form for direct replies */}
-      {isReplying && isExpanded && (
+      {isReplying && (
         <ReplyForm
           reviewId={reviewId}
           parentReplyId={null}
