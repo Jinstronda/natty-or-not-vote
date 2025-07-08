@@ -40,8 +40,13 @@ const InfluencerProfile = () => {
   }, [supabaseUser, userProfile, fetchUserProfile]);
 
   const handleReviewSubmitted = () => {
-    // Real-time updates will handle this automatically - no manual refresh needed
-    console.log('[InfluencerProfile] Review submitted - real-time updates will handle refresh');
+    // Trigger an immediate refresh of the user reviews so the new review appears instantly
+    if (userReviewsRef.current) {
+      console.log('[InfluencerProfile] Review submitted - forcing reviews refresh');
+      userReviewsRef.current.refresh();
+    } else {
+      console.log('[InfluencerProfile] Review submitted - reviews ref not ready, relying on real-time updates');
+    }
   };
   
   // Debug logs
