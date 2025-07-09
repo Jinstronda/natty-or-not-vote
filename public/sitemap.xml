@@ -73,4 +73,23 @@
     <priority>0.2</priority>
   </url>
 
+  <!-- Dynamic Content - Add your influencer URLs here -->
+  <!-- Example influencer pages (replace with actual IDs) -->
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/1</loc>
+    <lastmod>2025-01-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/2</loc>
+    <lastmod>2025-01-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Add more influencer URLs as needed -->
+  <!-- TODO: Generate this dynamically from your database -->
+
 </urlset> 

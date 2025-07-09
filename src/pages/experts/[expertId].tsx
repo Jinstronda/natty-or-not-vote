@@ -6,7 +6,8 @@ import { User } from 'lucide-react';
 import AdminExpertEditor from '@/components/AdminExpertEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
-import ExpertReviews from '@/components/ExpertReviews';
+import EnhancedExpertReviews from '@/components/EnhancedExpertReviews';
+import { ProgressiveExpertReviewsSkeleton } from '@/components/loading/ExpertReviewSkeleton';
 
 const ExpertProfilePage = () => {
   const { expertId } = useParams();
@@ -59,7 +60,29 @@ const ExpertProfilePage = () => {
     fetchReviews();
   }, [expertId]);
 
-  if (!expert) return <div className="text-center py-12">Loading...</div>;
+  if (!expert) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        {/* Expert Profile Skeleton */}
+        <Card className="mb-8">
+          <CardContent className="p-6 flex flex-col items-center">
+            <div className="w-24 h-24 rounded-full bg-muted animate-pulse mb-4"></div>
+            <div className="h-6 bg-muted animate-pulse rounded mb-2 w-48"></div>
+            <div className="h-4 bg-muted animate-pulse rounded mb-4 w-32"></div>
+            <div className="flex gap-3 mb-3">
+              <div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+              <div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+            </div>
+            <div className="h-10 bg-muted animate-pulse rounded w-40"></div>
+          </CardContent>
+        </Card>
+        
+        {/* Expert Reviews Skeleton */}
+        <ProgressiveExpertReviewsSkeleton count={3} showHeader={false} />
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,7 +119,7 @@ const ExpertProfilePage = () => {
           </CardContent>
         </Card>
         <div className="mb-8">
-          <ExpertReviews expertId={expert.id} />
+          <EnhancedExpertReviews expertId={expert.id} />
         </div>
         {influencer && (
           <div className="mt-8">
