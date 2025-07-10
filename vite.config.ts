@@ -34,6 +34,24 @@ export default defineConfig(({ mode }) => ({
     }),
     // PWA support with modern caching strategies - TEMPORARILY DISABLED for iOS debugging
     // VitePWA({
+    //   registerType: 'autoUpdate',
+    //   workbox: {
+    //     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+    //     runtimeCaching: [
+    //       {
+    //         urlPattern: /^https:\/\/nutgdqowaqjnxtedascw\.supabase\.co\/.*/i,
+    //         handler: 'NetworkFirst',
+    //         options: {
+    //           cacheName: 'supabase-cache',
+    //           expiration: {
+    //             maxEntries: 10,
+    //             maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+    //           }
+    //         }
+    //       }
+    //     ]
+    //   }
+    // }),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -55,11 +73,16 @@ export default defineConfig(({ mode }) => ({
       '@tanstack/react-query',
       '@supabase/supabase-js',
       'date-fns',
-      'lucide-react'
+      'lucide-react',
+      'web-vitals', // Pre-bundle for performance monitoring
+      'clsx', // Pre-bundle utility for faster className generation
+      'tailwind-merge' // Pre-bundle for efficient Tailwind class merging
     ],
     exclude: ['@lovable/tagger'],
     // Improve cold start performance
     holdUntilCrawlEnd: false,
+    // Enable esbuild cache for faster rebuilds
+    force: mode === 'development',
   },
   build: {
     // Target browsers for iOS Safari compatibility - changed from es2020 to es2018
@@ -68,30 +91,80 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     // Optimize chunk size warnings
     chunkSizeWarningLimit: 1000,
+    // Enhanced minification for better Core Web Vitals
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+        pure_funcs: mode === 'production' ? ['console.log'] : [],
+        passes: 2, // Multiple passes for better compression
+      },
+      mangle: {
+        safari10: true, // Fix Safari 10 compatibility
+      },
+      format: {
+        comments: false, // Remove comments for smaller bundle
+      },
+    },
+    // Optimize assets handling for better SEO
+    assetsInlineLimit: 2048, // 2KB - inline small assets for fewer requests
+    // Generate module preload directives for critical resources
+    modulePreload: {
+      polyfill: true,
+      resolveDependencies: (filename, deps) => {
+        // Preload critical chunks
+        return deps.filter(dep => 
+          dep.includes('vendor') || 
+          dep.includes('index') || 
+          dep.includes('router')
+        );
+      },
+    },
     // Advanced bundle optimization
     rollupOptions: {
       output: {
-        // Optimize chunk splitting for better caching
-        manualChunks: {
-          // Vendor chunk for React and core dependencies
-          vendor: ['react', 'react-dom'],
-          // Router chunk for navigation-related code
-          router: ['react-router-dom'],
-          // Supabase chunk for backend integration
-          supabase: ['@supabase/supabase-js'],
-          // Query chunk for data fetching
-          query: ['@tanstack/react-query'],
-          // UI chunk for component library
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
-        },
         // Optimize chunk naming for better caching
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Optimize chunk splitting for better caching and Core Web Vitals
+        manualChunks: (id) => {
+          // Create separate chunks for node_modules to improve caching
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase';
+            }
+            if (id.includes('@tanstack')) {
+              return 'query';
+            }
+            if (id.includes('web-vitals')) {
+              return 'performance';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('date-fns')) {
+              return 'utils';
+            }
+            return 'vendor';
+          }
+          // Group pages together for better code splitting
+          if (id.includes('/pages/')) {
+            return 'pages';
+          }
+          if (id.includes('/components/')) {
+            return 'components';
+          }
+        },
       }
     },
-    // Optimize assets inlining threshold
-    assetsInlineLimit: 2048, // 2KB
     // Report compressed sizes for monitoring
     reportCompressedSize: true,
     // Source maps for production debugging
