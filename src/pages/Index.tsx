@@ -173,12 +173,12 @@ const Index = () => {
               The community verdict on whether your favorite fitness influencer is natural or enhanced.
             </p>
             
-            {/* SEO-friendly content */}
-            <div className="max-w-3xl mx-auto mb-8">
-              <h2 className="sr-only">
+            {/* SEO-friendly content - hidden from view */}
+            <div className="sr-only">
+              <h2>
                 Community-Driven Fitness Influencer Analysis Platform
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p>
                 Discover the truth about fitness influencers. Our community analyzes physiques, 
                 performance, and authenticity to determine if influencers are naturally achieved (natty) 
                 or enhanced with performance-enhancing substances (juicy).
