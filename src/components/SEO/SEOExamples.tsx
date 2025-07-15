@@ -4,7 +4,7 @@
  */
 
 import { InfluencerSpecificSEO } from './InfluencerSpecificSEO';
-import { InfluencerMeta } from './DynamicMeta';
+import { DynamicMeta } from './DynamicMeta';
 
 /**
  * EXAMPLE 1: Basic Implementation in Influencer Page
