@@ -421,10 +421,10 @@ export function reportWebVitals(
 // Export for external analytics services
 export function sendToAnalytics(report: WebVitalsReport) {
   // Example integration with Google Analytics
-  if (typeof gtag !== 'undefined') {
+  if (typeof gtag_vitals !== 'undefined') {
     Object.entries(report).forEach(([key, value]) => {
       if (value && typeof value === 'object' && 'value' in value) {
-        gtag('event', key, {
+        gtag_vitals('event', key, {
           event_category: 'Web Vitals',
           event_label: key.toUpperCase(),
           value: Math.round(value.value),
@@ -471,7 +471,7 @@ declare global {
     };
   }
   
-  var gtag: (
+  var gtag_vitals: (
     command: string,
     targetId: string,
     config?: any

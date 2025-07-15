@@ -57,8 +57,8 @@ const App = () => {
     const trackConversion = (event: string, value?: number) => {
       // Google Analytics 4 conversion tracking
       try {
-        if (typeof gtag !== 'undefined') {
-          gtag('event', 'conversion', {
+        if (typeof (window as any).gtag !== 'undefined') {
+          (window as any).gtag('event', 'conversion', {
             event_name: event,
             value: value,
             currency: 'USD'

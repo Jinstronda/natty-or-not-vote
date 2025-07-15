@@ -43,19 +43,19 @@ export const useMobileGestures = (options: GestureOptions = {}) => {
   const initialDistance = useRef<number>(0);
   const isPanning = useRef<boolean>(false);
 
-  const getDistance = useCallback((touch1: Touch, touch2: Touch) => {
+  const getDistance = useCallback((touch1: React.Touch, touch2: React.Touch) => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }, []);
 
-  const getTouchPoint = useCallback((touch: Touch): TouchPoint => ({
+  const getTouchPoint = useCallback((touch: React.Touch): TouchPoint => ({
     x: touch.clientX,
     y: touch.clientY,
     timestamp: Date.now()
   }), []);
 
-  const handleTouchStart = useCallback((e: TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLElement>) => {
     e.preventDefault(); // Prevent default mobile behaviors
     
     const touch = e.touches[0];
@@ -77,7 +77,7 @@ export const useMobileGestures = (options: GestureOptions = {}) => {
     }
   }, [getTouchPoint, getDistance, onLongPress, longPressDelay]);
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLElement>) => {
     if (!startTouch.current) return;
 
     // Clear long press timer on move
@@ -109,7 +109,7 @@ export const useMobileGestures = (options: GestureOptions = {}) => {
     }
   }, [getTouchPoint, getDistance, onPinchZoom, onPan]);
 
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLElement>) => {
     if (!startTouch.current) return;
 
     // Clear long press timer
