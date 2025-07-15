@@ -4,13 +4,13 @@
 
   <url>
     <loc>https://nattyorjuicy.com/</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/merch</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -22,13 +22,13 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/how-it-works</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/experts</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -76,13 +76,13 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/login</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/signup</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -183,19 +183,25 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/83179dbb-6b7d-40dd-8532-49fbfcc4f253</loc>
-    <lastmod>2025-07-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://nattyorjuicy.com/influencer/68464dfc-50ef-4376-b403-de09d80c2abb</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nattyorjuicy.com/influencer/83179dbb-6b7d-40dd-8532-49fbfcc4f253</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nattyorjuicy.com/influencer/a3c7dcfc-34ef-4719-afd4-8ed1ff887ebc</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/0a90df1f-9e0a-4df4-ad57-524339f2f00a</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -225,7 +231,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/0a90df1f-9e0a-4df4-ad57-524339f2f00a</loc>
+    <loc>https://nattyorjuicy.com/influencer/9f4095f3-2a6a-4810-a0fe-d1b47630f963</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -243,13 +249,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/9f4095f3-2a6a-4810-a0fe-d1b47630f963</loc>
+    <loc>https://nattyorjuicy.com/influencer/29f3e4d0-10a7-4374-9f83-e19475993abe</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/29f3e4d0-10a7-4374-9f83-e19475993abe</loc>
+    <loc>https://nattyorjuicy.com/influencer/949f9477-bd32-4cec-8bd1-8108e17efefe</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -268,12 +274,6 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/0a4308c5-6c28-432e-af1b-7d15e99a4aaa</loc>
-    <lastmod>2025-07-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/949f9477-bd32-4cec-8bd1-8108e17efefe</loc>
     <lastmod>2025-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -327,13 +327,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/2342a0ec-3891-456f-b3cd-9d1451a45383</loc>
+    <loc>https://nattyorjuicy.com/influencer/4bc86e29-e320-46b7-927a-a37722364955</loc>
     <lastmod>2025-06-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/4bc86e29-e320-46b7-927a-a37722364955</loc>
+    <loc>https://nattyorjuicy.com/influencer/2342a0ec-3891-456f-b3cd-9d1451a45383</loc>
     <lastmod>2025-06-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -387,13 +387,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/46bcc186-fe8d-4dfb-b82b-b5c654fb89b2</loc>
+    <loc>https://nattyorjuicy.com/influencer/283a9b55-bbdc-4bcb-9098-2051bae6c484</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/b6d50c6d-2da1-4fba-be05-58627841fa74</loc>
+    <loc>https://nattyorjuicy.com/influencer/46bcc186-fe8d-4dfb-b82b-b5c654fb89b2</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -405,13 +405,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/9176433d-0011-42fe-a9ba-3a67bdf5abe4</loc>
+    <loc>https://nattyorjuicy.com/influencer/b6d50c6d-2da1-4fba-be05-58627841fa74</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/283a9b55-bbdc-4bcb-9098-2051bae6c484</loc>
+    <loc>https://nattyorjuicy.com/influencer/9176433d-0011-42fe-a9ba-3a67bdf5abe4</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -429,6 +429,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nattyorjuicy.com/influencer/1bfc8a2a-13f1-4f45-b423-8c0790aa585c</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nattyorjuicy.com/influencer/f2651e0f-a01c-4035-8099-19726ab404a7</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -441,55 +447,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/95b16554-482c-4d99-82b8-8ec3e31f611f</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/5278de82-4f4d-4b7f-b251-38ad5297fdd7</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/391ada86-8d8c-4d78-9fcc-74a03bfe3367</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/1bfc8a2a-13f1-4f45-b423-8c0790aa585c</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/1e263805-86e3-4548-a939-fd70397a4521</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://nattyorjuicy.com/influencer/bf9c9b67-c473-407a-bdcd-72143509f4e3</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/ce30f61e-53a6-4cb7-a0e2-8a77d51d8d7d</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/e4f05466-b5eb-411f-91d9-c3b2f8841462</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/6f2ed9be-14ad-4a46-96d3-42dae824f65b</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -501,13 +459,79 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/f5bb88aa-c95b-4e3e-8e57-419470293873</loc>
+    <loc>https://nattyorjuicy.com/influencer/391ada86-8d8c-4d78-9fcc-74a03bfe3367</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/5278de82-4f4d-4b7f-b251-38ad5297fdd7</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/ce30f61e-53a6-4cb7-a0e2-8a77d51d8d7d</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/95b16554-482c-4d99-82b8-8ec3e31f611f</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/e4f05466-b5eb-411f-91d9-c3b2f8841462</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/1e263805-86e3-4548-a939-fd70397a4521</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/2ce8299b-4949-4cb5-be93-c2b9113812c2</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/4221f4ac-67f7-446f-8058-8a5687134149</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/6f2ed9be-14ad-4a46-96d3-42dae824f65b</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/7565b42a-8a31-471d-bee6-6f554db8dd48</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/69fe8dbc-bb22-4add-88ac-1f804a3b4bf8</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/f69ef0a1-27ec-436e-8c0e-75a53f135d61</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/db3d5dd0-1d79-47d4-a90b-f5f920a45bc1</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -525,13 +549,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/2ce8299b-4949-4cb5-be93-c2b9113812c2</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/69fe8dbc-bb22-4add-88ac-1f804a3b4bf8</loc>
+    <loc>https://nattyorjuicy.com/influencer/f5bb88aa-c95b-4e3e-8e57-419470293873</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -543,19 +561,19 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/d6f08232-ab1e-4e54-89f3-48dbced3d3e9</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/9df02a52-4c08-4d3a-b95f-c51dadc537f1</loc>
+    <loc>https://nattyorjuicy.com/influencer/de7e7ea5-1d1d-4334-896e-e359c91ec83b</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/9fbdde14-d0e0-4077-8eed-1a348f80ad45</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/9df02a52-4c08-4d3a-b95f-c51dadc537f1</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -592,24 +610,6 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/202c8c1b-a367-460f-ae64-11922f0f5aab</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/f69ef0a1-27ec-436e-8c0e-75a53f135d61</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/7565b42a-8a31-471d-bee6-6f554db8dd48</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/db3d5dd0-1d79-47d4-a90b-f5f920a45bc1</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -669,6 +669,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nattyorjuicy.com/influencer/a4466e27-106e-4e74-a92c-d1163134be80</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nattyorjuicy.com/influencer/5f2f5107-b3a7-4e97-9f76-01f05f6a0806</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -681,19 +687,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/de7e7ea5-1d1d-4334-896e-e359c91ec83b</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://nattyorjuicy.com/influencer/eb39ca8d-76ab-4daa-a0e9-94f24e010dfd</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/dfa5da50-ebf1-45f9-a975-31b2811b6289</loc>
+    <loc>https://nattyorjuicy.com/influencer/d6f08232-ab1e-4e54-89f3-48dbced3d3e9</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -705,7 +705,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/77669ee6-6651-46f1-a145-1221e6af6695</loc>
+    <loc>https://nattyorjuicy.com/influencer/f95e0532-09d9-490c-ba93-188a9cba9259</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -723,13 +723,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/4db375e3-cb32-44e0-b37c-ccf3dab7cb98</loc>
+    <loc>https://nattyorjuicy.com/influencer/77669ee6-6651-46f1-a145-1221e6af6695</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/e95389cc-8e1b-4012-8b2c-e9a41b5897b5</loc>
+    <loc>https://nattyorjuicy.com/influencer/4db375e3-cb32-44e0-b37c-ccf3dab7cb98</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -747,6 +747,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nattyorjuicy.com/influencer/e95389cc-8e1b-4012-8b2c-e9a41b5897b5</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nattyorjuicy.com/influencer/60a238a9-1e52-4d91-b054-7568a145cbe0</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -754,12 +760,6 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/7b72b046-e5ea-4a47-b50c-adf4e2be1941</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/5d6eb37f-108f-4294-a4ad-b9cdbd64f7d9</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -783,7 +783,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/d0fba02c-acd8-458a-bcf2-97b6b730e350</loc>
+    <loc>https://nattyorjuicy.com/influencer/5d6eb37f-108f-4294-a4ad-b9cdbd64f7d9</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -795,7 +795,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/c2b951be-cf3a-4bb9-8a56-fdb887ac85a9</loc>
+    <loc>https://nattyorjuicy.com/influencer/d0fba02c-acd8-458a-bcf2-97b6b730e350</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -813,13 +813,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/7000ecfd-cdd5-40eb-8b5d-f14d3fe3f451</loc>
+    <loc>https://nattyorjuicy.com/influencer/c2b951be-cf3a-4bb9-8a56-fdb887ac85a9</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/e4c304a7-1dd7-42e8-b81e-701a56c75979</loc>
+    <loc>https://nattyorjuicy.com/influencer/7000ecfd-cdd5-40eb-8b5d-f14d3fe3f451</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -867,7 +867,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/5b839a0b-afe8-4810-8961-50e157ddc2ae</loc>
+    <loc>https://nattyorjuicy.com/influencer/e4c304a7-1dd7-42e8-b81e-701a56c75979</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -903,13 +903,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/3452d793-8a9b-4294-8d1b-298448061160</loc>
+    <loc>https://nattyorjuicy.com/influencer/5b839a0b-afe8-4810-8961-50e157ddc2ae</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/36ca6c34-6a14-46c4-a1c0-3c2676ef0aa5</loc>
+    <loc>https://nattyorjuicy.com/influencer/3452d793-8a9b-4294-8d1b-298448061160</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -933,6 +933,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nattyorjuicy.com/influencer/36ca6c34-6a14-46c4-a1c0-3c2676ef0aa5</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nattyorjuicy.com/influencer/5527e8b7-3b47-4fd7-897f-554da7874125</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -940,12 +946,6 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/e509eae1-de41-4f9d-8c0b-568b2527e606</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/4e0e98a5-8f55-4738-bdf3-16011cb75ce2</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -963,13 +963,19 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/4942ec0e-4f0f-4cb5-92b4-dc86c2858454</loc>
+    <loc>https://nattyorjuicy.com/influencer/4e0e98a5-8f55-4738-bdf3-16011cb75ce2</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://nattyorjuicy.com/influencer/4813d1b5-710e-42bc-91ae-3d824e3caba0</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/4942ec0e-4f0f-4cb5-92b4-dc86c2858454</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -993,7 +999,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/82498948-1c0a-45f8-8c53-87d1c89ed2cd</loc>
+    <loc>https://nattyorjuicy.com/influencer/3f705dba-aa18-4e69-b4bd-6e51138cc358</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -1005,19 +1011,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/3f705dba-aa18-4e69-b4bd-6e51138cc358</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://nattyorjuicy.com/influencer/a4466e27-106e-4e74-a92c-d1163134be80</loc>
-    <lastmod>2025-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://nattyorjuicy.com/influencer/d14130ee-43ab-4ea8-b077-cd2659cbbb5b</loc>
+    <lastmod>2025-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nattyorjuicy.com/influencer/82498948-1c0a-45f8-8c53-87d1c89ed2cd</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -1029,7 +1029,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/f95e0532-09d9-490c-ba93-188a9cba9259</loc>
+    <loc>https://nattyorjuicy.com/influencer/a2ddc104-aee8-4105-a172-531c8d2708f8</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -1041,7 +1041,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nattyorjuicy.com/influencer/a2ddc104-aee8-4105-a172-531c8d2708f8</loc>
+    <loc>https://nattyorjuicy.com/influencer/dfa5da50-ebf1-45f9-a975-31b2811b6289</loc>
     <lastmod>2025-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -1066,7 +1066,7 @@
   </url>
   <url>
     <loc>https://nattyorjuicy.com/terms</loc>
-    <lastmod>2025-07-10</lastmod>
+    <lastmod>2025-07-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
