@@ -57,16 +57,16 @@ export const useOptimizedExpertReviews = (influencerId?: string) => {
       return failureCount < 1;
     },
     // SAFE: Same logging as useExpertReviews
-    onSuccess: (data) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[OptimizedExpertReviews] Loaded ${data.length} reviews for ${influencerId}`);
+    ...(process.env.NODE_ENV === 'development' && {
+      meta: {
+        onSuccess: (data: OptimizedExpertReview[]) => {
+          console.log(`[OptimizedExpertReviews] Loaded ${data.length} reviews for ${influencerId}`);
+        },
+        onError: (error: Error) => {
+          console.error(`[OptimizedExpertReviews] Error loading reviews for ${influencerId}:`, error);
+        }
       }
-    },
-    onError: (error) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[OptimizedExpertReviews] Error loading reviews for ${influencerId}:`, error);
-      }
-    }
+    })
   });
 };
 

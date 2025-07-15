@@ -45,16 +45,16 @@ export const useExpertReviews = (influencerId?: string) => {
       return failureCount < 1;
     },
     // Add performance logging in development
-    onSuccess: (data) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[ExpertReviews] Loaded ${data.length} reviews for ${influencerId}`);
+    ...(process.env.NODE_ENV === 'development' && {
+      meta: {
+        onSuccess: (data: ExpertReview[]) => {
+          console.log(`[ExpertReviews] Loaded ${data.length} reviews for ${influencerId}`);
+        },
+        onError: (error: Error) => {
+          console.error(`[ExpertReviews] Error loading reviews for ${influencerId}:`, error);
+        }
       }
-    },
-    onError: (error) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[ExpertReviews] Error loading reviews for ${influencerId}:`, error);
-      }
-    }
+    })
   });
 };
 

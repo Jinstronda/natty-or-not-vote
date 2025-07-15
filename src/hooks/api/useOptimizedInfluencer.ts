@@ -57,7 +57,6 @@ export const useOptimizedInfluencer = (id: string) => {
       if (photosFinal.length === 0 && influencer.image) {
         photosFinal = [{
           id: 'legacy',
-          influencer_id: influencer.id,
           image_url: influencer.image,
           description: '',
           order: 0,

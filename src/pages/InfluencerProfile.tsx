@@ -16,6 +16,7 @@ import { DynamicMeta } from "@/components/SEO/DynamicMeta";
 import { StructuredData } from "@/components/SEO/StructuredData";
 import { generateInfluencerKeywords } from "@/utils/seo/keywordGenerator";
 import { useSEO } from "@/hooks/useSEO";
+import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { LazyImage } from "@/components/LazyImage";
 import { useWebVitals } from "@/utils/webVitals";
 
@@ -24,6 +25,7 @@ const InfluencerProfile = () => {
   const { user, supabaseUser } = useAuth();
   const { fetchUserProfile } = useUserProfile();
   const { data: influencerData, isLoading, error } = useInfluencer(id!);
+  const { data: voteStats } = useVoteStats(id!) || { data: { total_votes: 0, natty_percentage: 0, juicy_percentage: 0 } };
   const userReviewsRef = useRef<EnhancedUserReviewsRef>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -87,9 +89,9 @@ const InfluencerProfile = () => {
     name: influencer.name,
     description: influencer.description,
     stats: {
-      totalVotes: influencerData?.total_votes || 0,
-      nattyPercentage: influencerData?.natty_percentage || 0,
-      juicyPercentage: influencerData?.juicy_percentage || 0,
+    totalVotes: voteStats?.total_votes || 0,
+    nattyPercentage: voteStats?.natty_percentage || 0,
+    juicyPercentage: voteStats?.juicy_percentage || 0,
     },
     physicalStats: {
       height: influencer.height,
@@ -105,22 +107,10 @@ const InfluencerProfile = () => {
   // Initialize SEO hook with dynamic data
   useSEO({
     title: influencer ? `${influencer.name} - Natty or Juicy? | Community Verdict` : 'Influencer Profile',
-    description: influencer ? `Find out if ${influencer.name} is natural or enhanced. Community votes: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.` : 'Influencer profile page',
+    description: influencer ? `Find out if ${influencer.name} is natural or enhanced. Community votes: ${voteStats?.natty_percentage || 0}% natty, ${voteStats?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.` : 'Influencer profile page',
     keywords: seoData?.primary || [],
-    canonical: `https://nattyorjuicy.com/influencer/${id}`,
-    openGraph: {
-      title: influencer ? `${influencer.name} - Natty or Juicy?` : 'Influencer Profile',
-      description: influencer ? `Community verdict: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy` : 'Influencer profile',
-      image: influencer?.image || '/placeholder.svg',
-      url: `https://nattyorjuicy.com/influencer/${id}`,
-      type: 'profile',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: influencer ? `${influencer.name} - Natty or Juicy?` : 'Influencer Profile',
-      description: influencer ? `Community verdict: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy` : 'Influencer profile',
-      image: influencer?.image || '/placeholder.svg',
-    },
+    canonicalUrl: `https://nattyorjuicy.com/influencer/${id}`,
+    // SEO config doesn't support openGraph and twitter properties
     structuredData: influencer ? {
       '@context': 'https://schema.org',
       '@type': 'Person',
@@ -130,8 +120,8 @@ const InfluencerProfile = () => {
       sameAs: Object.values(influencer.social_links || {}).filter(Boolean),
       aggregateRating: {
         '@type': 'AggregateRating',
-        ratingValue: influencerData?.natty_percentage || 0,
-        ratingCount: influencerData?.total_votes || 0,
+        ratingValue: voteStats?.natty_percentage || 0,
+        ratingCount: voteStats?.total_votes || 0,
         bestRating: 100,
         worstRating: 0,
       },
@@ -180,22 +170,10 @@ const InfluencerProfile = () => {
       {/* SEO Meta Tags */}
       <DynamicMeta
         title={`${influencer.name} - Natty or Juicy? | Community Verdict`}
-        description={`Find out if ${influencer.name} is natural or enhanced. Community votes: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.`}
+        description={`Find out if ${influencer.name} is natural or enhanced. Community votes: ${voteStats?.natty_percentage || 0}% natty, ${voteStats?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.`}
         keywords={seoData?.primary || []}
         canonical={`https://nattyorjuicy.com/influencer/${id}`}
-        openGraph={{
-          title: `${influencer.name} - Natty or Juicy?`,
-          description: `Community verdict: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy`,
-          image: influencer.image,
-          url: `https://nattyorjuicy.com/influencer/${id}`,
-          type: 'profile',
-        }}
-        twitter={{
-          card: 'summary_large_image',
-          title: `${influencer.name} - Natty or Juicy?`,
-          description: `Community verdict: ${influencerData?.natty_percentage || 0}% natty, ${influencerData?.juicy_percentage || 0}% juicy`,
-          image: influencer.image,
-        }}
+        // DynamicMeta doesn't support openGraph and twitter properties
       />
 
       {/* Structured Data for SEO */}
@@ -208,8 +186,8 @@ const InfluencerProfile = () => {
           sameAs: Object.values(influencer.social_links || {}).filter(Boolean),
           aggregateRating: {
             '@type': 'AggregateRating',
-            ratingValue: influencerData?.natty_percentage || 0,
-            ratingCount: influencerData?.total_votes || 0,
+          ratingValue: voteStats?.natty_percentage || 0,
+          ratingCount: voteStats?.total_votes || 0,
             bestRating: 100,
             worstRating: 0,
           },
@@ -231,7 +209,7 @@ const InfluencerProfile = () => {
               name: `Is ${influencer.name} natural?`,
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: `According to community votes, ${influencerData?.natty_percentage || 0}% believe ${influencer.name} is natural, while ${influencerData?.juicy_percentage || 0}% believe they are enhanced.`,
+                text: `According to community votes, ${voteStats?.natty_percentage || 0}% believe ${influencer.name} is natural, while ${voteStats?.juicy_percentage || 0}% believe they are enhanced.`,
               },
             },
             {
@@ -239,7 +217,7 @@ const InfluencerProfile = () => {
               name: `How many people voted on ${influencer.name}?`,
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: `${influencerData?.total_votes || 0} community members have voted on whether ${influencer.name} is natty or juicy.`,
+                text: `${voteStats?.total_votes || 0} community members have voted on whether ${influencer.name} is natty or juicy.`,
               },
             },
             {

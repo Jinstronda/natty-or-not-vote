@@ -57,9 +57,7 @@ const MorphingSkeleton = memo(({ phase, progress }: { phase: string; progress: n
 MorphingSkeleton.displayName = 'MorphingSkeleton';
 
 // Lazy-loaded voting section for better performance
-const LazyVotingSection = React.lazy(() => 
-  import('./VotingSection').then(module => ({ default: module.VotingSection }))
-);
+const LazyVotingSection = React.lazy(() => import('./VotingSection'));
 
 const StateOfTheArtInfluencerCard = memo(({ 
   influencer, 
