@@ -334,7 +334,7 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
   onChangeInfluencer
 }) => {
   return (
-    <div className="relative p-6 min-h-[200px] flex flex-col items-center justify-center">
+    <div className="relative p-6 min-h-[300px] flex flex-col">
       {/* Admin Actions - Floating */}
       {isAdmin && (
         <div className="absolute top-4 right-4 z-20">
@@ -371,30 +371,36 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       )}
 
-      {/* Centered Expert Profile */}
-      <div className="flex flex-col items-center gap-4 text-center">
+      {/* Expert Profile Header */}
+      <div className="flex items-center gap-4 mb-4">
         {/* Profile Picture */}
-        <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg">
+        <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
-            expertName[0] || <User className="w-10 h-10" />
+            expertName[0] || <User className="w-8 h-8" />
           )}
         </div>
         
-        {/* Expert Name - Clickable */}
-        <div className="space-y-1">
-          {expert?.id ? (
-            <a href={`/experts/${expert.id}`} className="font-bold text-xl text-white drop-shadow-lg hover:underline block">
-              {expertName}
+        {/* Expert Name and Context */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {expert?.id ? (
+              <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
+                {expertName}
+              </a>
+            ) : (
+              <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
+            )}
+            <span className="text-white/70 text-sm">said about</span>
+            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-sm text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded">
+              {influencerName}
             </a>
-          ) : (
-            <span className="font-bold text-xl text-white drop-shadow-lg">{expertName}</span>
-          )}
+          </div>
           
           {/* Verdict Badge */}
           <div className={cn(
-            'px-4 py-2 rounded-full font-bold text-sm shadow-md',
+            'inline-flex px-3 py-1 rounded-full font-bold text-xs shadow-md',
             isNatty 
               ? 'bg-natty text-black' 
               : 'bg-juicy text-white'
@@ -402,6 +408,20 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
             {isNatty ? '💪 NATTY' : '💉 JUICY'}
           </div>
         </div>
+      </div>
+
+      {/* Read Full Review Link */}
+      {review.link_url && isValidUrl(review.link_url) && (
+        <div className="mb-3">
+          <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
+            <ExternalLink className="h-4 w-4" /> Read Full Review
+          </a>
+        </div>
+      )}
+
+      {/* Review Content */}
+      <div className="flex-1 text-base text-white drop-shadow-lg break-words whitespace-pre-line leading-relaxed">
+        {review.content}
       </div>
     </div>
   );
