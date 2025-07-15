@@ -216,7 +216,7 @@ const OptimizedInfluencerGrid = memo(({ searchTerm }: OptimizedInfluencerGridPro
       <div ref={loadMoreRef} className="flex flex-col items-center space-y-4 py-8">
         {isFetchingNextPage && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-[3px] border-primary border-t-transparent rounded-full animate-spin"></div>
             <span className="text-muted-foreground font-medium">
               Loading more amazing content...
             </span>
