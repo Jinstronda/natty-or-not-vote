@@ -1,9 +1,11 @@
 import * as React from "react"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+// Define types locally to avoid circular dependency
+type ToastProps = {
+  variant?: "default" | "destructive"
+} & React.ComponentPropsWithoutRef<"div">
+
+type ToastActionElement = React.ReactElement<any>
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
