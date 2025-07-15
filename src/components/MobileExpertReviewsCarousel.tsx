@@ -128,7 +128,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
     const influencer = influencers[review.influencer_id];
     const expertName = expert?.name || review.author || 'Unknown Expert';
     const influencerName = influencer?.name || 'Unknown Influencer';
-    const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
+    const isNatty = (review.rating ?? 0) >= 4;
 
     return (
       <Card className={cn('relative overflow-hidden border-2', className)}>
@@ -203,7 +203,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
               const influencer = influencers[review.influencer_id];
               const expertName = expert?.name || review.author || 'Unknown Expert';
               const influencerName = influencer?.name || 'Unknown Influencer';
-              const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
+              const isNatty = (review.rating ?? 0) >= 4;
               const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
 
               return (
