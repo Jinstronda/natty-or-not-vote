@@ -310,7 +310,7 @@ const SuspenseInfluencerGrid = ({ searchTerm }: SuspenseInfluencerGridProps) => 
           {hasNextPage && !isFetchingNextPage && allInfluencers.length > 0 && (
             <Button 
               variant="outline" 
-              onClick={() => startTransition(() => fetchNextPage())}
+              onClick={() => startTransition(() => { fetchNextPage(); })}
               className="mt-4"
             >
               Load More

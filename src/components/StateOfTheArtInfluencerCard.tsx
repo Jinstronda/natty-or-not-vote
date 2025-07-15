@@ -23,6 +23,7 @@ export interface InfluencerCardProps {
   };
   index?: number; // For staggered animations
   onLoadComplete?: (metrics: any) => void;
+  onReviewSubmitted?: () => void;
 }
 
 // Advanced skeleton with morphing capabilities
@@ -62,7 +63,8 @@ const LazyVotingSection = React.lazy(() => import('./VotingSection'));
 const StateOfTheArtInfluencerCard = memo(({ 
   influencer, 
   index = 0, 
-  onLoadComplete 
+  onLoadComplete,
+  onReviewSubmitted
 }: InfluencerCardProps) => {
   const { user } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -312,10 +314,8 @@ const StateOfTheArtInfluencerCard = memo(({
                 </div>
               }>
                 <LazyVotingSection 
-                  nattyPercentage={nattyPercentage}
-                  juicyPercentage={juicyPercentage}
-                  totalVotes={totalVotes}
-                  isAnimated={isComplete}
+                  influencerId={influencer.id}
+                  onReviewSubmitted={onReviewSubmitted}
                 />
               </Suspense>
             )}
