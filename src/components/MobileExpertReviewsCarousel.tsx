@@ -371,10 +371,10 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       )}
 
-      {/* Expert Profile Header */}
-      <div className="flex items-center gap-4 mb-4">
+      {/* Expert Profile Header - Same as single review */}
+      <div className="flex items-start gap-4 mb-4">
         {/* Profile Picture */}
-        <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg">
+        <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg flex-shrink-0">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
@@ -382,20 +382,18 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
           )}
         </div>
         
-        {/* Expert Name and Context */}
-        <div className="flex-1">
-          {/* Expert Name - Prominently displayed and clickable */}
-          <div className="mb-2">
+        {/* Expert Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             {expert?.id ? (
-              <a href={`/experts/${expert.id}`} className="font-bold text-xl text-white drop-shadow-lg hover:underline hover:text-blue-300 transition-colors">
+              <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
                 {expertName}
               </a>
             ) : (
-              <span className="font-bold text-xl text-white drop-shadow-lg">{expertName}</span>
+              <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
             )}
           </div>
           
-          {/* Context */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-white/70 text-sm">said about</span>
             <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-sm text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded">
@@ -415,19 +413,19 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       </div>
 
+      {/* Review Content */}
+      <div className="flex-1 text-base text-white drop-shadow-lg break-words whitespace-pre-line leading-relaxed">
+        {review.content}
+      </div>
+
       {/* Read Full Review Link */}
       {review.link_url && isValidUrl(review.link_url) && (
-        <div className="mb-3">
+        <div className="mt-3">
           <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
             <ExternalLink className="h-4 w-4" /> Read Full Review
           </a>
         </div>
       )}
-
-      {/* Review Content */}
-      <div className="flex-1 text-base text-white drop-shadow-lg break-words whitespace-pre-line leading-relaxed">
-        {review.content}
-      </div>
     </div>
   );
 };
