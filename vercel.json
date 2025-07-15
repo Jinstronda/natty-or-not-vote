@@ -10,6 +10,7 @@
     },
     {
       "src": "/sitemap\\.xml",
+      "dest": "/sitemap.xml",
       "headers": [
         {
           "key": "Content-Type",
@@ -19,6 +20,7 @@
     },
     {
       "src": "/sitemap-index\\.xml",
+      "dest": "/sitemap-index.xml",
       "headers": [
         {
           "key": "Content-Type",
@@ -28,6 +30,7 @@
     },
     {
       "src": "/sitemaps/(.*)\\.xml",
+      "dest": "/sitemaps/$1.xml",
       "headers": [
         {
           "key": "Content-Type",
@@ -37,6 +40,7 @@
     },
     {
       "src": "/robots\\.txt",
+      "dest": "/robots.txt",
       "headers": [
         {
           "key": "Content-Type",
