@@ -334,7 +334,7 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
   onChangeInfluencer
 }) => {
   return (
-    <div className="relative p-6 min-h-[500px] flex flex-col">
+    <div className="relative p-6 min-h-[200px] flex flex-col items-center justify-center">
       {/* Admin Actions - Floating */}
       {isAdmin && (
         <div className="absolute top-4 right-4 z-20">
@@ -371,48 +371,30 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       )}
 
-      {/* Expert Header - Compact */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-2 border-white/20">
+      {/* Centered Expert Profile */}
+      <div className="flex flex-col items-center gap-4 text-center">
+        {/* Profile Picture */}
+        <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden border-3 border-white/30 shadow-lg">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
-            expertName[0] || <User className="w-7 h-7" />
+            expertName[0] || <User className="w-10 h-10" />
           )}
         </div>
         
-        <div className="flex-1 min-w-0">
-          <div className="mb-1">
-            {expert?.id ? (
-              <a href={`/experts/${expert.id}`} className="font-bold text-lg text-white drop-shadow-lg hover:underline">
-                {expertName}
-              </a>
-            ) : (
-              <span className="font-bold text-lg text-white drop-shadow-lg">{expertName}</span>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <span className="text-white/70">analyzing</span>
-            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-white hover:underline bg-white/20 px-2 py-0.5 rounded-full">
-              {influencerName}
+        {/* Expert Name - Clickable */}
+        <div className="space-y-1">
+          {expert?.id ? (
+            <a href={`/experts/${expert.id}`} className="font-bold text-xl text-white drop-shadow-lg hover:underline block">
+              {expertName}
             </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Review Content - Main Focus */}
-      <div className="flex-1 mb-6">
-        <div className="text-base leading-relaxed break-words whitespace-pre-line text-white drop-shadow-sm font-medium">
-          {review.content}
-        </div>
-      </div>
-      
-      {/* Bottom Section - Verdict & Actions */}
-      <div className="space-y-3">
-        {/* Verdict Badge */}
-        <div className="flex justify-center">
+          ) : (
+            <span className="font-bold text-xl text-white drop-shadow-lg">{expertName}</span>
+          )}
+          
+          {/* Verdict Badge */}
           <div className={cn(
-            'px-6 py-3 rounded-full font-bold text-lg shadow-lg',
+            'px-4 py-2 rounded-full font-bold text-sm shadow-md',
             isNatty 
               ? 'bg-natty text-black' 
               : 'bg-juicy text-white'
@@ -420,21 +402,6 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
             {isNatty ? '💪 NATTY' : '💉 JUICY'}
           </div>
         </div>
-        
-        {/* External Link */}
-        {review.link_url && isValidUrl(review.link_url) && (
-          <div className="flex justify-center">
-            <a 
-              href={review.link_url} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-full transition-colors duration-200 backdrop-blur-sm"
-            >
-              <ExternalLink className="h-4 w-4" /> 
-              Read Full Analysis
-            </a>
-          </div>
-        )}
       </div>
     </div>
   );
