@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Keep session alive even if profile fetch fails - this prevents logout on refresh
             console.log('⚠️ Auth: Profile fetch failed but keeping session alive');
             setUser({
-              ...session.user,
+              id: session.user.id,
               email: session.user.email || '',
               username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
               role: 'user'

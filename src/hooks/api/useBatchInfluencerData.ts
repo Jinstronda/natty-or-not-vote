@@ -19,6 +19,7 @@ interface BatchInfluencerData {
   expert_reviews: Array<{
     id: string;
     rating?: number;
+    natty_or_not?: string;
   }>;
 }
 
@@ -55,7 +56,7 @@ export const useBatchInfluencerData = (influencerIds: string[]) => {
       // Batch fetch all expert reviews in one query
       const { data: expertReviews, error: expertError } = await supabase
         .from('expert_reviews')
-        .select('influencer_id, rating, id')
+        .select('influencer_id, rating, natty_or_not')
         .in('influencer_id', influencerIds);
 
       if (expertError) throw expertError;
@@ -89,7 +90,7 @@ export const useBatchInfluencerData = (influencerIds: string[]) => {
         
         const expertReviewsForInfluencer = expertsByInfluencer[influencer.id] || [];
         const expertNattyCount = expertReviewsForInfluencer.filter(review => 
-          (review.rating ?? 0) >= 4
+          (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty')
         ).length;
         const expertJuicyCount = expertReviewsForInfluencer.length - expertNattyCount;
         
@@ -109,10 +110,7 @@ export const useBatchInfluencerData = (influencerIds: string[]) => {
             natty_percentage: nattyPercentage,
             juicy_percentage: juicyPercentage,
           },
-          expert_reviews: expertReviewsForInfluencer.map(review => ({
-            id: review.id,
-            rating: review.rating
-          })),
+          expert_reviews: expertReviewsForInfluencer,
         };
       }) || [];
     },

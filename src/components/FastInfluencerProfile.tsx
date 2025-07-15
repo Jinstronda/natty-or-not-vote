@@ -68,7 +68,7 @@ const FastInfluencerProfile = () => {
     claimed_status: influencerData.claimed_status || '',
     description: influencerData.description || '',
     social_links: (influencerData.social_links as { instagram?: string; youtube?: string; tiktok?: string }) || {},
-    photos: influencerData.photos?.map(photo => ({ ...photo, influencer_id: influencerData.id })) || []
+    photos: influencerData.photos || []
   } : null;
 
   // Progressive loading state
@@ -114,7 +114,7 @@ const FastInfluencerProfile = () => {
           
           {/* Left Column - Influencer Info */}
           <div className="lg:col-span-1">
-            <div className={`transition-all duration-300 ${loadingStage !== 'basic' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className={`transition-all duration-300 ${loadingStage !== 'initial' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <Suspense fallback={<div className="h-96 bg-muted animate-pulse rounded-lg" />}>
                 <InfluencerInfo influencer={influencer} />
               </Suspense>
