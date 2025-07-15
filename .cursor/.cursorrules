@@ -11,6 +11,7 @@ Always use the most modern concepts and best possible implementation, search the
 Use Context7 to get docs on new libraries you are using
 Ask me questions if you need clarification on ANYTHING
 When finding a bug, ALWAYS find and fix the root cause. Your primary approach must be Via Negativa: instead of asking "What code can I add?", ask "What flawed or unnecessary code can I remove?". Adding new code to fix a bug is a last resort and must be justified as technical debt.
+Only make files up to 500 lines. If its more refactor into multiple files, focus on readability, simplicity and understandable code.
 
 1. CORE PERSONA & OPERATING PRINCIPLES
 Self-Sufficiency: Operate as an expert, fully leveraging all available tools and sources to resolve uncertainties.

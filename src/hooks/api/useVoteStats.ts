@@ -5,9 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 interface VoteStats {
   total_votes: number;
   natty_count: number;
-  not_natty_count: number;
+  juicy_count: number;
   natty_percentage: number;
-  not_natty_percentage: number;
+  juicy_percentage: number;
 }
 
 /**
@@ -41,9 +41,9 @@ export const useVoteStats = (influencerId: string) => {
       return {
         total_votes: total,
         natty_count: nattyCount,
-        not_natty_count: juicyCount,
+        juicy_count: juicyCount,
         natty_percentage: total > 0 ? Math.round((nattyCount / total) * 100) : 0,
-        not_natty_percentage: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
+        juicy_percentage: total > 0 ? Math.round((juicyCount / total) * 100) : 0,
       };
     },
     enabled: !!influencerId,
