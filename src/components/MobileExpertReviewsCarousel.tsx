@@ -384,14 +384,19 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         
         {/* Expert Name and Context */}
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {/* Expert Name - Prominently displayed and clickable */}
+          <div className="mb-2">
             {expert?.id ? (
-              <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
+              <a href={`/experts/${expert.id}`} className="font-bold text-xl text-white drop-shadow-lg hover:underline hover:text-blue-300 transition-colors">
                 {expertName}
               </a>
             ) : (
-              <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
+              <span className="font-bold text-xl text-white drop-shadow-lg">{expertName}</span>
             )}
+          </div>
+          
+          {/* Context */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-white/70 text-sm">said about</span>
             <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-sm text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded">
               {influencerName}
