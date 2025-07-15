@@ -45,20 +45,8 @@ const Index = () => {
     title: 'Natty or Not? - Community Verdict on Fitness Influencers | Natural vs Enhanced',
     description: 'Find out if your favorite fitness influencer is natural or enhanced. Community-driven platform to determine if influencers are natty or juicy. Vote, review, and discover the truth.',
     keywords: mainKeywords,
-    canonical: 'https://nattyorjuicy.com/',
-    openGraph: {
-      title: 'Natty or Not? - Community Verdict on Fitness Influencers',
-      description: 'Community-driven platform to determine if fitness influencers are natural or enhanced. Vote, review, and discover the truth.',
-      image: 'https://nattyorjuicy.com/og-image.jpg',
-      url: 'https://nattyorjuicy.com/',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Natty or Not? - Community Verdict on Fitness Influencers',
-      description: 'Community-driven platform to determine if fitness influencers are natural or enhanced.',
-      image: 'https://nattyorjuicy.com/og-image.jpg',
-    },
+    canonicalUrl: 'https://nattyorjuicy.com/',
+    // SEO config doesn't support openGraph and twitter properties
   });
 
   return (
