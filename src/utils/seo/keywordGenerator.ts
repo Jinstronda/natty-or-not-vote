@@ -49,16 +49,23 @@ export function generateInfluencerKeywords(input: InfluencerKeywordInput): SEOKe
     'fitness authenticity'
   ];
 
-  // Name-based keywords
+  // Name-based keywords - optimized for "is [name] juicy" searches
   const nameKeywords = [
+    `is ${name} juicy`,
+    `is ${name} natural`,
     `${name} natty or juicy`,
     `${name} natural or enhanced`,
+    `is ${name} natty`,
+    `is ${name} on steroids`,
     `${name} steroid use`,
     `${name} natural bodybuilding`,
     `${name} fitness analysis`,
     `${name} community verdict`,
-    `is ${name} natural`,
-    `is ${name} on steroids`
+    `${name} natty or not`,
+    `${name} enhanced or natural`,
+    `${name} juicy or natty`,
+    `${name} peds`,
+    `${name} fake natty`
   ];
 
   // Stats-based keywords
@@ -70,16 +77,23 @@ export function generateInfluencerKeywords(input: InfluencerKeywordInput): SEOKe
     `${name} juicy percentage`
   ] : [];
 
-  // Long-tail keywords
+  // Long-tail keywords - targeting specific search patterns
   const longTailKeywords = [
     `is ${name} natural bodybuilder or enhanced`,
+    `is ${name} juicy or natty community verdict`,
     `${name} steroid use community analysis`,
     `${name} natural vs enhanced debate`,
     `${name} fitness transformation natural`,
     `${name} bodybuilding natural claims`,
     `${name} enhanced athlete discussion`,
     `${name} natty or not community verdict`,
-    `${name} natural bodybuilding authenticity`
+    `${name} natural bodybuilding authenticity`,
+    `${name} fake natty accusations`,
+    `${name} peds usage analysis`,
+    `${name} natural genetics vs steroids`,
+    `${name} lifetime natural claims`,
+    `${name} juicy evidence discussion`,
+    `${name} enhanced physique analysis`
   ];
 
   // Combine all keywords
@@ -115,11 +129,14 @@ function generateTitles(input: InfluencerKeywordInput): string[] {
   const { name, stats, trending, controversial } = input;
   
   const titles = [
-    `${name} - Natty or Juicy? Community Verdict`,
+    `Is ${name} Juicy? ${stats?.nattyPercentage || 0}% Natty | Community Verdict`,
+    `${name} - Natty or Juicy? Community Analysis`,
     `Is ${name} Natural? Expert Analysis & Community Votes`,
     `${name} Natural vs Enhanced - Complete Analysis`,
     `${name} Steroid Use Analysis | Natty or Juicy`,
-    `${name} - Natural Bodybuilder or Enhanced Athlete?`
+    `${name} - Natural Bodybuilder or Enhanced Athlete?`,
+    `${name} Natty or Not? ${stats?.totalVotes || 0} Votes Cast`,
+    `Is ${name} Enhanced? Community Verdict & Analysis`
   ];
 
   if (stats) {

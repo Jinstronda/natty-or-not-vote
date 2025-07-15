@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
@@ -12,20 +11,18 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InfluencerProfileSkeleton } from "@/components/InfluencerProfileSkeleton";
 import { Influencer } from "@/types/vote";
-import { DynamicMeta } from "@/components/SEO/DynamicMeta";
-import { StructuredData } from "@/components/SEO/StructuredData";
-import { generateInfluencerKeywords } from "@/utils/seo/keywordGenerator";
-import { useSEO } from "@/hooks/useSEO";
 import { useVoteStats } from "@/hooks/api/useVoteStats";
 import { LazyImage } from "@/components/LazyImage";
 import { useWebVitals } from "@/utils/webVitals";
+import { useInfluencerRouting } from "@/hooks/useInfluencerRouting";
+import { EnhancedSEO } from "@/components/SEO/EnhancedSEO";
 
 const InfluencerProfile = () => {
-  const { id } = useParams();
   const { user, supabaseUser } = useAuth();
   const { fetchUserProfile } = useUserProfile();
-  const { data: influencerData, isLoading, error } = useInfluencer(id!);
-  const { data: voteStats } = useVoteStats(id!) || { data: { total_votes: 0, natty_percentage: 0, juicy_percentage: 0 } };
+  const { id, name, isLoading: routingLoading, error: routingError } = useInfluencerRouting();
+  const { data: influencerData, isLoading, error } = useInfluencer(id);
+  const { data: voteStats } = useVoteStats(id) || { data: { total_votes: 0, natty_percentage: 0, juicy_percentage: 0 } };
   const userReviewsRef = useRef<EnhancedUserReviewsRef>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -65,8 +62,9 @@ const InfluencerProfile = () => {
   
   // Debug logs
   console.log('[InfluencerProfile] id:', id);
+  console.log('[InfluencerProfile] name:', name);
   console.log('[InfluencerProfile] influencerData:', influencerData);
-  console.log('[InfluencerProfile] error:', error);
+  console.log('[InfluencerProfile] error:', error || routingError);
 
   // Transform the data to match the Influencer type with all required properties
   const influencer: Influencer | null = influencerData ? {
@@ -84,81 +82,21 @@ const InfluencerProfile = () => {
 
   console.log('[InfluencerProfile] influencer:', influencer);
   
-  // Generate SEO data when influencer data is available
-  const seoData = influencer ? generateInfluencerKeywords({
-    name: influencer.name,
-    description: influencer.description,
-    stats: {
-    totalVotes: voteStats?.total_votes || 0,
-    nattyPercentage: voteStats?.natty_percentage || 0,
-    juicyPercentage: voteStats?.juicy_percentage || 0,
-    },
-    physicalStats: {
-      height: influencer.height,
-      weight: influencer.weight,
-      yearsTraining: influencer.years_training,
-    },
-    claimedStatus: influencer.claimed_status,
-    socialFollowing: 0, // Could be enhanced with actual social media data
-    trending: influencerData?.trending || false,
-    controversial: influencerData?.controversial || false,
-  }) : null;
-
-  // Initialize SEO hook with dynamic data
-  useSEO({
-    title: influencer ? `${influencer.name} - Natty or Juicy? | Community Verdict` : 'Influencer Profile',
-    description: influencer ? `Find out if ${influencer.name} is natural or enhanced. Community votes: ${voteStats?.natty_percentage || 0}% natty, ${voteStats?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.` : 'Influencer profile page',
-    keywords: seoData?.primary || [],
-    canonicalUrl: `https://nattyorjuicy.com/influencer/${id}`,
-    // SEO config doesn't support openGraph and twitter properties
-    structuredData: influencer ? {
-      '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: influencer.name,
-      description: influencer.description,
-      image: influencer.image,
-      sameAs: Object.values(influencer.social_links || {}).filter(Boolean),
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: voteStats?.natty_percentage || 0,
-        ratingCount: voteStats?.total_votes || 0,
-        bestRating: 100,
-        worstRating: 0,
-      },
-    } : undefined,
-  });
-  
-  if (isLoading) {
-    return (
-      <>
-        <DynamicMeta
-          title="Loading Profile... | Natty or Juicy"
-          description="Loading influencer profile page"
-          robots="noindex, nofollow"
-        />
-        <InfluencerProfileSkeleton />
-      </>
-    );
+  if (isLoading || routingLoading) {
+    return <InfluencerProfileSkeleton />;
   }
 
-  if (error || !influencer) {
+  if (error || routingError || !influencer) {
     return (
-      <>
-        <DynamicMeta
-          title="Influencer Not Found | Natty or Juicy"
-          description="The influencer you're looking for doesn't exist or has been removed."
-          robots="noindex, nofollow"
-        />
-        <div className="min-h-screen bg-background">
-          <Header />
-          <div className="container mx-auto px-4 py-8">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold">Influencer not found</h1>
-              <p className="text-muted-foreground">The influencer you're looking for doesn't exist.</p>
-            </div>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Influencer not found</h1>
+            <p className="text-muted-foreground">The influencer you're looking for doesn't exist.</p>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -167,96 +105,10 @@ const InfluencerProfile = () => {
 
   return (
     <>
-      {/* SEO Meta Tags */}
-      <DynamicMeta
-        title={`${influencer.name} - Natty or Juicy? | Community Verdict`}
-        description={`Find out if ${influencer.name} is natural or enhanced. Community votes: ${voteStats?.natty_percentage || 0}% natty, ${voteStats?.juicy_percentage || 0}% juicy. See expert reviews and user opinions.`}
-        keywords={seoData?.primary || []}
-        canonical={`https://nattyorjuicy.com/influencer/${id}`}
-        // DynamicMeta doesn't support openGraph and twitter properties
-      />
-
-      {/* Structured Data for SEO */}
-      <StructuredData
-        type="Person"
-        data={{
-          name: influencer.name,
-          description: influencer.description || `${influencer.name} fitness profile and community verdict`,
-          image: influencer.image,
-          sameAs: Object.values(influencer.social_links || {}).filter(Boolean),
-          aggregateRating: {
-            '@type': 'AggregateRating',
-          ratingValue: voteStats?.natty_percentage || 0,
-          ratingCount: voteStats?.total_votes || 0,
-            bestRating: 100,
-            worstRating: 0,
-          },
-          knowsAbout: ['Fitness', 'Bodybuilding', 'Natural Training', 'Strength Training'],
-          occupation: {
-            '@type': 'Occupation',
-            name: 'Fitness Influencer',
-          },
-        }}
-      />
-
-      {/* FAQ Structured Data */}
-      <StructuredData
-        type="FAQPage"
-        data={{
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: `Is ${influencer.name} natural?`,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: `According to community votes, ${voteStats?.natty_percentage || 0}% believe ${influencer.name} is natural, while ${voteStats?.juicy_percentage || 0}% believe they are enhanced.`,
-              },
-            },
-            {
-              '@type': 'Question',
-              name: `How many people voted on ${influencer.name}?`,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: `${voteStats?.total_votes || 0} community members have voted on whether ${influencer.name} is natty or juicy.`,
-              },
-            },
-            {
-              '@type': 'Question',
-              name: `What are ${influencer.name}'s stats?`,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: `${influencer.name} is ${influencer.height || 'unknown height'}, weighs ${influencer.weight || 'unknown weight'}, and has been training for ${influencer.years_training || 'unknown years'}.`,
-              },
-            },
-          ],
-        }}
-      />
-
-      {/* Breadcrumb Structured Data */}
-      <StructuredData
-        type="BreadcrumbList"
-        data={{
-          itemListElement: [
-            {
-              '@type': 'ListItem',
-              position: 1,
-              name: 'Home',
-              item: 'https://nattyorjuicy.com',
-            },
-            {
-              '@type': 'ListItem',
-              position: 2,
-              name: 'Influencers',
-              item: 'https://nattyorjuicy.com/#influencers',
-            },
-            {
-              '@type': 'ListItem',
-              position: 3,
-              name: influencer.name,
-              item: `https://nattyorjuicy.com/influencer/${id}`,
-            },
-          ],
-        }}
+      {/* Enhanced SEO Component */}
+      <EnhancedSEO 
+        influencer={influencer}
+        voteStats={voteStats}
       />
 
       <div className="min-h-screen bg-background">
@@ -264,9 +116,9 @@ const InfluencerProfile = () => {
         
         {/* SEO-optimized content structure */}
         <div className="container mx-auto px-4 py-8">
-          {/* Hidden h1 for SEO */}
+          {/* Hidden h1 for SEO - optimized for "is [name] juicy" searches */}
           <h1 className="sr-only">
-            {influencer.name} - Natty or Juicy? Community Verdict on Natural vs Enhanced Status
+            Is {influencer.name} Juicy? {voteStats?.natty_percentage || 0}% Natty | Community Verdict on Natural vs Enhanced Status
           </h1>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -278,9 +130,9 @@ const InfluencerProfile = () => {
             </div>
             
             <div className="lg:col-span-2 space-y-8">
-              <VotingSection influencerId={id!} onReviewSubmitted={handleReviewSubmitted} />
-              <ExpertReviews influencerId={id!} />
-              <EnhancedUserReviews ref={userReviewsRef} influencerId={id!} />
+              <VotingSection influencerId={id} onReviewSubmitted={handleReviewSubmitted} />
+              <ExpertReviews influencerId={id} />
+              <EnhancedUserReviews ref={userReviewsRef} influencerId={id} />
             </div>
           </div>
         </div>
