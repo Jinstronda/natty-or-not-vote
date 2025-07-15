@@ -3,6 +3,12 @@
   "cleanUrls": true,
   "routes": [
     {
+      "src": "/(sitemap.*\\.xml|robots\\.txt)",
+      "headers": {
+        "Content-Type": "application/xml; charset=utf-8"
+      }
+    },
+    {
       "handle": "filesystem"
     },
     {
