@@ -345,10 +345,8 @@ export const LazyImage: React.FC<LazyImageProps> = ({
           decoding="async"
           fetchPriority={fetchPriority}
           style={{
-            // Prevent layout shift
             maxWidth: '100%',
             height: 'auto',
-            ...props.style,
           }}
         />
       )}
