@@ -374,7 +374,7 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
       {/* Centered Expert Profile */}
       <div className="flex flex-col items-center gap-4 text-center">
         {/* Profile Picture */}
-        <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden border-3 border-white/30 shadow-lg">
+        <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
