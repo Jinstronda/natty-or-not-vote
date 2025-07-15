@@ -249,7 +249,7 @@ export const SchemaGenerator: React.FC<SchemaGeneratorProps> = ({
   // Render the actual structured data and optional preview
   return (
     <>
-      {schema && <StructuredData data={schema} id={`generated-${type.toLowerCase()}`} />}
+      {schema && <StructuredData type={type} data={schema} id={`generated-${type.toLowerCase()}`} />}
       {renderPreview()}
       {children}
     </>
