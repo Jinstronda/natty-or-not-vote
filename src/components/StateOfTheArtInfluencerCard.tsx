@@ -23,7 +23,6 @@ export interface InfluencerCardProps {
   };
   index?: number; // For staggered animations
   onLoadComplete?: (metrics: any) => void;
-  onReviewSubmitted?: () => void;
 }
 
 // Advanced skeleton with morphing capabilities
@@ -58,13 +57,14 @@ const MorphingSkeleton = memo(({ phase, progress }: { phase: string; progress: n
 MorphingSkeleton.displayName = 'MorphingSkeleton';
 
 // Lazy-loaded voting section for better performance
-const LazyVotingSection = React.lazy(() => import('./VotingSection'));
+const LazyVotingSection = React.lazy(() => 
+  import('./VotingSection').then(module => ({ default: module.VotingSection }))
+);
 
 const StateOfTheArtInfluencerCard = memo(({ 
   influencer, 
   index = 0, 
-  onLoadComplete,
-  onReviewSubmitted
+  onLoadComplete 
 }: InfluencerCardProps) => {
   const { user } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -314,8 +314,10 @@ const StateOfTheArtInfluencerCard = memo(({
                 </div>
               }>
                 <LazyVotingSection 
-                  influencerId={influencer.id}
-                  onReviewSubmitted={onReviewSubmitted}
+                  nattyPercentage={nattyPercentage}
+                  juicyPercentage={juicyPercentage}
+                  totalVotes={totalVotes}
+                  isAnimated={isComplete}
                 />
               </Suspense>
             )}

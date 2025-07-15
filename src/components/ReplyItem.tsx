@@ -186,6 +186,7 @@ const ReplyItem: React.FC<ReplyItemProps> = memo(({
                 username={reply.user.username}
                 userId={reply.user_id}
                 profilePicture={reply.user.profile_picture_url}
+                size="sm"
               />
             ) : (
               <div className="flex items-center gap-2">

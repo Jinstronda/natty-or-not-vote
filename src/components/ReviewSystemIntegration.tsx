@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import EnhancedUserReviews from './EnhancedUserReviews';
+import { EnhancedUserReviews } from './EnhancedUserReviews';
 import { ProgressiveReviewSkeleton, ErrorState } from './loading/UnifiedSkeleton';
 import { withLoadingSafeguards, loadingCircuitBreaker, performanceMonitor } from '@/utils/loadingValidation';
 

@@ -84,8 +84,8 @@ export class SEOPerformanceMonitor {
 
   private sendToAnalytics(metric: string, value: number, rating?: string) {
     // Google Analytics 4 Event
-    if (typeof gtag_seo !== 'undefined') {
-      gtag_seo('event', 'web_vitals', {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'web_vitals', {
         metric_name: metric,
         metric_value: value,
         metric_rating: rating || this.getRating(metric, value)
@@ -190,5 +190,5 @@ export const initializeSEOMonitoring = () => {
 
 // Export types for TypeScript
 declare global {
-  function gtag_seo(...args: any[]): void;
-}
+  function gtag(...args: any[]): void;
+} 

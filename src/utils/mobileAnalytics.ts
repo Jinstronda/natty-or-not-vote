@@ -98,7 +98,7 @@ class MobileAnalyticsEngine {
       connectionType: nav.connection?.effectiveType || 'unknown',
       memorySize: nav.deviceMemory,
       cores: nav.hardwareConcurrency,
-      battery: undefined // Remove async call
+      battery: this.getBatteryInfo()
     };
   }
 

@@ -128,7 +128,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
     const influencer = influencers[review.influencer_id];
     const expertName = expert?.name || review.author || 'Unknown Expert';
     const influencerName = influencer?.name || 'Unknown Influencer';
-    const isNatty = (review.rating ?? 0) >= 4;
+    const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
 
     return (
       <Card className={cn('relative overflow-hidden border-2', className)}>
@@ -203,7 +203,7 @@ export const MobileExpertReviewsCarousel: React.FC<MobileExpertReviewsCarouselPr
               const influencer = influencers[review.influencer_id];
               const expertName = expert?.name || review.author || 'Unknown Expert';
               const influencerName = influencer?.name || 'Unknown Influencer';
-              const isNatty = (review.rating ?? 0) >= 4;
+              const isNatty = (review.rating ?? 0) >= 4 || (review.natty_or_not?.toLowerCase() === 'natty');
               const cardColor = isNatty ? 'bg-natty/10 border-natty' : 'bg-juicy/10 border-juicy';
 
               return (
@@ -334,7 +334,7 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
   onChangeInfluencer
 }) => {
   return (
-    <div className="relative p-6 min-h-[300px] flex flex-col">
+    <div className="relative p-6 min-h-[500px] flex flex-col">
       {/* Admin Actions - Floating */}
       {isAdmin && (
         <div className="absolute top-4 right-4 z-20">
@@ -371,39 +371,48 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
         </div>
       )}
 
-      {/* Expert Profile Header - Same as single review */}
-      <div className="flex items-start gap-4 mb-4">
-        {/* Profile Picture */}
-        <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-[3px] border-white/30 shadow-lg flex-shrink-0">
+      {/* Expert Header - Compact */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold overflow-hidden border-2 border-white/20">
           {expert?.profile_picture_url ? (
             <img src={expert.profile_picture_url} alt={expertName} className="w-full h-full object-cover rounded-full" />
           ) : (
-            expertName[0] || <User className="w-8 h-8" />
+            expertName[0] || <User className="w-7 h-7" />
           )}
         </div>
         
-        {/* Expert Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <div className="mb-1">
             {expert?.id ? (
-              <a href={`/experts/${expert.id}`} className="font-semibold text-lg text-white drop-shadow hover:underline">
+              <a href={`/experts/${expert.id}`} className="font-bold text-lg text-white drop-shadow-lg hover:underline">
                 {expertName}
               </a>
             ) : (
-              <span className="font-semibold text-lg text-white drop-shadow">{expertName}</span>
+              <span className="font-bold text-lg text-white drop-shadow-lg">{expertName}</span>
             )}
           </div>
-          
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="text-white/70 text-sm">said about</span>
-            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-sm text-white drop-shadow hover:underline bg-white/10 px-2 py-1 rounded">
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-white/70">analyzing</span>
+            <a href={`/influencer/${review.influencer_id}`} className="font-semibold text-white hover:underline bg-white/20 px-2 py-0.5 rounded-full">
               {influencerName}
             </a>
           </div>
-          
-          {/* Verdict Badge */}
+        </div>
+      </div>
+
+      {/* Review Content - Main Focus */}
+      <div className="flex-1 mb-6">
+        <div className="text-base leading-relaxed break-words whitespace-pre-line text-white drop-shadow-sm font-medium">
+          {review.content}
+        </div>
+      </div>
+      
+      {/* Bottom Section - Verdict & Actions */}
+      <div className="space-y-3">
+        {/* Verdict Badge */}
+        <div className="flex justify-center">
           <div className={cn(
-            'inline-flex px-3 py-1 rounded-full font-bold text-xs shadow-md',
+            'px-6 py-3 rounded-full font-bold text-lg shadow-lg',
             isNatty 
               ? 'bg-natty text-black' 
               : 'bg-juicy text-white'
@@ -411,21 +420,22 @@ const ExpertReviewCard: React.FC<ExpertReviewCardProps> = ({
             {isNatty ? '💪 NATTY' : '💉 JUICY'}
           </div>
         </div>
+        
+        {/* External Link */}
+        {review.link_url && isValidUrl(review.link_url) && (
+          <div className="flex justify-center">
+            <a 
+              href={review.link_url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-full transition-colors duration-200 backdrop-blur-sm"
+            >
+              <ExternalLink className="h-4 w-4" /> 
+              Read Full Analysis
+            </a>
+          </div>
+        )}
       </div>
-
-      {/* Review Content */}
-      <div className="flex-1 text-base text-white drop-shadow-lg break-words whitespace-pre-line leading-relaxed">
-        {review.content}
-      </div>
-
-      {/* Read Full Review Link */}
-      {review.link_url && isValidUrl(review.link_url) && (
-        <div className="mt-3">
-          <a href={review.link_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm font-medium inline-flex items-center gap-1">
-            <ExternalLink className="h-4 w-4" /> Read Full Review
-          </a>
-        </div>
-      )}
     </div>
   );
 };

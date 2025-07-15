@@ -1,3 +1,4 @@
+import { useParams } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Header from "@/components/Header";
 import VotingSection from "@/components/VotingSection";
@@ -11,27 +12,15 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InfluencerProfileSkeleton } from "@/components/InfluencerProfileSkeleton";
 import { Influencer } from "@/types/vote";
-import { useVoteStats } from "@/hooks/api/useVoteStats";
-import { LazyImage } from "@/components/LazyImage";
-import { useWebVitals } from "@/utils/webVitals";
-import { useInfluencerRouting } from "@/hooks/useInfluencerRouting";
-import { EnhancedSEO } from "@/components/SEO/EnhancedSEO";
 
 const InfluencerProfile = () => {
+  const { id } = useParams();
   const { user, supabaseUser } = useAuth();
   const { fetchUserProfile } = useUserProfile();
-  const { id, name, isLoading: routingLoading, error: routingError } = useInfluencerRouting();
-  const { data: influencerData, isLoading, error } = useInfluencer(id);
-  const { data: voteStats } = useVoteStats(id) || { data: { total_votes: 0, natty_percentage: 0, juicy_percentage: 0 } };
+  const { data: influencerData, isLoading, error } = useInfluencer(id!);
   const userReviewsRef = useRef<EnhancedUserReviewsRef>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(false);
-  
-  // Initialize Web Vitals monitoring for performance tracking
-  const { report: webVitalsReport } = useWebVitals({
-    lcp: 2000, // Target LCP under 2 seconds for influencer pages
-    cls: 0.05, // Strict CLS budget for image-heavy pages
-  });
 
   // Fetch user profile to get role
   useEffect(() => {
@@ -62,9 +51,8 @@ const InfluencerProfile = () => {
   
   // Debug logs
   console.log('[InfluencerProfile] id:', id);
-  console.log('[InfluencerProfile] name:', name);
   console.log('[InfluencerProfile] influencerData:', influencerData);
-  console.log('[InfluencerProfile] error:', error || routingError);
+  console.log('[InfluencerProfile] error:', error);
 
   // Transform the data to match the Influencer type with all required properties
   const influencer: Influencer | null = influencerData ? {
@@ -82,11 +70,11 @@ const InfluencerProfile = () => {
 
   console.log('[InfluencerProfile] influencer:', influencer);
   
-  if (isLoading || routingLoading) {
+  if (isLoading) {
     return <InfluencerProfileSkeleton />;
   }
 
-  if (error || routingError || !influencer) {
+  if (error || !influencer) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -104,40 +92,26 @@ const InfluencerProfile = () => {
   const isAdmin = userProfile?.role === 'admin';
 
   return (
-    <>
-      {/* Enhanced SEO Component */}
-      <EnhancedSEO 
-        influencer={influencer}
-        voteStats={voteStats}
-      />
-
-      <div className="min-h-screen bg-background">
-        <Header />
-        
-        {/* SEO-optimized content structure */}
-        <div className="container mx-auto px-4 py-8">
-          {/* Hidden h1 for SEO - optimized for "is [name] juicy" searches */}
-          <h1 className="sr-only">
-            Is {influencer.name} Juicy? {voteStats?.natty_percentage || 0}% Natty | Community Verdict on Natural vs Enhanced Status
-          </h1>
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            {isAdmin && !profileLoading && (
+              <AdminInfluencerEditor influencer={influencer} />
+            )}
+            <InfluencerInfo influencer={influencer} />
+          </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              {isAdmin && !profileLoading && (
-                <AdminInfluencerEditor influencer={influencer} />
-              )}
-              <InfluencerInfo influencer={influencer} />
-            </div>
-            
-            <div className="lg:col-span-2 space-y-8">
-              <VotingSection influencerId={id} onReviewSubmitted={handleReviewSubmitted} />
-              <ExpertReviews influencerId={id} />
-              <EnhancedUserReviews ref={userReviewsRef} influencerId={id} />
-            </div>
+          <div className="lg:col-span-2 space-y-8">
+            <VotingSection influencerId={id!} onReviewSubmitted={handleReviewSubmitted} />
+            <ExpertReviews influencerId={id!} />
+            <EnhancedUserReviews ref={userReviewsRef} influencerId={id!} />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

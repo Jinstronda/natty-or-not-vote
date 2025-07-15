@@ -118,20 +118,9 @@ export const InfluencerSpecificSEO: React.FC<InfluencerSEOProps> = ({
       <DynamicMeta
         title={generateOptimizedTitle()}
         description={generateOptimizedDescription()}
-        canonical={`https://nattyorjuicy.com/influencer/${influencer.id}`}
-        openGraph={{
-          title: generateOptimizedTitle(),
-          description: generateOptimizedDescription(),
-          image: influencer.image,
-          url: `https://nattyorjuicy.com/influencer/${influencer.id}`,
-          type: 'profile'
-        }}
-        twitter={{
-          card: 'summary_large_image',
-          title: generateOptimizedTitle(),
-          description: generateOptimizedDescription(),
-          image: influencer.image
-        }}
+        image={influencer.image}
+        url={`https://nattyorjuicy.com/influencer/${influencer.id}`}
+        type="profile"
       />
       
       {/* SAFE: Add keywords meta tag */}
@@ -217,7 +206,7 @@ const InfluencerQASchema: React.FC<{
     ]
   };
 
-  return <StructuredData type="FAQPage" data={qaSchema} id={`qa-${influencer.id}`} />;
+  return <StructuredData data={qaSchema} id={`qa-${influencer.id}`} />;
 };
 
 /**
@@ -277,7 +266,7 @@ const EnhancedPersonSchema: React.FC<{
     }
   };
 
-  return <StructuredData type="Person" data={schema} id={`person-enhanced-${influencer.id}`} />;
+  return <StructuredData data={schema} id={`person-enhanced-${influencer.id}`} />;
 };
 
 /**

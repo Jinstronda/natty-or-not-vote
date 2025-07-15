@@ -807,14 +807,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      truncate_review_content: {
-        Args: { content_text: string }
-        Returns: string
-      }
-      validate_review_content: {
-        Args: { content_text: string }
-        Returns: boolean
-      }
     }
     Enums: {
       [_ in never]: never

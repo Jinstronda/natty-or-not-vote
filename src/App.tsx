@@ -1,6 +1,7 @@
 
 import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -56,8 +57,8 @@ const App = () => {
     const trackConversion = (event: string, value?: number) => {
       // Google Analytics 4 conversion tracking
       try {
-        if (typeof (window as any).gtag !== 'undefined') {
-          (window as any).gtag('event', 'conversion', {
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'conversion', {
             event_name: event,
             value: value,
             currency: 'USD'
@@ -78,6 +79,7 @@ const App = () => {
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
+            <Sonner />
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
