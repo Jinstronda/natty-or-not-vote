@@ -51,11 +51,6 @@ const PRODUCTS: Product[] = [
     originalPrice: 59.90, // Example original price, adjust as needed
     image: "/natty-tshirt-lightning.jpg", // Updated to use the new provided image in the public directory
     features: [
-      "Dropped shoulders for a relaxed fit",
-      "Stabilizing shoulder-to-shoulder tape",
-      "Long-lasting double needle stitch hems",
-      "100% durable carded cotton",
-      "Medium-heavy fabric for comfort"
     ],
     inStock: true, // Set to false if sold out
     stockCount: 10, // Adjust as needed
@@ -175,17 +170,19 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           </div>
           
           {/* Juicy features */}
-          <div className="grid grid-cols-2 gap-2">
-            {product.features.map((feature, index) => (
-              <Badge 
-                key={index} 
-                variant="secondary" 
-                className="text-xs justify-center py-2 bg-gradient-to-r from-juicy/20 to-pink-500/20 text-juicy border-juicy/30 hover:from-juicy/30 hover:to-pink-500/30 transition-all duration-300 font-semibold"
-              >
-                {feature}
-              </Badge>
-            ))}
-          </div>
+          {product.id !== 'natty-tshirt-1' && (
+            <div className="grid grid-cols-2 gap-2">
+              {product.features.map((feature, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary" 
+                  className="text-xs justify-center py-2 bg-gradient-to-r from-juicy/20 to-pink-500/20 text-juicy border-juicy/30 hover:from-juicy/30 hover:to-pink-500/30 transition-all duration-300 font-semibold"
+                >
+                  {feature}
+                </Badge>
+              ))}
+            </div>
+          )}
           
           {/* Juicy pricing - SHOWN ONLY ONCE */}
           <div className="flex items-center gap-2">
