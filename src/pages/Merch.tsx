@@ -42,6 +42,26 @@ const PRODUCTS: Product[] = [
     rating: 0,
     reviewCount: 0,
     shopifyUrl: "https://606ejf-hf.myshopify.com/products/the-juicy-lightning%E2%84%A2-the-secret-weapon-every-natural-influencer-doesnt-want-you-to-know"
+  },
+  {
+    id: "natty-tshirt-1",
+    title: "My mom said I look Natty Oversized T-Shirt",
+    description: "\"My mom said I look Natty\". Prove her and everybody else wrong! Best Gym clothes from Natty or Juicy, the most controversial platform of Gym lovers.",
+    price: 49.90, // EUR, adjust if you want to convert to USD
+    originalPrice: 59.90, // Example original price, adjust as needed
+    image: "/natty-tshirt-lightning.jpg", // Updated to use the new provided image in the public directory
+    features: [
+      "Dropped shoulders for a relaxed fit",
+      "Stabilizing shoulder-to-shoulder tape",
+      "Long-lasting double needle stitch hems",
+      "100% durable carded cotton",
+      "Medium-heavy fabric for comfort"
+    ],
+    inStock: true, // Set to false if sold out
+    stockCount: 10, // Adjust as needed
+    rating: 0, // Update if you have reviews
+    reviewCount: 0,
+    shopifyUrl: "https://606ejf-hf.myshopify.com/products/funny-oversized-t-shirt-gym-wear-gift-for-gym-goyer-oversized-t-shirt-gym-gym-mem-gym-gym-lovers?utm_source=copyToPasteBoard&utm_medium=product-links&utm_content=web"
   }
 ];
 
