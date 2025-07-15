@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 const Terms = () => (
   <div className="max-w-2xl mx-auto px-4 py-12 text-sm text-foreground">

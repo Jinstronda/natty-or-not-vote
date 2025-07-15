@@ -58,6 +58,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    global: 'globalThis',
+  },
   // Advanced CSS optimization
   css: {
     // Enable threaded CSS preprocessing for faster builds (up to 40% improvement)
@@ -69,6 +72,7 @@ export default defineConfig(({ mode }) => ({
     include: [
       'react',
       'react-dom',
+      'react/jsx-runtime',
       'react-router-dom',
       '@tanstack/react-query',
       '@supabase/supabase-js',
@@ -82,7 +86,7 @@ export default defineConfig(({ mode }) => ({
     // Improve cold start performance
     holdUntilCrawlEnd: false,
     // Enable esbuild cache for faster rebuilds
-    force: mode === 'development',
+    force: true, // Force pre-bundling to ensure React is available
   },
   build: {
     // Target browsers for iOS Safari compatibility - changed from es2020 to es2018
@@ -128,40 +132,10 @@ export default defineConfig(({ mode }) => ({
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
-        // Optimize chunk splitting for better caching and Core Web Vitals
-        manualChunks: (id) => {
-          // Create separate chunks for node_modules to improve caching
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase';
-            }
-            if (id.includes('@tanstack')) {
-              return 'query';
-            }
-            if (id.includes('web-vitals')) {
-              return 'performance';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('date-fns')) {
-              return 'utils';
-            }
-            return 'vendor';
-          }
-          // Group pages together for better code splitting
-          if (id.includes('/pages/')) {
-            return 'pages';
-          }
-          if (id.includes('/components/')) {
-            return 'components';
-          }
+        // Simplified chunk splitting to avoid React bundling issues
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-toast', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
         },
       }
     },
