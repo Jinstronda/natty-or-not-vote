@@ -1,5 +1,6 @@
 
 {
+  "cleanUrls": true,
   "routes": [
     {
       "handle": "filesystem"
@@ -9,8 +10,13 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/sitemap\\.xml",
-      "dest": "/sitemap.xml",
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "**/*.xml",
       "headers": [
         {
           "key": "Content-Type",
@@ -19,28 +25,7 @@
       ]
     },
     {
-      "src": "/sitemap-index\\.xml",
-      "dest": "/sitemap-index.xml",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "src": "/sitemaps/(.*)\\.xml",
-      "dest": "/sitemaps/$1.xml",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "src": "/robots\\.txt",
-      "dest": "/robots.txt",
+      "source": "/robots.txt",
       "headers": [
         {
           "key": "Content-Type",
@@ -48,12 +33,6 @@
         }
       ]
     },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "headers": [
     {
       "source": "/assets/(.*)\\.js",
       "headers": [
